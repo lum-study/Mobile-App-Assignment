@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Your App Name</string>
+    <string name="first_page_load">Explorer the world</string>
+    <string name="second_page_load">Safe and easy</string>
+    <string name="third_page_load">Wellcome to Travee</string>
+    <string name="greeting_text">Welcome Back!</string>
+    <string name="sign_in_text">Sign In</string>
+    <string name="username_text">Username</string>
+    <string name="password_text">Password</string>
+    <string name="get_started">Register To Get Started</string>
+    <string name="email_text">Email</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="regrister_text">Register</string>
+    <string name="verify_text">Verify</string>
+    <string name="otp">OTP Verification</string>
+    <string name="sent_text">We have sent the verification code to your email address</string>
+    <string name="code_received">Didn’t receive code? Resend</string>
+    <string name="change_password_text">Change Password</string>
+    <string name="change_text">Change</string>
+
+</resources>

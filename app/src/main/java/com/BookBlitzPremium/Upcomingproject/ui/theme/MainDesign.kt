@@ -1,0 +1,100 @@
+package com.BookBlitzPremium.Upcomingproject.ui.theme
+
+import androidx.annotation.ColorRes
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+
+data class MainDesign(
+    val background: Color,
+    val onBackground: Color,
+    val primary: Color,
+    val onPrimary: Color,
+    val secondary: Color,
+    val onSecondary: Color,
+    val surface: Color = Color.White, // Added defaults
+    val onSurface: Color = Color.Black,
+    val surfaceVariant: Color = Color(0xFFEEEEEE),
+    val error: Color = Color(0xFFB00020)
+)
+data class AppTypography(
+    val displayLarge: TextStyle,
+    val headlineLarge: TextStyle,
+    val titleLarge: TextStyle,
+    val bodyLarge: TextStyle,
+    val labelMedium: TextStyle,
+    val labelSmall: TextStyle
+)
+
+data class AppShape(
+    val container: Shape,
+    val button: Shape
+)
+
+data class AppSize(
+    val large:Dp,
+    val normal:Dp,
+    val medium:Dp,
+    val small:Dp,
+)
+
+data class Elevation(
+    val none: Dp = 0.dp,
+    val small: Dp = 2.dp,
+    val medium: Dp = 4.dp,
+    val large: Dp = 8.dp
+)
+
+val LocalAppColorSchema = staticCompositionLocalOf {
+    MainDesign(
+        background = Color.Unspecified,
+        onBackground = Color.Unspecified,
+        primary = Color.Unspecified,
+        onPrimary = Color.Unspecified,
+        secondary = Color.Unspecified,
+        onSecondary = Color.Unspecified
+    )
+}
+
+val LocalAppTypography = staticCompositionLocalOf {
+    AppTypography(
+        displayLarge = TextStyle.Default,
+        headlineLarge = TextStyle.Default,
+        titleLarge = TextStyle.Default,
+        bodyLarge = TextStyle.Default,
+        labelMedium = TextStyle.Default,
+        labelSmall = TextStyle.Default,
+
+    )
+}
+
+val LocalAppShape = staticCompositionLocalOf {
+   AppShape(
+        container = RectangleShape,
+        button= RectangleShape
+    )
+}
+
+val LocalAppSize = staticCompositionLocalOf {
+    AppSize(
+        large = Dp.Unspecified,
+        normal = Dp.Unspecified,
+        medium = Dp.Unspecified,
+        small= Dp.Unspecified,
+    )
+}
+
+val LocalElevation = staticCompositionLocalOf {
+    Elevation(
+        none = 0.dp,
+        small = 2.dp,
+        medium = 4.dp,
+        large = 8.dp
+    )
+}
