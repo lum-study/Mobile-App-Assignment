@@ -18,4 +18,5 @@
     <string name="change_password_text">Change Password</string>
     <string name="change_text">Change</string>
 
+    <string name="home_greeting">Hi, %s</string>
 </resources>
