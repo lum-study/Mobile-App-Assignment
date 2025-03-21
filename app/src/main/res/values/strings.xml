@@ -1,4 +1,6 @@
 <resources>
+    <string name="google_maps_key">${GOOGLE_MAPS_API_KEY}</string>
+
     <string name="app_name">Your App Name</string>
     <string name="first_page_load">Explorer the world</string>
     <string name="second_page_load">Safe and easy</string>
@@ -18,5 +20,71 @@
     <string name="change_password_text">Change Password</string>
     <string name="change_text">Change</string>
 
-    <string name="home_greeting">Hi, %s</string>
+    <string name="home_title">Hi, %s</string>
+    <string name="home_description">Find your next trip</string>
+    <string name="home_package_title">Recommended Trip Packages</string>
+    <string name="home_hotel_name">Recommended Hotels</string>
+
+    <!--Title-->
+    <string name="search_navigation">Search Navigation</string>
+    <string name="search_title">Search</string>
+    <string name="last_search">Last Search</string>
+    <string name="filter_title">Filter</string>
+    <string name="filtered_result">Filtered Result</string>
+    <string name="trip_packages">Trip Packages</string>
+    <string name="hot_package">Hot Package</string>
+    <string name="filter_price_title">Pricing Range</string>
+    <string name="filter_region_title">Region</string>
+    <string name="filter_state_title">State</string>
+    <string name="filter_type">Type</string>
+    <string name="schedule">Schedule</string>
+    <string name="flight">Flight</string>
+    <string name="hotel">Hotels</string>
+    <string name="location">Location</string>
+    <string name="information">Information</string>
+    
+    <!--Image Description-->
+    <string name="country_image">Country Image</string>
+
+    <!--Payment Method-->
+    <string name="payment_method">Payment Method</string>
+    <string name="debit_card">Debit Card</string>
+    <string name="credit_card">Credit Card</string>
+    <string name="e_wallet">eWallet</string>
+
+    <!--Receipt-->
+    <string name="receipt">Receipt</string>
+    <string name="transaction_details">Transaction Details</string>
+    <string name="transaction_id">Transaction ID</string>
+    <string name="card_number">Card Number</string>
+    <string name="currency">Currency</string>
+    <string name="reference">Reference</string>
+    <string name="transaction_date">Transaction Date</string>
+    <string name="total_amount_details">Total Amount Details</string>
+    <string name="packages">Package</string>
+    <string name="transport">Transport</string>
+    <string name="bag_and_extras">Bags &amp; Extra</string>
+    <string name="discount">Discount</string>
+
+    <!--Action Button Description-->
+    <string name="add_button">Add</string>
+    <string name="apply_button">Apply</string>
+    <string name="back_button">Back</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="confirm_button">Confirm</string>
+    <string name="next_button">Next</string>
+    <string name="edit">Edit</string>
+    <string name="transaction_completed">Transaction Completed</string>
+    <string name="clear_all">Clear all</string>
+
+    <!--Message-->
+    <string name="no_record">No Record Founded</string>
+    <string name="total_amount">Total Amount:</string>
+    <string name="price_value">%s%.2f</string>
+    <string name="available_slot">%d slots are available</string>
+    <string name="day_count">Day %d</string>
+    <string name="airport_name">%s (%s)</string>
+    <string name="search_placeholder">Search a hotel or trip package</string>
+
+
 </resources>

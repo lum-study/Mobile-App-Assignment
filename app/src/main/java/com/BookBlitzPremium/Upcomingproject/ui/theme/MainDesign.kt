@@ -21,9 +21,20 @@ data class MainDesign(
     val surface: Color = Color.White, // Added defaults
     val onSurface: Color = Color.Black,
     val surfaceVariant: Color = Color(0xFFEEEEEE),
-    val error: Color = Color(0xFFB00020)
+    val error: Color = Color(0xFFB00020),
+    val brown: Color,
 )
+
 data class AppTypography(
+    val largeBold: TextStyle,
+    val largeSemiBold: TextStyle,
+    val mediumBold: TextStyle,
+    val mediumSemiBold: TextStyle,
+    val mediumNormal: TextStyle,
+    val smallLight: TextStyle,
+    val smallRegular: TextStyle,
+    val smallSemiBold: TextStyle,
+
     val displayLarge: TextStyle,
     val headlineLarge: TextStyle,
     val titleLarge: TextStyle,
@@ -38,10 +49,10 @@ data class AppShape(
 )
 
 data class AppSize(
-    val large:Dp,
-    val normal:Dp,
-    val medium:Dp,
-    val small:Dp,
+    val large: Dp,
+    val normal: Dp,
+    val medium: Dp,
+    val small: Dp,
 )
 
 data class Elevation(
@@ -58,26 +69,35 @@ val LocalAppColorSchema = staticCompositionLocalOf {
         primary = Color.Unspecified,
         onPrimary = Color.Unspecified,
         secondary = Color.Unspecified,
-        onSecondary = Color.Unspecified
+        onSecondary = Color.Unspecified,
+        brown = Color(0xFF964B00)
     )
 }
 
 val LocalAppTypography = staticCompositionLocalOf {
     AppTypography(
+        largeBold = TextStyle.Default,
+        largeSemiBold = TextStyle.Default,
+        mediumBold = TextStyle.Default,
+        mediumSemiBold = TextStyle.Default,
+        mediumNormal = TextStyle.Default,
+        smallLight = TextStyle.Default,
+        smallRegular = TextStyle.Default,
+        smallSemiBold = TextStyle.Default,
+
         displayLarge = TextStyle.Default,
         headlineLarge = TextStyle.Default,
         titleLarge = TextStyle.Default,
         bodyLarge = TextStyle.Default,
         labelMedium = TextStyle.Default,
         labelSmall = TextStyle.Default,
-
-    )
+        )
 }
 
 val LocalAppShape = staticCompositionLocalOf {
-   AppShape(
+    AppShape(
         container = RectangleShape,
-        button= RectangleShape
+        button = RectangleShape
     )
 }
 
@@ -86,7 +106,7 @@ val LocalAppSize = staticCompositionLocalOf {
         large = Dp.Unspecified,
         normal = Dp.Unspecified,
         medium = Dp.Unspecified,
-        small= Dp.Unspecified,
+        small = Dp.Unspecified,
     )
 }
 

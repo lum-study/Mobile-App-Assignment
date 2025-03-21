@@ -21,37 +21,105 @@ import com.BookBlitzPremium.Upcomingproject.R // Adjust based on your package
 private val darkColorScheme = MainDesign(
     background = Color(0xFF121212),
     onBackground = Color.White,
-    primary = Color(0xFFBB86FC),
+    primary = Color(0xFFFFEB3B),
     onPrimary = Color.Black,
     secondary = Color(0xFF03DAC6),
     onSecondary = Color.Black,
     surface = Color(0xFF1E1E1E),
     onSurface = Color.White,
     surfaceVariant = Color(0xFF333333),
-    error = Color(0xFFCF6679)
+    error = Color(0xFFCF6679),
+    brown = Color(0xFF964B00)
 )
 
 private val lightColorScheme = MainDesign(
     background = Color.White,
     onBackground = Color.Black,
-    primary = Color(0xFF6750A4), // Corrected hex to a valid purple
+    primary = Color(0xFF0081FF),
     onPrimary = Color.White,
     secondary = Color(0xFF625B71),
     onSecondary = Color.White,
     surface = Color(0xFFF5F5F5),
     onSurface = Color.Black,
     surfaceVariant = Color(0xFFE0E0E0),
-    error = Color(0xFFB00020)
+    error = Color(0xFFB00020),
+    brown = Color(0xFF964B00)
 )
 
 private val typography = AppTypography(
+    largeBold = TextStyle(
+        fontFamily = poppinsBold,
+        fontWeight = FontWeight.Normal,
+        fontSize = 24.sp,
+        lineHeight = 28.sp,
+        letterSpacing = (-0.25).sp,
+        color = Color.Unspecified // To be set by theme
+    ),
+    largeSemiBold = TextStyle(
+        fontFamily = poppinsSemibold,
+        fontWeight = FontWeight.Normal,
+        fontSize = 24.sp,
+        lineHeight = 36.sp,
+        letterSpacing = (-0.25).sp,
+        color = Color.Unspecified
+    ),
+    mediumBold = TextStyle(
+        fontFamily = poppinsBold,
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp,
+        lineHeight = 28.sp,
+        letterSpacing = (-0.25).sp,
+        color = Color.Unspecified
+    ),
+    mediumSemiBold = TextStyle(
+        fontFamily = poppinsSemibold,
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp,
+        lineHeight = 28.sp,
+        letterSpacing = (-0.25).sp,
+        color = Color.Unspecified
+    ),
+    mediumNormal = TextStyle(
+        fontFamily = poppinsRegular,
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp,
+        lineHeight = 28.sp,
+        letterSpacing = (-0.25).sp,
+        color = Color.Unspecified
+    ),
+    smallSemiBold = TextStyle(
+        fontFamily = poppinsSemibold,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp,
+        lineHeight = 20.sp,
+        letterSpacing = (-0.25).sp,
+        color = Color.Unspecified
+    ),
+    smallRegular = TextStyle(
+        fontFamily = poppinsRegular,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp,
+        lineHeight = 20.sp,
+        letterSpacing = (-0.25).sp,
+        color = Color.Unspecified
+    ),
+    smallLight = TextStyle(
+        fontFamily = poppinsExtralight,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp,
+        lineHeight = 20.sp,
+        letterSpacing = (-0.25).sp,
+        color = Color.Unspecified
+    ),
+
+
     displayLarge = TextStyle(
         fontFamily = poppinsBold,
         fontWeight = FontWeight.Bold,
         fontSize = 57.sp,
         lineHeight = 64.sp,
         letterSpacing = (-0.25).sp,
-        color = Color.Unspecified // To be set by theme
+        color = Color.Unspecified
     ),
     headlineLarge = TextStyle(
         fontFamily = poppinsRegular,

@@ -51,6 +51,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.scenecore)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.adaptive.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -60,4 +62,20 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     implementation (libs.androidx.material.icons.extended)
+    implementation(libs.coil.compose)
+    implementation (libs.zxing.android.embedded)
+    
+    //API
+    implementation (libs.androidx.lifecycle.runtime.compose)
+    implementation (libs.androidx.runtime.livedata)
+    implementation (libs.androidx.navigation.compose.v272)
+
+    // Retrofit and Gson for API requests
+    implementation (libs.retrofit)
+    implementation (libs.converter.gson)
+
+    // Coroutines for background network calls
+    implementation (libs.kotlinx.coroutines.core)
+    implementation (libs.kotlinx.coroutines.android)
+    implementation (libs.play.services.maps)
 }
