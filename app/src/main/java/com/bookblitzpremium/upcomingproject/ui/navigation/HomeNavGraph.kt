@@ -1,0 +1,39 @@
+package com.bookblitzpremium.upcomingproject.ui.navigation
+
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.model.TripPackage
+import com.bookblitzpremium.upcomingproject.ui.screen.home.HomeScreen
+import com.bookblitzpremium.upcomingproject.ui.screen.hotel.DynamicHotelDetails
+import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.FlightScreen
+import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.ScheduleScreen
+import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.TripPackageScreen
+
+fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
+    navigation(
+        startDestination = AppScreen.Home.route,
+        route = AppScreen.HomeGraph.route
+    ) {
+        composable(AppScreen.Home.route) {
+            HomeScreen(navController)
+        }
+        composable(AppScreen.TripPackage.route) {
+            TripPackageScreen(navController)
+        }
+        composable(AppScreen.Schedule.route) {
+            ScheduleScreen(navController)
+        }
+        composable(AppScreen.Flight.route) {
+            FlightScreen(navController)
+        }
+        composable(AppScreen.Hotel.route) {
+            DynamicHotelDetails( onNextButtonClicked = { }, navController)
+        }
+    }
+}

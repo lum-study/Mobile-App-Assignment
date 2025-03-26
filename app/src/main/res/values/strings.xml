@@ -1,0 +1,96 @@
+<resources>
+    <string name="app_name">Your App Name</string>
+    <string name="first_page_load">Explorer the world</string>
+    <string name="second_page_load">Safe and easy</string>
+    <string name="third_page_load">Welcome to Travel</string>
+    <string name="greeting_text">Welcome Back!</string>
+    <string name="sign_in_text">Sign In</string>
+    <string name="username_text">Username</string>
+    <string name="password_text">Password</string>
+    <string name="get_started">Register To Get Started</string>
+    <string name="email_text">Email</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="register_text">Register</string>
+    <string name="verify_text">Verify</string>
+    <string name="otp">OTP Verification</string>
+    <string name="sent_text">We have sent the verification code to your email address</string>
+    <string name="code_received">Didn’t receive code? Resend</string>
+    <string name="change_password_text">Change Password</string>
+    <string name="change_text">Change</string>
+    <string name="sign_in_with">Sign In with</string>
+    <string name="or_login_with">Or login with</string>
+    <string name="enter_your_password">Enter your Password</string>
+    <string name="forget_password">Forget Password</string>
+    <string name="login">Login</string>
+    <string name="verify">Verify</string>
+    <string name="change">Change</string>
+    <string name="verification_code_message">We have sent the verification code to\n your email address</string>
+    <string name="register_as_a_account">Register As a Account</string>
+    <string name="change_password">Change Password</string>
+    <string name="description">Description</string>
+    <string name="swiss_hotel">Swiss Hotel</string>
+    <string name="reviews">Reviews</string>
+    <string name="preview">Preview</string>
+
+
+    <string name="home_title">Hi, %s</string>
+    <string name="home_description">Find your next trip</string>
+    <string name="home_package_title">Recommended Trip Packages</string>
+    <string name="home_hotel_name">Recommended Hotels</string>
+    <!-- Title -->
+    <string name="search_navigation">Search Navigation</string>
+    <string name="search_title">Search</string>
+    <string name="last_search">Last Search</string>
+    <string name="filter_title">Filter</string>
+    <string name="filtered_result">Filtered Result</string>
+    <string name="trip_packages">Trip Packages</string>
+    <string name="hot_package">Hot Package</string>
+    <string name="filter_price_title">Pricing Range</string>
+    <string name="filter_region_title">Region</string>
+    <string name="filter_state_title">State</string>
+    <string name="filter_type">Type</string>
+    <string name="schedule">Schedule</string>
+    <string name="flight">Flight</string>
+    <string name="hotel">Hotels</string>
+    <string name="location">Location</string>
+    <string name="information">Information</string>
+    <!-- Image Description -->
+    <string name="country_image">Country Image</string>
+    <!-- Payment Method -->
+    <string name="payment_method">Payment Method</string>
+    <string name="debit_card">Debit Card</string>
+    <string name="credit_card">Credit Card</string>
+    <string name="e_wallet">eWallet</string>
+    <!-- Receipt -->
+    <string name="receipt">Receipt</string>
+    <string name="transaction_details">Transaction Details</string>
+    <string name="transaction_id">Transaction ID</string>
+    <string name="card_number">Card Number</string>
+    <string name="currency">Currency</string>
+    <string name="reference">Reference</string>
+    <string name="transaction_date">Transaction Date</string>
+    <string name="total_amount_details">Total Amount Details</string>
+    <string name="packages">Package</string>
+    <string name="transport">Transport</string>
+    <string name="bag_and_extras">Bags Extra</string>
+    <string name="discount">Discount</string>
+    <!-- Action Button Description -->
+    <string name="add_button">Add</string>
+    <string name="apply_button">Apply</string>
+    <string name="back_button">Back</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="confirm_button">Confirm</string>
+    <string name="next_button">Next</string>
+    <string name="edit">Edit</string>
+    <string name="transaction_completed">Transaction Completed</string>
+    <string name="clear_all">Clear all</string>
+    <!-- Message -->
+    <string name="no_record">No Record Founded</string>
+    <string name="total_amount">Total Amount:</string>
+    <string name="price_value">%s%.2f</string>
+    <string name="available_slot">%d slots are available</string>
+    <string name="day_count">Day %d</string>
+    <string name="airport_name">%s (%s)</string>
+    <string name="search_placeholder">Search a hotel or trip package</string>
+    <string name="already_have_an_account_login">Already have an account? Login</string>
+</resources>
