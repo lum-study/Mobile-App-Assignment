@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -55,6 +56,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -91,6 +93,7 @@ enum class TravelScreen() {
 //) {
 //    Text(stringResource(R.string.next))
 //}
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -121,7 +124,9 @@ fun App(
                 TitleBar(
                     currentScreen = currentScreen,
                     canNavigateBack = navController.previousBackStackEntry != null,
-                    navigateUp = { navController.navigateUp() }
+                    navigateUp = { navController.navigateUp() },
+                    modifier = Modifier
+
                 )
             }
         },
@@ -145,7 +150,6 @@ fun App(
     ) { innerPadding ->
         AppNavigation(navController, startDestination, Modifier.padding(innerPadding))
     }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -157,121 +161,33 @@ fun TitleBar(
     modifier: Modifier = Modifier
 ) {
     CenterAlignedTopAppBar(
-        title = { Text(
-            text = currentScreen.name.replace(Regex("([a-z])([A-Z])"), "$1 $2"),
-            fontWeight = FontWeight.Bold
-        ) },
+        title = {
+            Text(
+                text = currentScreen.name.replace(Regex("([a-z])([A-Z])"), "$1 $2"),
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp,
+                textAlign = TextAlign.Center, // ✅ Ensure text is centered
+                modifier = Modifier.fillMaxWidth() // ✅ Full width for proper alignment
+            )
+        },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
             containerColor = Color.Transparent
         ),
-        modifier = modifier,
+        modifier = modifier.height(74.dp), // ✅ Set correct height
         navigationIcon = {
             if (canNavigateBack) {
-                IconButton(onClick = navigateUp) {
+                IconButton(
+                    onClick = navigateUp,
+                    modifier = Modifier.size(24.dp) // ✅ Consistent button size
+                ) {
                     Icon(
                         imageVector = Icons.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.back_button)
+                        contentDescription = stringResource(R.string.back_button),
+                        modifier = Modifier.size(24.dp) // ✅ Adjust icon size
                     )
                 }
             }
         }
-    )
-}
-
-
-
-@SuppressLint("ContextCastToActivity")
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
-@Composable
-fun SplitScreen() {
-    val activity = LocalContext.current as? Activity ?: return
-    val windowSizeClass = calculateWindowSizeClass(activity)
-    val isTablet = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded &&
-            windowSizeClass.heightSizeClass == WindowHeightSizeClass.Medium
-
-    var showBye by remember { mutableStateOf(false) } // Toggle state
-
-    if (isTablet) {
-        // 🟢 Tablet Layout: Splitting screen into two halves
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            // 🟥 Left Side (Static Red Background)
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .background(Color.Red),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Static Side", color = Color.White, style = MaterialTheme.typography.headlineLarge)
-            }
-
-            // 🟦 Right Side (Dynamic Component Switcher)
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .background(Color.Black),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    if (showBye) Bye() else Hello()
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Button(
-                        onClick = { showBye = !showBye },
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
-                    ) {
-                        Text(if (showBye) "Switch to Hello" else "Switch to Bye")
-                    }
-                }
-            }
-        }
-    } else {
-        // 🔵 Default Phone Layout (Stacked)
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            if (showBye) Bye() else Hello()
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Button(
-                onClick = { showBye = !showBye },
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
-            ) {
-                Text(if (showBye) "Switch to Hello" else "Switch to Bye")
-            }
-        }
-    }
-}
-
-@Composable
-fun Hello() {
-    Text(
-        text = "Hello!",
-        color = Color.White,
-        style = MaterialTheme.typography.headlineLarge
-    )
-}
-
-@Composable
-fun Bye() {
-    Text(
-        text = "Bye!",
-        color = Color.White,
-        style = MaterialTheme.typography.headlineLarge
     )
 }
 
@@ -290,64 +206,6 @@ fun MySimpleLayout() {
     }
 }
 
-
-
-
-@Composable
-fun DraggableDividerExample() {
-
-    var topHeight by remember { mutableStateOf(300.dp) } // Initial height of top section
-    val minHeight = 50.dp // Minimum height limit for the top section
-    val maxHeight = 500.dp // Maximum height before the divider stops
-    val dragSpeedFactor = 0.3f // 🔹 Slows down movement (smaller = slower)
-
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // Top Section
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(topHeight)
-                .background(Color.Red)
-        ) {
-            Text(
-                text = "Top Section",
-                color = Color.White,
-                modifier = Modifier.align(Alignment.Center)
-            )
-        }
-
-        // Draggable Divider
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(10.dp) // Thickness of the divider
-                .background(Color.Gray)
-                .draggable(
-                    orientation = Orientation.Vertical,
-                    state = rememberDraggableState { delta ->
-                        val scaledDelta = delta * dragSpeedFactor // 🔹 Reduce movement speed
-                        val newHeight = (topHeight.value + scaledDelta).dp
-                        topHeight = newHeight.coerceIn(minHeight, maxHeight) // Restrict movement
-                    }
-                )
-        )
-
-        // Bottom Section
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Blue)
-        ) {
-            Text(
-                text = "Bottom Section",
-                color = Color.White,
-                modifier = Modifier.align(Alignment.Center)
-            )
-        }
-    }
-}
 
 
 

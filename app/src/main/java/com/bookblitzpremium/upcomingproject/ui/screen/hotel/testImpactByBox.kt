@@ -1,19 +1,15 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.hotel
 
 import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Box
@@ -42,9 +38,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,9 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -72,97 +64,111 @@ import com.bookblitzpremium.upcomingproject.ui.components.HeaderDetails
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 
 @Composable
-fun MobieLayout(showNUmber:Int, defaultSize : Dp, maxSize: Dp) {
-
-    var topHeight by remember { mutableStateOf(defaultSize) } // 🔹 Shared state for top section
-    val minHeight = 100.dp // 🔹 Minimum height (almost hides)
-    val maxHeight = maxSize // 🔹 Maximum height
-    val dragSpeedFactor = 0.3f // 🔹 Slow down dragging effect
-
+fun ImageShow(){
     Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(topHeight) // 🔹 Dynamically adjust height
-                .background(Color.Black)
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.hotel_images),
-                contentDescription = "Hotel Image",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize() // ✅ Fill the dynamic height
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(700.dp)
+            .paint(
+                painterResource(id = R.drawable.hotel_images),
+                contentScale = ContentScale.Crop
             )
+    ){
 
-            if( showNUmber ==1 || showNUmber ==3 ){
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.Transparent)
-                        .align(Alignment.BottomEnd)
-                        .padding( horizontal = 48.dp, vertical = 30.dp)
-                ){
-                    Button(
-                        onClick = {
-
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Black,
-                            contentColor = Color.White
-                        ),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier
-                            .width(300.dp)
-                            .padding(end = 20.dp)
-
-                    ){
-                        Text(
-                            text = "Pick Date",
-                            style = AppTheme.typography.mediumBold
-                        )
-                    }
-
-                    Button(
-                        onClick = {
-
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Black,
-                            contentColor = Color.White
-                        ),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier.width(300.dp)
-                    ){
-                        Text(
-                            text = "Pick Date",
-                            style = AppTheme.typography.mediumBold
-                        )
-                    }
-                }
-            }
-        }
-
-        Column(
-            modifier = Modifier
-                .background(Color.Black)
-        ){
-            DragableToTop(
-                showBackButton = showNUmber,
-                topHeight = topHeight,
-                onDrag = { delta ->
-                    val scaledDelta = delta * dragSpeedFactor
-                    val newHeight = (topHeight.value + scaledDelta).dp
-                    topHeight = newHeight.coerceIn(minHeight, maxHeight)
-                }
-            )
-        }
     }
 }
 
+@Preview(showBackground = true , widthDp = 500 , heightDp = 1000)
 @Composable
-fun HotelHeaderTable( onNextButtonClicked: () -> Unit ) {
+fun PreviewMobileLayout(){
+    RoundedBottomSheet()
+}
+
+
+
+@Composable
+fun MobieLayout1(showNumber: Int, defaultSize: Dp, maxSize: Dp) {
+    var topHeight by remember { mutableStateOf(defaultSize) } // 🔹 Controls the height of top section
+    val minHeight = 100.dp // 🔹 Minimum height (almost hides)
+    val maxHeight = maxSize // 🔹 Maximum height
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(bottom = 100.dp) // ✅ Ensures space at the bottom
+    ) {
+       item{
+           Image(
+               painter = painterResource(id = R.drawable.hotel_images), // Change this to your image
+               contentDescription = null,
+               contentScale = ContentScale.Crop,
+               modifier = Modifier.fillMaxSize()
+           )
+       }
+
+        item{
+            Column(
+                modifier = Modifier
+                    .background(Color.White, RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+            ){
+                HotelInfoSection(showBackButton = 1, modifier = Modifier)
+                HotelDescriptionSection(showBackButton = 1, modifier = Modifier)
+                HotelPreviewImages(showBackButton = 1, modifier = Modifier)
+                HotelReviewsSection(showBackButton = 1, modifier = Modifier)
+
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    onClick = { } // ✅ Handle button click
+                ) {
+                    Text(text = "Next")
+                }
+
+                Spacer(modifier = Modifier.height(100.dp))
+            }
+        }
+//        item { HotelInfoSection(showBackButton = 1, modifier = Modifier) }
+//        item { HotelDescriptionSection(showBackButton = 1, modifier = Modifier) }
+//        item { HotelPreviewImages(showBackButton = 1, modifier = Modifier) }
+//        item { HotelReviewsSection(showBackButton = 1, modifier = Modifier) }
+
+//        item {
+//            Button(
+//                colors = ButtonDefaults.buttonColors(
+//                    containerColor = Color.Black,
+//                    contentColor = Color.White
+//                ),
+//                shape = RoundedCornerShape(16.dp),
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(16.dp),
+//                onClick = { } // ✅ Handle button click
+//            ) {
+//                Text(text = "Next")
+//            }
+//        }
+
+        // ✅ Ensures content doesn't get cut off at the bottom
+//        item {  }
+    }
+}
+
+
+
+
+
+
+
+@Composable
+fun HotelHeaderTable1( onNextButtonClicked: () -> Unit ) {
     var showNewComponent by remember { mutableStateOf(false) } // ✅ State for toggling components
 
     Row(
@@ -254,7 +260,7 @@ fun HotelHeaderTable( onNextButtonClicked: () -> Unit ) {
 }
 
 @Composable
-fun DragableToTop(
+fun DragableToTop1(
     showBackButton: Int,
     topHeight: Dp,
     onDrag: (Float) -> Unit
@@ -336,11 +342,11 @@ fun DragableToTop(
         HotelDescriptionSection(showBackButton = 2 , modifier = Modifier)
 
         val scrollModifier = if (topHeight >= 310.dp && topHeight <=500.dp) {
-            Modifier.verticalScroll(rememberScrollState())
-//            Modifier
+//            Modifier.verticalScroll(rememberScrollState())
+            Modifier
         } else if (topHeight <= 250.dp) {  // ✅ Fixed comparison operator
-            Modifier.verticalScroll(rememberScrollState())
-//            Modifier
+//            Modifier.verticalScroll(rememberScrollState())
+            Modifier
         } else {
             Modifier // ✅ Ensures all cases return a valid Modifier
         }
@@ -352,40 +358,31 @@ fun DragableToTop(
                 .wrapContentHeight()
         ) {
 
-             if (topHeight >= 310.dp && topHeight <=500.dp) {
-                HotelPreviewImages(showBackButton = 2, modifier = Modifier)
+            if (topHeight >= 310.dp && topHeight <=500.dp) {
+                HotelPreviewImages1(showBackButton = 2, modifier = Modifier)
 //                HotelReviewsSection(showBackButton = 2, modifier = Modifier.height(500.dp))
             } else if (topHeight <= 250.dp) {  // ✅ Fixed comparison operator
                 HotelPreviewImages(showBackButton = 2, modifier = Modifier)
                 HotelReviewsSection(showBackButton = 2, modifier = Modifier.height(500.dp))
-                 ButtonGrid()
-
-                 Spacer(modifier = Modifier.height(200.dp))
             } else {
                 HotelPreviewImages(showBackButton = 2, modifier = Modifier)
             }
 
 
         }
-
-
-
     }
 }
 
 
 @Composable
-fun HotelInfoSection(
-    showBackButton: Int ,
-    modifier: Modifier
-) {
+fun HotelInfoSection1(showBackButton: Int , modifier: Modifier) {
 
     val textOffset = if (showBackButton == 1) 24.dp  else if (showBackButton ==2) 24.dp else 24.dp
     val rangeBetweenLocation = if (showBackButton == 1) 340.dp  else if (showBackButton == 2) 150.dp else 500.dp
 
     Column(
         modifier = Modifier
-            .background(Color.White , RoundedCornerShape(32.dp))
+            .background(Color.White , RoundedCornerShape(32.dp)) //
     ){
         Row(
             modifier = Modifier
@@ -483,7 +480,7 @@ fun HotelInfoSection(
 
 
 @Composable
-fun HotelDescriptionSection(showBackButton: Int, modifier: Modifier) {
+fun HotelDescriptionSection1(showBackButton: Int, modifier: Modifier) {
 
     val textOffset = if (showBackButton == 1) 24.dp  else if (showBackButton ==2) 24.dp else 24.dp
 
@@ -514,7 +511,7 @@ fun HotelDescriptionSection(showBackButton: Int, modifier: Modifier) {
 }
 
 @Composable
-fun HotelPreviewImages(showBackButton: Int,modifier: Modifier) {
+fun HotelPreviewImages1(showBackButton: Int,modifier: Modifier) {
     val textOffset = if (showBackButton == 1) 24.dp  else if (showBackButton ==2) 24.dp else 24.dp
 
     Column(modifier = Modifier.padding( top = 16.dp, end = 16.dp)) {
@@ -569,7 +566,7 @@ fun HotelPreviewImages(showBackButton: Int,modifier: Modifier) {
 }
 
 @Composable
-fun HotelReviewsSection(showBackButton: Int,modifier: Modifier) {
+fun HotelReviewsSection1(showBackButton: Int,modifier: Modifier) {
     val textOffset = if (showBackButton == 1) 24.dp  else if (showBackButton ==2) 24.dp else 24.dp
     Column(modifier = Modifier.padding(top = 16.dp)) {
         HeaderDetails(R.string.reviews , textOffset,modifier = Modifier)
@@ -581,7 +578,7 @@ fun HotelReviewsSection(showBackButton: Int,modifier: Modifier) {
             horizontalArrangement = spacedBy(16.dp)
         ) {
             items(5) {
-                ReviewItem(showBackButton )
+                ReviewItem1(showBackButton )
             }
         }
     }
@@ -590,7 +587,7 @@ fun HotelReviewsSection(showBackButton: Int,modifier: Modifier) {
 
 
 @Composable
-fun ReviewItem(showBackButton: Int,) {
+fun ReviewItem1(showBackButton: Int,) {
     val textOffset = if (showBackButton == 1) 24.dp  else if (showBackButton ==2) 24.dp else 24.dp
     Column(
         modifier = Modifier
@@ -631,57 +628,276 @@ fun ReviewItem(showBackButton: Int,) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+
 @Composable
-fun ButtonGrid() {
-    val haptics = LocalHapticFeedback.current
-    var showPopup by remember { mutableStateOf(false) } // Controls popup visibility
+fun DraggableDividerExample1() {
 
-    // ✅ Button to open popup
-    Button(
-        onClick = { showPopup = true },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .combinedClickable(onClick = { showPopup = true })
-            .background(Color.Red)
-    ) {
-        Text(text = "Open Popup")
-    }
+    var topHeight by remember { mutableStateOf(300.dp) } // Initial height of top section
+    val minHeight = 50.dp // Minimum height limit for the top section
+    val maxHeight = 500.dp // Maximum height before the divider stops
+    val dragSpeedFactor = 0.3f // 🔹 Slows down movement (smaller = slower)
 
-    // ✅ Animated popup
-    AnimatedVisibility(
-        visible = showPopup,
-        enter = fadeIn() + slideInVertically { it / 2 },
-        exit = fadeOut() + slideOutVertically { it }
+    Column(
+        modifier = Modifier.fillMaxSize()
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
+        // Top Section
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(topHeight)
+                .background(Color.Red)
         ) {
-            // ✅ Top half (Clicking here dismisses the popup)
-            Box(
+            Text(
+                text = "Top Section",
+                color = Color.White,
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
+
+        // Draggable Divider
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(10.dp) // Thickness of the divider
+                .background(Color.Gray)
+                .draggable(
+                    orientation = Orientation.Vertical,
+                    state = rememberDraggableState { delta ->
+                        val scaledDelta = delta * dragSpeedFactor // 🔹 Reduce movement speed
+                        val newHeight = (topHeight.value + scaledDelta).dp
+                        topHeight = newHeight.coerceIn(minHeight, maxHeight) // Restrict movement
+                    }
+                )
+        )
+
+        // Bottom Section
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Blue)
+        ) {
+            Text(
+                text = "Bottom Section",
+                color = Color.White,
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
+    }
+}
+
+
+@Composable
+fun RoundedBottomSheet() {
+    var isExpanded by remember { mutableStateOf(false) } // ✅ Track expanded/collapsed state
+
+    // ✅ Animate the offset when toggling
+    val offsetValueChanged by animateDpAsState(
+        targetValue = if (isExpanded) 250.dp else 750.dp, // ✅ 0.dp means full scrolling mode
+        animationSpec = tween(durationMillis = 300)
+    )
+
+    if (isExpanded) {
+        // ✅ Full Scrollable Layout (Image + Content)
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // ✅ Scrollable Image
+            item {
+                Image(
+                    painter = painterResource(id = R.drawable.hotel_images),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(700.dp) // ✅ Adjust height
+                )
+            }
+
+            // ✅ Content inside scrollable view
+            items(30) {
+                Column(
+                    modifier = Modifier
+                        .background(Color.Black)
+                ){
+                    Text(
+                        text = "Your Content Here",
+                        fontSize = 18.sp,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+            }
+        }
+    } else {
+        // ✅ Initial Static Layout (Collapsible Box)
+        Box(modifier = Modifier.fillMaxSize()) {
+            // ✅ Background Image (Static)
+            Image(
+                painter = painterResource(id = R.drawable.hotel_images),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.5f) // Covers top half
-                    .background(Color.Red) // ✅ Red background
-                    .clickable { showPopup = false } // ✅ Click to dismiss
+                    .height(700.dp) // ✅ Fixed height
             )
 
+            // ✅ White Rounded Box (Animated Offset)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
-                    .background(Color.Blue) // ✅ Blue background
-                    .padding(16.dp)
+                    .offset(y = offsetValueChanged) // ✅ Apply animated offset
+                    .background(
+                        Color.White.copy(alpha = 0.9f),
+                        RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
+                    )
+                    .align(Alignment.BottomCenter)
             ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp) // Optional: Add spacing
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    SelectingFigure(2, modifier = Modifier)
+                    // ✅ Drag Handle (Click to Expand)
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .padding(top = 8.dp, bottom = 16.dp)
+                                .size(width = 40.dp, height = 5.dp)
+                                .background(Color.Gray, RoundedCornerShape(50))
+                                .clickable { isExpanded = true } // ✅ Click to fully expand
+                        )
+                    }
+
+                    // ✅ Example Scrollable Content
+                    items(30) {
+                        Text(
+                            text = "Your Content Here",
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun OverlappingContentTest() {
+    var isExpanded by remember { mutableStateOf(false) } // 🔥 Toggle state
+    val offsetValue by animateDpAsState(
+        targetValue = if (isExpanded) 250.dp else 700.dp, // 🔥 Moves content up
+        animationSpec = tween(300)
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+
+        if(isExpanded){
+
+            LazyColumn (
+                modifier = Modifier
+                    .fillMaxSize()
+            ){
+                item{
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+//                            .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+                            .background(Color.White)
+//                            .offset(y = offsetValue) // 🔥 Moves content smoothly
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+
+                            Image(
+                                painter = painterResource(id = R.drawable.hotel_images),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+
+                            )
+
+                            // ✅ Drag Handle
+                            Box(
+                                modifier = Modifier
+                                    .padding(top = 8.dp, bottom = 16.dp)
+                                    .size(width = 40.dp, height = 5.dp)
+                                    .background(Color.Gray, RoundedCornerShape(50))
+                                    .clickable { isExpanded = !isExpanded } // 🔥 Click to Expand/Collapse
+                            )
+
+                            // ✅ Scrollable Content (Properly spaced)
+                            repeat(50) { // 🔥 More items to test scrolling
+                                Text(
+                                    text = "Item $it",
+                                    fontSize = 18.sp,
+                                    modifier = Modifier
+                                        .padding(vertical = 8.dp)
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
+        }else{
+
+            // ✅ Background Image
+            Image(
+                painter = painterResource(id = R.drawable.hotel_images),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(700.dp) // 🔥 Fixed height
+            )
+
+            // ✅ Foreground Content (Scrollable when expanded)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .offset(y = offsetValue)
+                    .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+                    .background(Color.White)
+                ,
+            ) {
+                LazyColumn(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // ✅ Drag Handle
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .padding(top = 8.dp, bottom = 16.dp)
+                                .size(width = 40.dp, height = 5.dp)
+                                .background(Color.Gray, RoundedCornerShape(50))
+                                .clickable { isExpanded = !isExpanded } // 🔥 Click to Expand/Collapse
+                        )
+                    }
+
+                    // ✅ Example Content
+                    items(40) {
+                        Text(
+                            text = "Item $it",
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    }
+                }
+            }
         }
     }
 }

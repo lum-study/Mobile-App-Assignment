@@ -6,7 +6,7 @@ import com.google.android.material.bottomappbar.BottomAppBar
 
 enum class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomBar: Boolean) {
     // Auth Screens
-    AuthGraph("AuthGraph", hasTopBar = false, hasBottomBar = false),
+    AuthGraph("AuthGraph", hasTopBar = false, hasBottomBar = true),
     Login("Login", hasTopBar = false, hasBottomBar = false),
     Register("Register", hasTopBar = false, hasBottomBar = false),
     OTP("OTP", hasTopBar = false, hasBottomBar = false),

@@ -211,7 +211,7 @@ fun PreviewPSelectFigure() {
                         .fillMaxSize()
                         .background(Color.Black)
                 ) {
-                    SelectingFigure(1)
+                    SelectingFigure(1 , modifier = Modifier)
                 }
             }
 
@@ -224,12 +224,12 @@ fun PreviewPSelectFigure() {
                         .background(Color.Black)
 //                        .offset(y = 400.dp)
                 ) {
-                    SelectingFigure(2)
+                    SelectingFigure(2, modifier = Modifier)
                 }
             }
 
             else -> {
-                SelectingFigure(3)
+                SelectingFigure(3, modifier = Modifier)
             }
         }
     } else {
