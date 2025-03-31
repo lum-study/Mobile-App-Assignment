@@ -16,8 +16,8 @@ fun AppNavigation(navController: NavHostController, startDestination: String, mo
     ) {
 
         authNavGraph(navController)
-//        homeNavGraph(navController)
-//        searchNavGraph(navController)
-//        profileNavGraph(navController)
+        homeNavGraph(navController)
+        searchNavGraph(navController)
+        profileNavGraph(navController)
     }
 }

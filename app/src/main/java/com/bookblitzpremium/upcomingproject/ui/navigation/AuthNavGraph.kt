@@ -12,12 +12,10 @@ import com.bookblitzpremium.upcomingproject.ui.screen.auth.DynamicForgetPassword
 import com.bookblitzpremium.upcomingproject.ui.screen.auth.DynamicLoginPage
 import com.bookblitzpremium.upcomingproject.ui.screen.auth.DynamicOTPPage
 import com.bookblitzpremium.upcomingproject.ui.screen.auth.DynamicRegisterPage
-import com.bookblitzpremium.upcomingproject.ui.screen.booking.BookingFlow
-import com.bookblitzpremium.upcomingproject.ui.screen.hotel.ButtonGrid
+import com.bookblitzpremium.upcomingproject.ui.screen.booking.BookingAmount
+import com.bookblitzpremium.upcomingproject.ui.screen.booking.ReviewFinalPackageSelected
 import com.bookblitzpremium.upcomingproject.ui.screen.hotel.MobieLayout
-import com.bookblitzpremium.upcomingproject.ui.screen.hotel.MobieLayout1
 import com.bookblitzpremium.upcomingproject.ui.screen.hotel.OverlappingContentTest
-import com.bookblitzpremium.upcomingproject.ui.screen.hotel.RoundedBottomSheet
 import com.bookblitzpremium.upcomingproject.ui.screen.hotel.SelectingFigure
 
 
@@ -27,27 +25,29 @@ fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
         route = AppScreen.AuthGraph.route
     ) {
         composable(AppScreen.Login.route) {
-//            DynamicLoginPage(
-//                onNextButtonClicked = {
-//                    navController.navigate(AppScreen.HomeGraph.route) {
-//                        popUpTo(
-//                            AppScreen.AuthGraph.route
-//                        ) { inclusive = true }
-//                        launchSingleTop = true
-//                    }
-//                },
-//                navController = navController
-//            )
+            DynamicLoginPage(
+                onNextButtonClicked = {
+                    navController.navigate(AppScreen.HomeGraph.route) {
+                        popUpTo(
+                            AppScreen.AuthGraph.route
+                        ) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+                navController = navController
+            )
 
 //            MobieLayout1(2, 500.dp, 500.dp)
 //            SelectingFigure(2, modifier = Modifier)
 
 //            ButtonGrid()
 //            RoundedBottomSheet()
-
-            OverlappingContentTest()
+//            BookingDatePage(modifier = Modifier)
+//            OverlappingContentTest(2, navController)
+//            BookingPeople(modifier = Modifier)
+//            BookingAmount(modifier = Modifier)
+//            ReviewFinalPackageSelected()
         }
-
 
         composable(AppScreen.Register.route) {
             DynamicRegisterPage(  // Check the correct spelling here

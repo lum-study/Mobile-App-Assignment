@@ -30,5 +30,10 @@ enum class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomBar
 
     // Profile Screens
     ProfileGraph("ProfileGraph", hasTopBar = false, hasBottomBar = false),
-    Profile("Profile", hasTopBar = true, hasBottomBar = true)
+    Profile("Profile", hasTopBar = true, hasBottomBar = true),
+
+    //Booking Date and people
+    BookingDate("BookingDate", hasTopBar = true, hasBottomBar = true),
+    BookingPeople("BookingPeople", hasTopBar = true, hasBottomBar = true),
+    BookingReview("BookingReview", hasTopBar = true, hasBottomBar = true)
 }

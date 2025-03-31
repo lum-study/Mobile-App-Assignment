@@ -3,14 +3,19 @@ package com.bookblitzpremium.upcomingproject.ui.navigation
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.model.TripPackage
+import com.bookblitzpremium.upcomingproject.ui.screen.booking.BookingAmount
+import com.bookblitzpremium.upcomingproject.ui.screen.booking.BookingDatePage
+import com.bookblitzpremium.upcomingproject.ui.screen.booking.ReviewFinalPackageSelected
 import com.bookblitzpremium.upcomingproject.ui.screen.home.HomeScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.hotel.DynamicHotelDetails
+import com.bookblitzpremium.upcomingproject.ui.screen.hotel.OverlappingContentTest
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.FlightScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.ScheduleScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.TripPackageScreen
@@ -33,7 +38,19 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
             FlightScreen(navController)
         }
         composable(AppScreen.Hotel.route) {
-            DynamicHotelDetails( onNextButtonClicked = { }, navController)
+            OverlappingContentTest(2, navController)
         }
+        composable(AppScreen.BookingDate.route) {
+            BookingDatePage(modifier = Modifier, navController)
+        }
+
+        composable(AppScreen.BookingPeople.route) {
+            BookingAmount(modifier = Modifier,navController)
+        }
+
+        composable(AppScreen.BookingReview.route) {
+            ReviewFinalPackageSelected(modifier = Modifier, navController = navController)
+        }
+
     }
 }
