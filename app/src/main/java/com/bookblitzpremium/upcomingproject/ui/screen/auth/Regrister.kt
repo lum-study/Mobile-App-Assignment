@@ -23,14 +23,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.TravelScreen
-import com.bookblitzpremium.upcomingproject.ui.components.VideoPlayer
 import com.bookblitzpremium.upcomingproject.ui.components.ClickableFun
+import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.ui.components.LineOver
 import com.bookblitzpremium.upcomingproject.ui.components.SignInWithGoogle
 import com.bookblitzpremium.upcomingproject.ui.components.TextHeader
+import com.bookblitzpremium.upcomingproject.ui.components.VideoPlayer
 import com.bookblitzpremium.upcomingproject.ui.components.videoUri
 
 @Composable

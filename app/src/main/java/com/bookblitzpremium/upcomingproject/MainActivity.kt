@@ -3,6 +3,7 @@ package com.bookblitzpremium.upcomingproject
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -73,26 +74,9 @@ enum class TravelScreen() {
     OTP
 }
 
-//@Composable
-//fun StartOrderScreen(
-//    quantityOptions: List<Pair<Int, Int>>,
-//    onNextButtonClicked: () -> Unit,
-//    modifier: Modifier = Modifier
-//){
-//}
-//
-
-//
-//
-//Button(
-//modifier = Modifier.weight(1f),
-//enabled = selectedValue.isNotEmpty(),
-//onClick = onNextButtonClicked
-//) {
-//    Text(stringResource(R.string.next))
-//}
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d("MainActivity", "onCreate started")
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {

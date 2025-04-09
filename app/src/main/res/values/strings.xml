@@ -56,11 +56,26 @@
     <string name="information">Information</string>
     <!-- Image Description -->
     <string name="country_image">Country Image</string>
+    <string name="base64_image">Base64 Image</string>
+    <string name="network_image">Network Image</string>
+    <string name="hotel_image">Hotel Image</string>
+    <string name="profile_image">Profile Image</string>
+    <string name="trip_package_image">Trip Package Image</string>
+    <string name="rating_icon">Rating Icon</string>
+    <string name="location_icon">Location Icon</string>
+    <string name="card_background">Card Background</string>
+    <string name="mastercard_icon">Mastercard Icon</string>
+    <string name="search_icon">Search Icon</string>
+    <string name="filter_icon">Filter Icon</string>
+    <string name="barcode">Barcode</string>
+    <string name="clock_icon">Clock Icon</string>
+    <string name="flight_image">Flight Image</string>
+    <string name="flight_icon">Flight Icon</string>
+
     <!-- Payment Method -->
     <string name="payment_method">Payment Method</string>
-    <string name="debit_card">Debit Card</string>
-    <string name="credit_card">Credit Card</string>
-    <string name="e_wallet">eWallet</string>
+    <string name="total_price">Total Price</string>
+    <string name="price_details">Price Details</string>
     <!-- Receipt -->
     <string name="receipt">Receipt</string>
     <string name="transaction_details">Transaction Details</string>
@@ -69,7 +84,6 @@
     <string name="currency">Currency</string>
     <string name="reference">Reference</string>
     <string name="transaction_date">Transaction Date</string>
-    <string name="total_amount_details">Total Amount Details</string>
     <string name="packages">Package</string>
     <string name="transport">Transport</string>
     <string name="bag_and_extras">Bags Extra</string>
@@ -86,7 +100,6 @@
     <string name="clear_all">Clear all</string>
     <!-- Message -->
     <string name="no_record">No Record Founded</string>
-    <string name="total_amount">Total Amount:</string>
     <string name="price_value">%s%.2f</string>
     <string name="available_slot">%d slots are available</string>
     <string name="day_count">Day %d</string>
