@@ -277,7 +277,7 @@ fun TimeAndDestinationRow(
             ) {
                 Icon(
                     imageVector = Icons.Outlined.AccessTime,
-                    contentDescription = "Clock",
+                    contentDescription = stringResource(R.string.clock_icon),
                     tint = Color.Gray
                 )
                 Spacer(modifier = Modifier.width(4.dp))

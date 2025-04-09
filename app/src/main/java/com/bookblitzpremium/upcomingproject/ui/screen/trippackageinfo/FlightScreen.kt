@@ -30,12 +30,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.model.AirportInfo
 import com.bookblitzpremium.upcomingproject.model.FlightSchedule
-import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.google.zxing.BarcodeFormat
 import com.journeyapps.barcodescanner.BarcodeEncoder
@@ -82,17 +81,17 @@ fun FlightScreen(navController: NavHostController) {
                     contentAlignment = Alignment.TopCenter
                 ) {
                     Image(
-                        painterResource(R.drawable.red_mountain),
-                        contentDescription = "Test",
+                        painterResource(R.drawable.firefly_bg),
+                        contentDescription = stringResource(R.string.flight_image),
                         contentScale = ContentScale.FillBounds,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .fillMaxHeight(.75f)
+                            .fillMaxHeight(.85f)
                     )
                     Image(
-                        painterResource(R.drawable.ic_launcher_background),
-                        contentDescription = "Test",
-                        modifier = Modifier.align(Alignment.BottomCenter),
+                        painterResource(R.drawable.airasia_icon),
+                        contentDescription = stringResource(R.string.flight_icon),
+                        modifier = Modifier.align(Alignment.BottomCenter).height(70.dp),
                     )
                 }
                 Text(
@@ -168,7 +167,7 @@ fun FlightScreen(navController: NavHostController) {
             barcodeBitmap?.let {
                 Image(
                     bitmap = it.asImageBitmap(),
-                    contentDescription = "Barcode",
+                    contentDescription = stringResource(R.string.barcode),
                     modifier = Modifier.fillMaxWidth()
                 )
             }

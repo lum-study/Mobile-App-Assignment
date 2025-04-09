@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,11 +26,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationDrawerItem
@@ -41,12 +47,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -58,11 +66,12 @@ import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.model.Hotel
 import com.bookblitzpremium.upcomingproject.model.TripPackage
+import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 
 //900,1440
 //360,806
-@Preview(showBackground = true, widthDp = 900, heightDp = 1440)
+@Preview(showBackground = true, widthDp = 360, heightDp = 806)
 @Composable
 fun HomeScreenPreview() {
     val navController = rememberNavController()
@@ -74,7 +83,7 @@ fun HomeScreen(navController: NavHostController) {
     Log.d("HomeScreen", "HomeScreen Composable Loaded")
     val username = "Abu Bakar"
     val tripPackageList: List<TripPackage> = listOf(
-        TripPackage(R.drawable.green_mountain, "Trip to Bali", "Enjoy a relaxing vacation"),
+        TripPackage(R.drawable.green_mountain, "Trip to Bali", "RM99999"),
         TripPackage(R.drawable.green_mountain, "Trip to Bali", "Enjoy a relaxing vacation"),
         TripPackage(R.drawable.green_mountain, "Trip to Bali", "Enjoy a relaxing vacation"),
         TripPackage(R.drawable.green_mountain, "Trip to Bali", "Enjoy a relaxing vacation"),
@@ -98,7 +107,7 @@ fun HomeScreen(navController: NavHostController) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(end = 16.dp, bottom = 8.dp, start = 16.dp).background(Color(0xFFE8E8E8)),
+                    .padding(end = 16.dp, bottom = 8.dp, start = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
@@ -303,7 +312,7 @@ fun GreetingProfile(username: String, textColor: Color = Color.Gray) {
         }
         Image(
             painter = painterResource(id = R.drawable.green_mountain),
-            contentDescription = "Mountain landscape background",
+            contentDescription = stringResource(R.string.profile_image),
             modifier = Modifier
                 .size(80.dp)
                 .clip(CircleShape),
@@ -355,75 +364,111 @@ fun TripPackageSection(
 }
 
 @Composable
-fun TripPackageCard2(
-    tripPackage: TripPackage,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier
-    ) {
-        Image(
-//            painter = rememberImagePainter(
-//                data = tripPackage.imageResource
-//            ),
-            painterResource(id = tripPackage.imageResource),
-            contentDescription = tripPackage.packageTitle,
-            contentScale = ContentScale.FillBounds,
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-        )
-        Text(
-            text = tripPackage.packageTitle
-        )
-    }
-}
-
-@Composable
 fun TripPackageCard(
     tripPackage: TripPackage,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
     Box(
-        modifier = modifier.clip(RoundedCornerShape(36.dp)).clickable {
+        modifier = modifier.clip(RoundedCornerShape(12.dp)).clickable {
             onClick() },
         contentAlignment = Alignment.BottomCenter,
     ) {
-        Image(
-//            painter = rememberImagePainter(
-//                data = tripPackage.imageResource
-//            ),
-            painterResource(id = tripPackage.imageResource),
-            contentDescription = tripPackage.packageTitle,
-            contentScale = ContentScale.FillBounds,
-            modifier = Modifier
-                .fillMaxSize()
+        UrlImage(
+            imageUrl = "https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_534,q_40,w_800/hotelier-images/f8/82/68daae48a411dcceee76ab32031f064521a58b08d043926dd1b291f2f91f.jpeg",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize(),
         )
-        Column(
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(8.dp),
+            colors = CardDefaults.cardColors(Color(0xB3FFFFFF)),
         ) {
-            Text(
-                text = tripPackage.packageTitle,
-                modifier = Modifier
-                    .fillMaxWidth(),
-                style = AppTheme.typography.mediumBold,
-                color = Color.White,
-            )
-            Text(
-                text = tripPackage.packageDesc,
-                modifier = Modifier
-                    .fillMaxWidth(),
-                style = AppTheme.typography.smallRegular,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                color = Color.White,
-            )
+            Column (
+                modifier = Modifier.fillMaxWidth().fillMaxHeight(.6f).padding(horizontal = 12.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.SpaceBetween
+            ){
+                Row (
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth(),
+                ){
+                    Text(
+                        text = tripPackage.packageTitle,
+                        style = AppTheme.typography.mediumBold,
+                        color = Color.Black,
+                    )
+                    Text(
+                        text = tripPackage.packageDesc,
+                        style = AppTheme.typography.mediumBold,
+                        color = Color.Black,
+                        textAlign = TextAlign.End,
+                    )
+                }
+                Column (
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ){
+                    Row (
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = stringResource(R.string.rating_icon),
+                            tint = Color(0xFFFF9800)
+                        )
+                        Text(
+                            text = "4,5",
+                            style = AppTheme.typography.mediumNormal,
+                            color = Color.Gray,
+                            textAlign = TextAlign.Start,
+                        )
+                    }
+                    Row (
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        Icon(
+                            imageVector = Icons.Outlined.LocationOn,
+                            contentDescription = stringResource(R.string.location_icon),
+                            tint = Color.Gray
+                        )
+                        Text(
+                            text = tripPackage.packageTitle,
+                            style = AppTheme.typography.mediumNormal,
+                            color = Color.Gray,
+                            textAlign = TextAlign.End,
+                        )
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(40.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(Color(0xFFFFC71E), Color(0xFFFF9800))
+                            )
+                        )
+                ) {
+                    Button(
+                        onClick = {},
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(Color.Transparent),
+                        modifier = Modifier.matchParentSize(),
+                        contentPadding = PaddingValues()
+                    ) {
+                        Text(
+                            text = "More Detail",
+                            style = AppTheme.typography.mediumBold,
+                            color = Color.Black
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -472,33 +517,6 @@ fun HotelSection(
 }
 
 @Composable
-fun HotelCard2(
-    hotel: Hotel,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier.wrapContentSize(Alignment.TopStart)
-    ) {
-        Image(
-//            painter = rememberImagePainter(
-//                data = tripPackage.imageResource
-//            ),
-            painterResource(id = hotel.imageResource),
-            contentDescription = hotel.hotelName,
-            contentScale = ContentScale.FillBounds,
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-        )
-        Text(
-            text = hotel.hotelName
-        )
-    }
-}
-
-@Composable
 fun DrawerLabel(imageVector: ImageVector, contentDesc: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 8.dp)
@@ -534,19 +552,14 @@ fun HotelCard(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize().background(Color(0xFFE8E8E8))
         ) {
-            Image(
-//            painter = rememberImagePainter(
-//                data = tripPackage.imageResource
-//            ),
-                painterResource(id = hotel.imageResource),
-                contentDescription = hotel.hotelName,
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            )
+            Box(
+                modifier = Modifier.weight(1f)
+            ){
+                UrlImage("https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_534,q_40,w_800/hotelier-images/f8/82/68daae48a411dcceee76ab32031f064521a58b08d043926dd1b291f2f91f.jpeg")
+
+            }
             Column(
                 modifier = Modifier
                     .fillMaxWidth()

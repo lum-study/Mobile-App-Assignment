@@ -82,7 +82,7 @@ fun TravelHeaderTable() {
         ) {
             Image(
                 painter = painterResource(id = R.drawable.hotel_images),
-                contentDescription = "Trip Package Image",
+                contentDescription = stringResource(R.string.trip_package_image),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()

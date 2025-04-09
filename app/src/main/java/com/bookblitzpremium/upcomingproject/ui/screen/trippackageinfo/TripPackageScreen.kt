@@ -1,6 +1,5 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,7 +33,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,13 +44,15 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.model.TripPackage
+import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
 import com.bookblitzpremium.upcomingproject.ui.screen.hotel.DynamicHotelDetails
 import com.bookblitzpremium.upcomingproject.ui.screen.travel.TravelHeaderTable
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 
-@Preview(showBackground = true, widthDp = 1440, heightDp = 900)
+@Preview(showBackground = true, widthDp = 360, heightDp = 806)
 @Composable
-fun TripPackageScreen() {
+fun TripPackageScreenPreview() {
+
     TripPackageScreen(rememberNavController())
 }
 
@@ -65,9 +65,8 @@ fun TripPackageScreen(navController: NavController) {
     val availableSlot = 50
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
-
     AppTheme {
-        if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT && windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.MEDIUM) {
+        if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -78,18 +77,13 @@ fun TripPackageScreen(navController: NavController) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Image(
-                        painterResource(
-                            id = tripPackage.imageResource
-                        ),
-                        contentDescription = tripPackage.packageTitle,
+                    UrlImage(
+                        imageUrl = "https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_534,q_40,w_800/hotelier-images/f8/82/68daae48a411dcceee76ab32031f064521a58b08d043926dd1b291f2f91f.jpeg",
+                        modifier = Modifier.height(200.dp).fillMaxWidth(),
                         contentScale = ContentScale.FillBounds,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
                     )
                     Text(
-                        text = description,
+                        text = tripPackage.packageDesc,
                         style = AppTheme.typography.smallRegular,
                         color = Color.Gray,
                         modifier = Modifier.padding(start = 16.dp, end = 16.dp)

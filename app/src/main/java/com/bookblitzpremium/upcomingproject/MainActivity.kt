@@ -6,7 +6,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
@@ -60,10 +59,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.TripPackageViewModel
 import com.bookblitzpremium.upcomingproject.ui.navigation.AppNavigation
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
-import dagger.hilt.android.AndroidEntryPoint
 
 enum class TravelScreen() {
     LOGIN,
@@ -94,8 +91,6 @@ enum class TravelScreen() {
 //) {
 //    Text(stringResource(R.string.next))
 //}
-
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

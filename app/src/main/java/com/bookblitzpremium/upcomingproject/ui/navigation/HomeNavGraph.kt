@@ -1,14 +1,10 @@
 package com.bookblitzpremium.upcomingproject.ui.navigation
 
-import android.os.Build
-import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
-import com.bookblitzpremium.upcomingproject.model.TripPackage
 import com.bookblitzpremium.upcomingproject.ui.screen.home.HomeScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.hotel.DynamicHotelDetails
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.FlightScreen
