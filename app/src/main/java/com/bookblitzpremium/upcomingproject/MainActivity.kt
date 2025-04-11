@@ -62,6 +62,7 @@ import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.ui.navigation.AppNavigation
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import dagger.hilt.android.AndroidEntryPoint
 
 enum class TravelScreen() {
     LOGIN,
@@ -74,6 +75,7 @@ enum class TravelScreen() {
     OTP
 }
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d("MainActivity", "onCreate started")
