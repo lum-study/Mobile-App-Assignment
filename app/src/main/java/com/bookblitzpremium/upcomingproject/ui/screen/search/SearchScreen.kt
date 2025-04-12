@@ -26,6 +26,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -134,7 +135,7 @@ fun SearchBar(
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
-                contentDescription = "Search Icon",
+                contentDescription = stringResource(R.string.search_icon),
                 tint = Color.Blue,
             )
         },
@@ -147,7 +148,7 @@ fun SearchBar(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Tune,
-                        contentDescription = "Filter Icon",
+                        contentDescription = stringResource(R.string.filter_icon),
                     )
                 }
             }

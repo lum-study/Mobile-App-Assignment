@@ -73,7 +73,7 @@ fun ReceiptScreen(navController: NavController) {
             ) {
                 Column {
                     Text(
-                        text = stringResource(R.string.total_amount),
+                        text = stringResource(R.string.total_price),
                         style = AppTheme.typography.mediumSemiBold
                     )
                     Text(
@@ -140,7 +140,7 @@ fun ReceiptScreen(navController: NavController) {
                 }
             }
             Text(
-                text = stringResource(R.string.total_amount_details),
+                text = stringResource(R.string.price_details),
                 style = AppTheme.typography.mediumSemiBold,
                 modifier = Modifier.padding(top = 8.dp)
             )
@@ -176,9 +176,9 @@ fun ReceiptScreen(navController: NavController) {
                         data = String.format("%.0f%%", (packagePrice.discount * 100)),
                         modifier = Modifier.fillMaxWidth()
                     )
-                    HorizontalDivider()
+                    HorizontalDivider(color = Color.Black)
                     InformationTextRow(
-                        title = stringResource(R.string.total_amount),
+                        title = stringResource(R.string.total_price),
                         data = String.format(
                             "%.2f",
                             (packagePrice.packages + packagePrice.extras + packagePrice.hotel + packagePrice.transport) * (1 - packagePrice.discount)

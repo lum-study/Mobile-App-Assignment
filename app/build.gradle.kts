@@ -81,6 +81,7 @@ dependencies {
     implementation(libs.material)
 
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.espresso.core)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)

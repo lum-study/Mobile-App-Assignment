@@ -98,25 +98,6 @@ enum class TravelScreen() {
     OTP
 }
 
-//@Composable
-//fun StartOrderScreen(
-//    quantityOptions: List<Pair<Int, Int>>,
-//    onNextButtonClicked: () -> Unit,
-//    modifier: Modifier = Modifier
-//){
-//}
-//
-
-//
-//
-//Button(
-//modifier = Modifier.weight(1f),
-//enabled = selectedValue.isNotEmpty(),
-//onClick = onNextButtonClicked
-//) {
-//    Text(stringResource(R.string.next))
-//}
-
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
@@ -128,6 +109,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d("MainActivity", "onCreate started")
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         FirebaseApp.initializeApp(this)

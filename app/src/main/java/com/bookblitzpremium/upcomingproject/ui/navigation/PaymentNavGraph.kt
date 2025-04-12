@@ -6,7 +6,7 @@ import androidx.navigation.compose.composable
 import com.bookblitzpremium.upcomingproject.ui.screen.hotel.PaymentDetails
 
 enum class Payment(val route: String) {
-    DebitCard(route = "Debit Card"),
+    Card(route = "Debit Card"),
     CreditCard(route = "Credit Card"),
     EWallet(route = "eWallet"),
     PaymentMethod(route = "PaymentMethod"),
