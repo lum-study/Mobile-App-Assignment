@@ -44,7 +44,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.ViewModel.UserLogin
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
@@ -200,13 +199,13 @@ fun LineOver() {
 fun ButtonHeader(
     textResId: Int,
     valueHorizontal: Dp,
-    userLogin: UserLogin,
-    email: String,
-    password: String, navContorller : NavController){
+    userFunction: () -> Unit,
+    navigationPage: () -> Unit
+){
     Button(
         onClick = {
-            userLogin.signup(email,password)
-            navContorller.navigate(AppScreen.Login.route)
+            userFunction()
+            navigationPage()
         },
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Black, // Background color
@@ -244,7 +243,7 @@ fun ClickableFun(
 fun SignInWithGoogle(valueHorizontal: Dp, viewModel: UserLogin, email: String, password: String){
     Button(
         onClick = {
-            viewModel.login(email, password)
+
         },
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Black, // Background color

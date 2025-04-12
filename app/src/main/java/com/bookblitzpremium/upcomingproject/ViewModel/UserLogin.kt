@@ -24,7 +24,7 @@ class UserLogin: ViewModel() {
         }
     }
 
-    fun login(email : String,password : String){
+    fun login(email: String, password: String, onResult: (Boolean) -> Unit){
 
         if(email.isEmpty() || password.isEmpty()){
             _authState.value = AuthState.Error("Email or password can't be empty")

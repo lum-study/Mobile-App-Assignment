@@ -29,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.R
@@ -38,6 +39,7 @@ import com.bookblitzpremium.upcomingproject.ui.components.ClickableFun
 import com.bookblitzpremium.upcomingproject.ui.components.LineOver
 import com.bookblitzpremium.upcomingproject.ui.components.SignInWithGoogle
 import com.bookblitzpremium.upcomingproject.ui.components.TextHeader
+import com.google.firebase.firestore.auth.User
 
 @Composable
 fun RegristerPage(showToggleToTablet: Boolean,  onNextButtonClicked: () -> Unit, navController: NavController){
@@ -54,6 +56,8 @@ fun RegristerPage(showToggleToTablet: Boolean,  onNextButtonClicked: () -> Unit,
     var password by remember {
         mutableStateOf("")
     }
+
+    val viewModel = viewModel<UserLogin>()
 
 
     Box(

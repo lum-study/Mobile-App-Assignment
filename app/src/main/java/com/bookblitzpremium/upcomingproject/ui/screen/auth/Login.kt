@@ -141,14 +141,24 @@ fun LoginPage(showToggleToTablet: Boolean ,onNextButtonClicked: () -> Unit, navC
                    .padding(top = 40.dp)
            ){
 
-               ButtonHeader( R.string.login, valueHorizontal, UserLogin() , email,password, navController )
+               ButtonHeader(
+                   textResId = R.string.login,
+                   valueHorizontal = valueHorizontal,
+                   userFunction = {
+                       viewModel.login(email, password) { success ->
+                           if (success) {
+                               navController.navigate(AppScreen.Home.route)
+                           }
+                       }
+                   },
+                   navigationPage = {}
+               )
 
 //               ButtonHeader( R.string.forget_password, valueHorizontal,onNextButtonClicked = onNextButtonClicked )
 
                 SignInWithGoogle(valueHorizontal, UserLogin(),email, password)
 
            }
-
             Text(
                 text = "Register Account",
                 style = AppTheme.typography.bodyLarge,
