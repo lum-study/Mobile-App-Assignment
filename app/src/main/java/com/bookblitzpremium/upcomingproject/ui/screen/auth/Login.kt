@@ -145,13 +145,9 @@ fun LoginPage(showToggleToTablet: Boolean ,onNextButtonClicked: () -> Unit, navC
                    textResId = R.string.login,
                    valueHorizontal = valueHorizontal,
                    userFunction = {
-                       viewModel.login(email, password) { success ->
-                           if (success) {
-                               navController.navigate(AppScreen.Home.route)
-                           }
-                       }
+                       viewModel.login(email, password)
                    },
-                   navigationPage = {}
+                   navigationPage = {navController.navigate(AppScreen.HomeGraph.route)}
                )
 
 //               ButtonHeader( R.string.forget_password, valueHorizontal,onNextButtonClicked = onNextButtonClicked )
