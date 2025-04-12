@@ -17,73 +17,24 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.R
+import com.bookblitzpremium.upcomingproject.ViewModel.UserLogin
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.ui.components.ButtonHeader
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.ui.components.SignInWithGoogle
-import com.bookblitzpremium.upcomingproject.ui.components.VideoPlayer
-import com.bookblitzpremium.upcomingproject.ui.components.videoUri
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 
-
-//@Composable
-//fun DynamicLoginPage(onNextButtonClicked: () -> Unit, navController: NavController) {
-//    val activity = LocalContext.current as? Activity
-//
-//    if (activity != null) {
-//        val windowSizeClass = getWindowSizeClass(activity)
-//
-//        when {
-//            isTablet(windowSizeClass) && isMediumHeight(windowSizeClass) -> {
-//                LoginPage(true, onNextButtonClicked, navController)
-//            }
-//            !isTablet(windowSizeClass) && isMediumHeight(windowSizeClass) -> {
-//                LoginPage(false, onNextButtonClicked, navController)
-//            }
-//            else -> {
-//                LoginPage(false, onNextButtonClicked, navController)
-//            }
-//        }
-//    } else {
-//        Column(modifier = Modifier.padding(16.dp)) {
-//            Text(text = "Activity is null - Preview mode or invalid context")
-//        }
-//    }
-//}
-
-//@SuppressLint("ContextCastToActivity")
-//@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
-//@Composable
-//fun DynamicLoginPage(  onNextButtonClicked: () -> Unit, navController: NavController ) {
-//    val activity = LocalContext.current as? Activity
-//
-//    if (activity != null) {
-//        val windowSizeClass = calculateWindowSizeClass(activity = activity)
-//        when {
-//            windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded &&
-//                    windowSizeClass.heightSizeClass == WindowHeightSizeClass.Medium -> {
-//                LoginPage(true , onNextButtonClicked = onNextButtonClicked, navController = navController )
-//            }
-//            windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact &&
-//                    windowSizeClass.heightSizeClass == WindowHeightSizeClass.Medium -> {
-//                LoginPage(false ,onNextButtonClicked = onNextButtonClicked,navController = navController )
-//            }
-//            else -> {
-//                LoginPage(false, onNextButtonClicked = onNextButtonClicked,navController = navController )
-//            }
-//        }
-//    } else {
-//        Column(modifier = Modifier.padding(16.dp)) {
-//            Text(text = "Activity is null - Preview mode or invalid context")
-//        }
-//    }
-//}
 
 @Composable
 fun LoginPage(showToggleToTablet: Boolean ,onNextButtonClicked: () -> Unit, navController: NavController){
@@ -92,54 +43,76 @@ fun LoginPage(showToggleToTablet: Boolean ,onNextButtonClicked: () -> Unit, navC
     val offsetValueX = if (showToggleToTablet) 620.dp else 0.dp
     val maxSizeAvailable = if (showToggleToTablet) 0.4f else 1f
 
+    val viewModel  = viewModel<UserLogin>()
+
+    var email by remember {
+        mutableStateOf("")
+    }
+
+    var password by remember {
+        mutableStateOf("")
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
+//            .background(
+//                brush = Brush.verticalGradient(
+//                    colors = listOf(
+//                        Color(0xFFFFF9E5), // Light yellow
+//                        Color(0xFFE6F0FA)  // Light blue
+//                    )
+//                )
+//            )
     ) {
 
-        VideoPlayer(
-            videoUri = videoUri,
-            modifier = Modifier
-                .fillMaxSize()
+//        VideoPlayer(
+//            videoUri = videoUri,
+//            modifier = Modifier
+//                .fillMaxSize()
+//
+//        )
 
-        )
 
         // 📝 Login UI - Positioned above the video
         Column(
             modifier = Modifier
                 .fillMaxHeight()
                 .fillMaxWidth(maxSizeAvailable) // 40% width for a "column" effect
-                .padding(horizontal = 28.dp)
+                .padding(horizontal = 28.dp,)
                 .offset(x = offsetValueX),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center // Center content vertically
         ){
+
+//            Spacer(modifier = Modifier.height(300.dp))
+
             Text(
                 text = "Welcome Back!",
-                style = AppTheme.typography.expandBold,
+                style = AppTheme.typography.largeBold,
                 modifier = Modifier
                     .padding(top = 0.dp, bottom = 30.dp)
                     .align(Alignment.CenterHorizontally)
             )
 
             CustomTextField(
-                value = "",
-                onValueChange = { },
+                value = email,
+                onValueChange = { email = it },
                 label = "Username",
                 placeholder = "Enter your username",
                 leadingIcon = Icons.Default.Person,
                 trailingIcon = Icons.Default.Clear,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = valueHorizontal, vertical = 16.dp)
+                    .padding(horizontal = valueHorizontal, vertical = 12.dp)
 
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             CustomTextField(
-                value = "",
-                onValueChange = { },
+                value = password,
+                onValueChange = {  password = it },
                 label = "Password",
                 placeholder = "Enter your Password",
                 leadingIcon = Icons.Default.Lock,
@@ -150,26 +123,42 @@ fun LoginPage(showToggleToTablet: Boolean ,onNextButtonClicked: () -> Unit, navC
 
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
-
             Text(
                 text = "Forgot Password?",
                 style = AppTheme.typography.bodyLarge,
                 textDecoration = TextDecoration.Underline,
                 modifier = Modifier
-                    .align(Alignment.Start)
-                    .padding(start = valueHorizontal, top = 30.dp)
+                    .align(Alignment.End)
+                    .padding(start = valueHorizontal, top = 0.dp)
                     .clickable {
                         navController.navigate(AppScreen.ForgotPassword.route)
                     }
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+           Column(
+               verticalArrangement = Arrangement.spacedBy(10.dp)
+               , modifier = Modifier
+                   .padding(top = 40.dp)
+           ){
 
-            ButtonHeader( R.string.login, valueHorizontal,onNextButtonClicked = onNextButtonClicked )
+               ButtonHeader(
+                   textResId = R.string.login,
+                   valueHorizontal = valueHorizontal,
+                   userFunction = {
+                       viewModel.login(email, password) { success ->
+                           if (success) {
+                               navController.navigate(AppScreen.Home.route)
+                           }
+                       }
+                   },
+                   navigationPage = {}
+               )
 
-            SignInWithGoogle(valueHorizontal)
+//               ButtonHeader( R.string.forget_password, valueHorizontal,onNextButtonClicked = onNextButtonClicked )
 
+                SignInWithGoogle(valueHorizontal, UserLogin(),email, password)
+
+           }
             Text(
                 text = "Register Account",
                 style = AppTheme.typography.bodyLarge,
@@ -184,3 +173,6 @@ fun LoginPage(showToggleToTablet: Boolean ,onNextButtonClicked: () -> Unit, navC
         }
     }
 }
+
+
+//if enter more than three times assume forget passwrod pop up forget passwrpd

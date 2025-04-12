@@ -31,7 +31,7 @@
     <string name="swiss_hotel">Swiss Hotel</string>
     <string name="reviews">Reviews</string>
     <string name="preview">Preview</string>
-
+    <string name="web_client_id">935068366622-mq20k1ch77qaq8ms5a7lksec10esl92b.apps.googleusercontent.com</string>
 
     <string name="home_title">Hi, %s</string>
     <string name="home_description">Find your next trip</string>
@@ -106,4 +106,5 @@
     <string name="airport_name">%s (%s)</string>
     <string name="search_placeholder">Search a hotel or trip package</string>
     <string name="already_have_an_account_login">Already have an account? Login</string>
+    <string name="pick_date">Pick Date</string>
 </resources>

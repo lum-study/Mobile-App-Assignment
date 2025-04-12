@@ -51,8 +51,7 @@ import com.bookblitzpremium.upcomingproject.model.Hotel
 import com.bookblitzpremium.upcomingproject.model.TripPackageTabs
 import com.bookblitzpremium.upcomingproject.ui.screen.home.HotelCard
 import com.bookblitzpremium.upcomingproject.ui.screen.hotel.DynamicHotelDetails
-import com.bookblitzpremium.upcomingproject.ui.screen.hotel.MobileLayout
-
+import com.bookblitzpremium.upcomingproject.ui.screen.hotel.MobieLayout
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.FlightScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.ScheduleScreen
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
@@ -67,7 +66,7 @@ fun TravelHeaderTable() {
     val tabs: List<TripPackageTabs> = listOf(
         TripPackageTabs("Schedule", Icons.Outlined.Task, {ScheduleScreen(navController = rememberNavController())}),
         TripPackageTabs("Flight", Icons.Outlined.Flight, { FlightScreen(navController = rememberNavController()) }),
-        TripPackageTabs("Hotel", Icons.Outlined.HomeWork, { MobileLayout(2, 300.dp, 500.dp) }),
+        TripPackageTabs("Hotel", Icons.Outlined.HomeWork, {  MobieLayout(2, 500.dp, 500.dp) }),
     )
 
     Row(

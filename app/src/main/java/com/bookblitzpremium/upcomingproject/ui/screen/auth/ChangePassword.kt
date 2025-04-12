@@ -18,18 +18,31 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.R
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.ui.components.VideoPlayer
 import com.bookblitzpremium.upcomingproject.ui.components.TextEmailSent
 import com.bookblitzpremium.upcomingproject.ui.components.TextHeader
 import com.bookblitzpremium.upcomingproject.ui.components.videoUri
+
+
+//@Preview(showBackground = true, widthDp = 500, heightDp = 1000)
+//@Composable
+//fun PreviewChangePassword(){
+//    val navController = rememberNavController()
+//    ChangePassword(false, onNextButtonClicked = navController.navigate(AppScreen.BookingPeople.route))
+//}
 
 @Composable
 fun ChangePassword(showToggleToTablet: Boolean, onNextButtonClicked: () -> Unit){
@@ -41,15 +54,22 @@ fun ChangePassword(showToggleToTablet: Boolean, onNextButtonClicked: () -> Unit)
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White.copy(alpha = 0.3f)) // Adjust opacity here
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFFFFF9E5), // Light yellow
+                        Color(0xFFE6F0FA)  // Light blue
+                    )
+                )
+            )
     ) {
 
-        VideoPlayer(
-            videoUri = videoUri,
-            modifier = Modifier
-                .fillMaxSize()
-
-        )
+//        VideoPlayer(
+//            videoUri = videoUri,
+//            modifier = Modifier
+//                .fillMaxSize()
+//
+//        )
 
         Column(
             modifier = Modifier
@@ -62,14 +82,6 @@ fun ChangePassword(showToggleToTablet: Boolean, onNextButtonClicked: () -> Unit)
         ) {
 
             TextHeader(stringResource(R.string.change_password))
-
-//            Row(
-//                modifier = Modifier
-//                    .padding(bottom = 30.dp),
-//                horizontalArrangement = Arrangement.Center
-//            ) {
-//
-//            }
 
             TextEmailSent()
 
@@ -109,19 +121,6 @@ fun ChangePassword(showToggleToTablet: Boolean, onNextButtonClicked: () -> Unit)
                         .padding(horizontal = valueHorizontal, vertical = 16.dp)
                 )
             }
-
-//            ButtonHeader(R.string.change, valueHorizontal)
-
-//            Spacer(modifier = Modifier.height(30.dp))
-
-//            Divider(color = Color.Gray, thickness = 1.dp)
-
-//            Text(
-//                text = "Or login with",
-//                style = AppTheme.typography.labelMedium,
-//                modifier = Modifier
-//                    .padding(vertical = 16.dp)
-//            )
         }
     }
 }

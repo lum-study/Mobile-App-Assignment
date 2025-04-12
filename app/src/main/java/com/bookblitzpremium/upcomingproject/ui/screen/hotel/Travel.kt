@@ -1,7 +1,9 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.hotel
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.spacedBy
@@ -24,6 +26,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.LocationOn
@@ -35,7 +39,10 @@ import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDateRangePickerState
@@ -45,22 +52,34 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Tab
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRestorer
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 
 @Composable
 fun NumberRoom(
@@ -230,7 +249,7 @@ fun NumberRoom(
     }
 }
 
-@Preview(showBackground = false)
+//@Preview(showBackground = false)
 @Composable
 fun PreviewHotels(){
     HotelCard()
@@ -627,7 +646,7 @@ fun PaymentMethod(){
 }
 
 
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
 fun PaymentDetails() {
 
@@ -738,7 +757,7 @@ fun PaymentDetails() {
 }
 
 
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
 fun PaymentImageReview() {
     Column( // ⬅️ Replacing LazyColumn with Column
@@ -1590,11 +1609,16 @@ fun InlineDateRangePicker(onDateRangeSelected: (Pair<Long?, Long?>) -> Unit) {
     }
 }
 
+//@Preview(showBackground = true, widthDp = 360, heightDp = 800)
+@Composable
+fun SelectingFigurePreview() {
+    SelectingFigure(showToggleTablet = 2, modifier = Modifier)
+}
 
 @Composable
-fun SelectingFigure(showToggleTablet: Int) {
+fun SelectingFigure(showToggleTablet: Int , modifier: Modifier) {
 
-    val maxHeight = if (showToggleTablet == 1) 1f else if (showToggleTablet ==2 ) 0.5f else 1f
+    val maxHeight = if (showToggleTablet == 1) 1f else if (showToggleTablet ==2 ) 1f else 1f
     val maxWeight = if (showToggleTablet == 1) 0.9f else if (showToggleTablet ==2 ) 1f else 1f
 
 
@@ -1606,10 +1630,10 @@ fun SelectingFigure(showToggleTablet: Int) {
             .offset(x = 12.dp)
 
         2 -> Modifier
-            .fillMaxHeight(maxHeight)
-            .fillMaxWidth(maxWeight)
-            .background(Color.LightGray, RoundedCornerShape(32.dp))
-            .padding(16.dp)
+            .fillMaxHeight()
+            .fillMaxWidth()
+            .background(Color.LightGray)
+            .padding(top = 200.dp)
 
         else -> Modifier
             .fillMaxHeight(maxHeight)
@@ -1621,24 +1645,27 @@ fun SelectingFigure(showToggleTablet: Int) {
           modifier = modifierEdit
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White,RoundedCornerShape( topStart = 32.dp , topEnd = 32.dp)),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
 
+
             if (showToggleTablet == 2) {
-                Divider(
-                    modifier = Modifier
-                        .offset(x = 100.dp, y = -4.dp)
-                        .fillMaxWidth(0.5f)
-                        .height(4.dp)
-                        .background(Color.Red)
-                        .shadow(
-                            elevation = 0.dp,
-                            shape = RoundedCornerShape(32.dp),
-                            clip = true,
-                            ambientColor = Color.LightGray,
-                        )
-                )
+//                Divider(
+//                    modifier = Modifier
+//                        .offset(x = 100.dp, y = -4.dp)
+//                        .fillMaxWidth(0.5f)
+//                        .height(4.dp)
+//                        .background(Color.Red)
+//                        .shadow(
+//                            elevation = 0.dp,
+//                            shape = RoundedCornerShape(32.dp),
+//                            clip = true,
+//                            ambientColor = Color.LightGray,
+//                        )
+//                )
             }
 
 
@@ -1646,32 +1673,44 @@ fun SelectingFigure(showToggleTablet: Int) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                    .padding(horizontal = 18.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
 
-                ) {
+                IconButton(onClick = { /* Handle click */ }) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = "Close",
+                        tint = Color.Black,
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
+
                 Text(
                     text = "Figure",
                     style = AppTheme.typography.largeBold,
-                    fontSize = 28.sp
+                    fontSize = 24.sp,
+                    textAlign = TextAlign.Center, modifier = Modifier
+                        .padding(start = 90.dp)
                 )
 
-                if (showToggleTablet == 2) {
-                    Button(
-                        onClick = { /* do something */ },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Black,
-                            contentColor = Color.White
-                        ),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier.width(100.dp)
-                    ) {
-                        Text(
-                            text = "Done",
-                            fontSize = 16.sp
-                        )
-                    }
-                }
+//                if (showToggleTablet == 2) {
+//                    Button(
+//                        onClick = { /* do something */ },
+//                        colors = ButtonDefaults.buttonColors(
+//                            containerColor = Color.Black,
+//                            contentColor = Color.White
+//                        ),
+//                        shape = RoundedCornerShape(16.dp),
+//                        modifier = Modifier.width(100.dp)
+//                    ) {
+//                        Text(
+//                            text = "Done",
+//                            fontSize = 16.sp
+//                        )
+//                    }
+//                }
             }
 
             // This Column will be placed at the bottom
@@ -1681,8 +1720,40 @@ fun SelectingFigure(showToggleTablet: Int) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 SelectNumber()
-                SelectNumber()
-                SelectNumber()
+
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Bottom, // ✅ Pushes content to the bottom
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(), // ✅ Make Row span full width
+                    horizontalArrangement = Arrangement.SpaceBetween // ✅ Space buttons out
+                ) {
+                    Button(
+                        onClick = {},
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Black,
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.width(120.dp)
+                    ) {
+                        Text(text = "Back")
+                    }
+
+                    IconButton(onClick = { /* Handle click */ }) {
+                        Icon(
+                            imageVector = Icons.Filled.KeyboardArrowRight,
+                            contentDescription = "Chevron Right",
+                            tint = Color.Black,
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+                }
             }
 
             var selectedDateRange by remember { mutableStateOf<Pair<Long?, Long?>>(null to null) }
@@ -1698,38 +1769,91 @@ fun SelectingFigure(showToggleTablet: Int) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectNumber() {
+    var state by remember { mutableStateOf(0) }
+    val titles = listOf("Tab 1", "Tab 2")
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp), // ✅ Added padding for spacing
-        verticalArrangement = spacedBy(8.dp) // ✅ Spacing between "Adult" and Row
+            .padding(vertical = 16.dp, horizontal = 24.dp,),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            text = "Adult",
-            fontSize = 24.sp,
-            modifier = Modifier.align(Alignment.Start) // ✅ Align text to the left
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(), // ✅ Ensures even spacing
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = spacedBy(8.dp) // ✅ Adjusted spacing
+        // ✅ Tab Row with better styling
+        TabRow(
+            selectedTabIndex = state,
+            containerColor = Color(0xFFF0F0F0), // ✅ Background color for tabs
+            contentColor = Color.Black,
+            indicator = { tabPositions ->
+                TabRowDefaults.Indicator(
+                    Modifier
+                        .tabIndicatorOffset(tabPositions[state])
+                        .height(4.dp) // ✅ Custom indicator height
+                        .clip(RoundedCornerShape(16.dp)),
+                    color = Color.Black // ✅ Indicator color
+                )
+            },
+            modifier = Modifier
+                .padding(bottom = 40.dp)
         ) {
-            repeat(10) {
-                Box(
+            titles.forEachIndexed { index, title ->
+                Tab(
+                    selected = state == index,
+                    onClick = { state = index },
+                    text = {
+                        Text(
+                            text = title,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                )
+            }
+        }
+
+        // ✅ Conditional Content Based on Tab Selection
+        if (state == 1) {
+            Column {
+                Text(
+                    text = "Adult",
+                    fontSize = 24.sp,
                     modifier = Modifier
-                        .size(32.dp) // ✅ Slightly bigger for better visibility
-                        .background(Color.LightGray, RoundedCornerShape(8.dp)), // ✅ Added rounded corners
-                    contentAlignment = Alignment.Center // ✅ Centers the text inside
+                        .align(Alignment.Start)
+
+                )
+
+                // ✅ Corrected LazyRow Implementation
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        text = "${it + 1}", // ✅ Displays 1 to 10 instead of always "1"
-                        fontSize = 12.sp
-                    )
+                    items(count = 10) { index -> // ✅ Fix: Properly generate 10 items
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp) // ✅ Increased size for better touchability
+                                .background(Color.LightGray, RoundedCornerShape(12.dp))
+                                .clickable { /* Handle click */ },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "${index + 1}",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+                        }
+                    }
                 }
             }
+        } else {
+            Text(
+                text = "Hello",
+                fontSize = 20.sp,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
         }
     }
 }
@@ -1737,7 +1861,8 @@ fun SelectNumber() {
 
 
 
-@Preview(showBackground = true)
+
+//@Preview(showBackground = true)
 @Composable
 fun SelectPeople() {
     Column( // ✅ Changed from Box to Column to stack elements properly

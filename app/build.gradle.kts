@@ -5,6 +5,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -43,28 +44,49 @@ android {
 }
 
 dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth") // ✅ added
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.firestore.ktx)
+
     implementation(libs.coil.compose)
-    implementation (libs.zxing.android.embedded)
+    implementation(libs.zxing.android.embedded)
+
+    implementation("androidx.compose.material3:material3:1.3.0")
+    implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.compose.material:material-icons-extended:1.6.0")
-    implementation ("androidx.constraintlayout:constraintlayout-compose:1.0.1")
+    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
     implementation(libs.androidx.core.ktx)
+
     implementation("androidx.compose.material3:material3-window-size-class:1.0.1")
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.activity:activity-compose:1.9.2")
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
+
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.scenecore)
     implementation(libs.androidx.adaptive.android)
+
     implementation("androidx.media3:media3-exoplayer:1.2.0")
     implementation("androidx.media3:media3-ui:1.2.0")
+
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.30.1")
     implementation(libs.androidx.constraintlayout)
     implementation(libs.material)
+
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
+    implementation(libs.play.services.auth)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
