@@ -62,7 +62,7 @@ import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 
 //900,1440
 //360,806
-@Preview(showBackground = true, widthDp = 900, heightDp = 1440)
+@Preview(showBackground = true, widthDp = 400, heightDp = 1440)
 @Composable
 fun HomeScreenPreview() {
     val navController = rememberNavController()

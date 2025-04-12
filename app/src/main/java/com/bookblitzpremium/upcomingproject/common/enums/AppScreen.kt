@@ -6,7 +6,7 @@ import com.google.android.material.bottomappbar.BottomAppBar
 
 enum class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomBar: Boolean) {
     // Auth Screens
-    AuthGraph("AuthGraph", hasTopBar = false, hasBottomBar = false),
+    AuthGraph("AuthGraph", hasTopBar = false, hasBottomBar = true),
     Login("Login", hasTopBar = false, hasBottomBar = false),
     Register("Register", hasTopBar = false, hasBottomBar = false),
     OTP("OTP", hasTopBar = false, hasBottomBar = false),
@@ -30,5 +30,14 @@ enum class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomBar
 
     // Profile Screens
     ProfileGraph("ProfileGraph", hasTopBar = false, hasBottomBar = false),
-    Profile("Profile", hasTopBar = true, hasBottomBar = true)
+    Profile("Profile", hasTopBar = true, hasBottomBar = true),
+
+    //Booking Date and people
+    BookingDate("BookingDate", hasTopBar = true, hasBottomBar = false),
+    BookingPeople("BookingPeople", hasTopBar = true, hasBottomBar = false),
+    BookingReview("BookingReview", hasTopBar = true, hasBottomBar = false),
+
+    //Entry Page
+    EntryPage("EntryPage",hasTopBar = false, hasBottomBar = false ),
+    EntryPage2("EntryPage2",hasTopBar = false, hasBottomBar = false )
 }

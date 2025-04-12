@@ -36,6 +36,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 
+
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 fun VideoPlayer(
@@ -105,11 +106,11 @@ fun CustomTextField(
         trailingIcon = trailingIcon?.let {
             { Icon(imageVector = it, contentDescription = null, tint = Color.Gray) }
         },
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedBorderColor = Color(0xFF6200EA),
-            unfocusedBorderColor = Color.Gray,
-            cursorColor = Color.Black
-        ),
+//        colors = TextFieldDefaults.outlinedTextFieldColors(
+//            focusedBorderColor = Color(0xFF6200EA),
+//            unfocusedBorderColor = Color.Gray,
+//            cursorColor = Color.Black
+//        ),
         textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
         shape = RoundedCornerShape(12.dp),
         keyboardOptions = KeyboardOptions(  // ✅ Fixed: Merged both options

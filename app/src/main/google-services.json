@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "757951132750",
+    "firebase_url": "https://blitzpremium-d4a0d-default-rtdb.firebaseio.com",
+    "project_id": "blitzpremium-d4a0d",
+    "storage_bucket": "blitzpremium-d4a0d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:757951132750:android:150562090a1712478e7f1f",
+        "android_client_info": {
+          "package_name": "com.bookblitzpremium.upcomingproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbg17t1kCJzV2FBHMTyhoD7Ebnf8BBVUI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
