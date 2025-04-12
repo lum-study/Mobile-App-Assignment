@@ -2,12 +2,14 @@ package com.bookblitzpremium.upcomingproject.ui.screen.booking
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,258 +33,92 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.hotel.SelectingFigure
 
-
-
 @Composable
-fun PreviewBookingPeople(){
-//    ResolveButtonUp()
+fun SelectedGuestResult(
+    iconRes: Int,   // 🔥 Pass the image resource as an argument
+    label: String,
+    number:Int
+) {
+    Box(
+        modifier = Modifier
+            .width(IntrinsicSize.Min),  // ✅ Ensures only necessary width
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(iconRes),
+                contentDescription = label,
+                modifier = Modifier.size(48.dp)
+            )
+
+            Text(
+                text = number.toString(),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
+    }
 }
 
-
 @Composable
-fun PeopleSelected(
-    modifier: Modifier
-){
-    Column(
+fun TravelInfoCard() {
+    Box(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = 16.dp)
-    ){
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFFFF7043)) // Orange background
+            .padding(16.dp)
+    ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp)
-        ){
-            Column(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_launcher_foreground), // Change to your icon resource
+                contentDescription = "Travel Icon",
+                tint = Color.White,
                 modifier = Modifier
-                    .fillMaxWidth(0.5f)
+                    .size(40.dp)
+                    .padding(end = 16.dp)
+            )
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ){
                 Text(
-                    text = "Not Selected",
-                    fontStyle = FontStyle.Normal,
+                    text = "Enjoy your trip!",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
-                    modifier = Modifier.padding(top = 16.dp)
+                    color = Color.White
                 )
-
                 Text(
-                    text = "Ages below 13 ",
-                    fontStyle = FontStyle.Normal,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(top = 16.dp)
+                    text = "Have a safe and pleasant journey.",
+                    fontSize = 14.sp,
+                    color = Color.White.copy(alpha = 0.8f)
                 )
-            }
-
-            Row(
-                modifier = Modifier
-                    .padding(top = 16.dp, end= 16.dp),
-            ){
-                Box(
-                    modifier = Modifier
-                        .border(BorderStroke(2.dp, Color.Black), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
-                        .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
-                        .padding(8.dp) // Optional padding
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Remove,
-                        contentDescription = "Remove",
-                        tint = Color.Black,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-
-                Text(
-                    text = "1",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .padding(horizontal = 24.dp , vertical = 12.dp)
-                )
-
-                Box(
-                    modifier = Modifier
-                        .border(BorderStroke(2.dp, Color.Black), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
-                        .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
-                        .padding(8.dp) // Optional padding
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Remove,
-                        contentDescription = "Remove",
-                        tint = Color.Black,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp)
-        ){
-
-            Column(
-                modifier = Modifier
-                    .width(200.dp)
-                    .padding(start =  16.dp)
-            ){
-                Text(
-                    text = "Children",
-                    fontStyle = FontStyle.Normal,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(top = 16.dp)
-                )
-
-                Text(
-                    text = "Ages below 13 ",
-                    fontStyle = FontStyle.Normal,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(top = 16.dp)
-                )
-            }
-
-            Column(
-                modifier = Modifier
-                    .width(350.dp),
-                verticalArrangement = Arrangement.Center,
-            ) {
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp, end= 16.dp),
-                ){
-                    Box(
-                        modifier = Modifier
-                            .border(BorderStroke(2.dp, Color.Black), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
-                            .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
-                            .padding(8.dp) // Optional padding
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Remove,
-                            contentDescription = "Remove",
-                            tint = Color.Black,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-
-                    Text(
-                        text = "1",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .padding(horizontal = 24.dp , vertical = 12.dp)
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .border(BorderStroke(2.dp, Color.Black), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
-                            .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
-                            .padding(8.dp) // Optional padding
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Remove,
-                            contentDescription = "Remove",
-                            tint = Color.Black,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                }
-            }
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp)
-        ){
-
-            Column(
-                modifier = Modifier
-                    .width(200.dp)
-                    .padding(start =  16.dp)
-            ){
-                Text(
-                    text = "Infant",
-                    fontStyle = FontStyle.Normal,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(top = 16.dp)
-                )
-
-                Text(
-                    text = "Ages below 13 ",
-                    fontStyle = FontStyle.Normal,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(top = 16.dp)
-                )
-            }
-
-            Column(
-                modifier = Modifier
-                    .width(350.dp),
-                verticalArrangement = Arrangement.Center,
-            ) {
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp, end= 16.dp),
-                ){
-                    Box(
-                        modifier = Modifier
-                            .border(BorderStroke(2.dp, Color.Black), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
-                            .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
-                            .padding(8.dp) // Optional padding
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Remove,
-                            contentDescription = "Remove",
-                            tint = Color.Black,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-
-                    Text(
-                        text = "1",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .padding(horizontal = 24.dp , vertical = 12.dp)
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .border(BorderStroke(2.dp, Color.Black), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
-                            .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
-                            .padding(8.dp) // Optional padding
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Remove,
-                            contentDescription = "Remove",
-                            tint = Color.Black,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                }
             }
         }
     }
@@ -299,7 +135,7 @@ fun GuestSection(
     ) {
         Text(
             text = "Total Guest",
-            fontSize = 28.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .padding(start = 12.dp)
@@ -307,34 +143,18 @@ fun GuestSection(
 
         Row(
             modifier = Modifier
-                .padding(top = 16.dp)
+                .fillMaxWidth()  // ✅ Takes up full width
+                .padding(top = 16.dp, start = 50.dp)
+                ,
+            horizontalArrangement = Arrangement.spacedBy(60.dp) // ✅ Ensures proper spacing
         ) {
-            repeat(3) { index ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f), // Equal height distribution
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp), // Adds space between children
-                        horizontalAlignment = Alignment.CenterHorizontally // Centers items
-                    ){
-                        Icon(imageVector = Icons.Filled.Traffic, contentDescription = "Trafffic", tint = Color.Black, modifier = Modifier.size(24.dp))
-
-                        Text(
-                            text = "Adult",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier
-                                .padding(top = 8.dp)
-                        )
-                    }
-                }
-            }
+            SelectedGuestResult(R.drawable.adults, "Adults", 5)
+            SelectedGuestResult(R.drawable.children,"Children", 5)
+            SelectedGuestResult(R.drawable.infant, "Infant", 5)
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+
+        Spacer(modifier = Modifier.weight(1f))
 
         Button(
             onClick = {
@@ -367,79 +187,102 @@ fun BookingAmount(
             .fillMaxSize()
             .fillMaxHeight()
             .padding(16.dp)
+        , verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        repeat(3){
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp)
-            ){
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth(0.5f)
-                ){
-                    Text(
-                        text = "Not Selected",
-                        fontStyle = FontStyle.Normal,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(top = 16.dp)
-                    )
 
-                    Text(
-                        text = "Ages below 13 ",
-                        fontStyle = FontStyle.Normal,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(top = 16.dp)
-                    )
-                }
+        TravelInfoCard()
 
-                Row(
-                    modifier = Modifier
-                        .padding(top = 16.dp, end= 16.dp),
-                ){
-                    Box(
-                        modifier = Modifier
-                            .border(BorderStroke(2.dp, Color.Black), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
-                            .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
-                            .padding(8.dp) // Optional padding
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Remove,
-                            contentDescription = "Remove",
-                            tint = Color.Black,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
+        SelectPeopleLevel("Adult", "Ages 13 or above")
 
-                    Text(
-                        text = "1",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .padding(horizontal = 24.dp , vertical = 12.dp)
-                    )
+        SelectPeopleLevel("Children", "Ages 2 - 12")
 
-                    Box(
-                        modifier = Modifier
-                            .border(BorderStroke(2.dp, Color.Black), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
-                            .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
-                            .padding(8.dp) // Optional padding
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Remove,
-                            contentDescription = "Remove",
-                            tint = Color.Black,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                }
-            }
-        }
+        SelectPeopleLevel("Infant" , "Under ages 2")
 
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         GuestSection(modifier = Modifier, navController = navController)
+    }
+}
+
+@Composable
+fun SelectPeopleLevel(
+    label1: String,
+    label2:String,
+){
+
+    var count by remember { mutableIntStateOf(1) }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp)
+    ){
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(0.5f)
+        ){
+            Text(
+                text = label1,
+                fontStyle = FontStyle.Normal,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp,
+                modifier = Modifier.padding(top = 16.dp)
+            )
+
+            Text(
+                text = label2,
+                fontStyle = FontStyle.Normal,
+                fontWeight = FontWeight.Bold,
+                fontSize = 12.sp,
+                modifier = Modifier
+            )
+        }
+
+        Row(
+            modifier = Modifier
+                .padding(top = 16.dp, end= 16.dp),
+        ){
+            Box(
+                modifier = Modifier
+                    .border(BorderStroke(2.dp, Color.Black), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
+                    .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
+                    .padding(8.dp) // Optional padding
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Remove,
+                    contentDescription = "Remove",
+                    tint = Color.Black,
+                    modifier = Modifier.size(24.dp)
+                        .clickable {
+                            count --
+                        }
+                )
+            }
+
+            Text(
+                text =  count.toString(),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .padding(horizontal = 24.dp , vertical = 12.dp)
+            )
+
+            Box(
+                modifier = Modifier
+                    .border(BorderStroke(2.dp, Color.Black), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
+                    .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
+                    .padding(8.dp) // Optional padding
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = "Add",
+                    tint = Color.Black,
+                    modifier = Modifier.size(24.dp)
+                        .clickable {
+                            count ++
+                        }
+                )
+            }
+        }
     }
 }

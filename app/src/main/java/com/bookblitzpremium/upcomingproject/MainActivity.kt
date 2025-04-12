@@ -1,49 +1,48 @@
 package com.bookblitzpremium.upcomingproject
 
-import android.annotation.SuppressLint
-import android.app.Activity
+import android.app.Activity.RESULT_OK
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.rememberDraggableState
-import androidx.compose.foundation.layout.Arrangement
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
@@ -57,12 +56,35 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.bookblitzpremium.upcomingproject.ViewModel.RemoteDatabase
+import com.bookblitzpremium.upcomingproject.ViewModel.User2
+import com.bookblitzpremium.upcomingproject.ViewModel.UserLogin
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.presentation.GoogleUiClient
+import com.bookblitzpremium.upcomingproject.presentation.ProfileScreen
+import com.bookblitzpremium.upcomingproject.presentation.SignInScreen
+import com.bookblitzpremium.upcomingproject.presentation.SignInState
+import com.bookblitzpremium.upcomingproject.presentation.SignInUser
 import com.bookblitzpremium.upcomingproject.ui.navigation.AppNavigation
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.firebase.FirebaseApp
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.firestore.auth.User
+import kotlinx.coroutines.launch
+
+
 
 enum class TravelScreen() {
     LOGIN,
@@ -95,16 +117,28 @@ enum class TravelScreen() {
 //}
 
 class MainActivity : ComponentActivity() {
+
+    private val googleAuthClient by lazy {
+        GoogleUiClient(
+            context = applicationContext,
+            oneTapLCient = Identity.getSignInClient(applicationContext)
+        )
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        FirebaseApp.initializeApp(this)
         setContent {
             AppTheme{
                 App()
+
+//                UserListScreen()
             }
         }
     }
 }
+
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 806)
 @Composable
@@ -125,7 +159,7 @@ fun App(
                     currentScreen = currentScreen,
                     canNavigateBack = navController.previousBackStackEntry != null,
                     navigateUp = { navController.navigateUp() },
-                    modifier = Modifier
+                    modifier = Modifier.padding(start = 20.dp)
 
                 )
             }
@@ -167,7 +201,8 @@ fun TitleBar(
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
                 textAlign = TextAlign.Center, // ✅ Ensure text is centered
-                modifier = Modifier.fillMaxWidth() // ✅ Full width for proper alignment
+                modifier = Modifier.fillMaxWidth()
+                    .offset(x = -20.dp)
             )
         },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
@@ -178,7 +213,7 @@ fun TitleBar(
             if (canNavigateBack) {
                 IconButton(
                     onClick = navigateUp,
-                    modifier = Modifier.size(24.dp) // ✅ Consistent button size
+                    modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Filled.ArrowBack,
@@ -191,20 +226,28 @@ fun TitleBar(
     )
 }
 
+
+
 @Composable
-fun MySimpleLayout() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth(0.5f)
-            .fillMaxHeight()
-            .paint(painterResource(id = R.drawable.hotel_images), contentScale = ContentScale.Crop)
-    ) {
-        Text(
-            text = "fdgfghfgh",
-            modifier = Modifier.align(Alignment.Center)
-        )
+fun UserListScreen() {
+    val users = remember { mutableStateListOf<User2>() }
+
+    val callViewModel = viewModel<RemoteDatabase>()
+
+    LaunchedEffect(true) {
+        callViewModel.readUsersFromDatabase {
+            users.clear()
+            users.addAll(it)
+        }
+    }
+
+    LazyColumn {
+        items(users) { user ->
+            Text(text = "${user.name} - ${user.course} - Age: ${user.age}")
+        }
     }
 }
+
 
 
 

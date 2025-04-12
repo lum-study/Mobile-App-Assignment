@@ -43,6 +43,8 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -76,7 +78,106 @@ import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.ui.components.HeaderDetails
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.navigation.compose.rememberNavController
+
+@Composable
+fun ProductDetailScreen() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF6FAF5))
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp),
+            elevation = CardDefaults.cardElevation(4.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(20.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column {
+                        Text(
+                            text = "Eclipse V2",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp
+                        )
+                        Row {
+                            Text(
+                                text = "$165.00",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                color = Color(0xFF2C6E49)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "$200.00",
+                                style = TextStyle(
+                                    textDecoration = TextDecoration.LineThrough
+                                ),
+                                color = Color.Gray,
+                                fontSize = 16.sp
+                            )
+                        }
+                    }
+                    Text(
+                        text = "ERO2542",
+                        color = Color.Gray,
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .background(Color(0xFFE0E0E0), shape = RoundedCornerShape(8.dp))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Specs Row
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    SpecItem("Height:", "4 cm")
+                    SpecItem("Width:", "15 cm")
+                    SpecItem("Material", "Glass")
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Button(
+                    onClick = { /* Add to cart logic */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2C6E49))
+                ) {
+                    Text("Add to Cart", fontSize = 18.sp, color = Color.White)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SpecItem(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = label, color = Color.Gray, fontSize = 14.sp)
+        Text(text = value, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+    }
+}
 
 
 @Composable
@@ -110,7 +211,7 @@ fun MobieLayout(showNUmber:Int, defaultSize : Dp, maxSize: Dp) {
                         .fillMaxWidth()
                         .background(Color.Transparent)
                         .align(Alignment.BottomEnd)
-                        .padding( horizontal = 48.dp, vertical = 30.dp)
+                        .padding(horizontal = 48.dp, vertical = 30.dp)
                 ){
                     Button(
                         onClick = {
@@ -127,7 +228,7 @@ fun MobieLayout(showNUmber:Int, defaultSize : Dp, maxSize: Dp) {
 
                     ){
                         Text(
-                            text = "Pick Date",
+                            text = stringResource(R.string.pick_date),
                             style = AppTheme.typography.mediumBold
                         )
                     }
@@ -144,7 +245,7 @@ fun MobieLayout(showNUmber:Int, defaultSize : Dp, maxSize: Dp) {
                         modifier = Modifier.width(300.dp)
                     ){
                         Text(
-                            text = "Pick Date",
+                            text = stringResource(R.string.pick_date),
                             style = AppTheme.typography.mediumBold
                         )
                     }
@@ -204,7 +305,7 @@ fun HotelHeaderTable( onNextButtonClicked: () -> Unit ) {
                         .width(300.dp)
                         .padding(end = 20.dp)
                 ) {
-                    Text(text = "Pick Date", style = AppTheme.typography.mediumBold)
+                    Text(text = stringResource(R.string.pick_date), style = AppTheme.typography.mediumBold)
                 }
 
                 Button(
@@ -216,7 +317,7 @@ fun HotelHeaderTable( onNextButtonClicked: () -> Unit ) {
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier.width(300.dp)
                 ) {
-                    Text(text = "Pick Date", style = AppTheme.typography.mediumBold)
+                    Text(text = stringResource(R.string.pick_date), style = AppTheme.typography.mediumBold)
                 }
             }
         }
@@ -251,7 +352,7 @@ fun HotelHeaderTable( onNextButtonClicked: () -> Unit ) {
                                 .padding(16.dp),
                             onClick = { showNewComponent = true } // ✅ Update state on click
                         ) {
-                            Text(text = "Next")
+                            Text(text = stringResource(R.string.next_button))
                         }
                     }
                     item { Spacer(modifier = Modifier.height(100.dp)) }
@@ -274,7 +375,7 @@ fun DragableToTop(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color.White,RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)) // ✅ Background color
+            .background(Color.White, RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)) // ✅ Background color
 
 //            .verticalScroll(rememberScrollState()) // ✅ Enables scrolling
     ) {
@@ -699,13 +800,14 @@ fun OverlappingContentTest(
                             .fillMaxWidth()
                             .background(Color.White)
                             .offset(y = -500.dp)
+                            .wrapContentSize()
                             .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
-                            .padding(top = 16.dp)
+//                            .padding(top = 16.dp,bottom= 32.dp)
                     ) {
+
                         Column(
                             modifier = Modifier
                                 .background(Color.White, RoundedCornerShape(32.dp))
-                                .wrapContentSize() // ✅ Fix: Prevents extra space
                         ) {
                             Box(
                                 modifier = Modifier
@@ -805,12 +907,15 @@ fun OverlappingContentTest(
 
                     Column(
                         modifier = Modifier
-                            .offset( y = -100.dp)
+                            .offset(y = -100.dp)
                             .fillMaxSize()
                     ){
                         Column(
                             modifier = Modifier
-                                .background(Color.White, RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)) // ✅ Rounded top corners
+                                .background(
+                                    Color.White,
+                                    RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
+                                ) // ✅ Rounded top corners
                                 .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
                                 .fillMaxWidth()
                                 .fillMaxHeight()
@@ -883,10 +988,71 @@ fun OverlappingContentTest(
 
                         }
                     }
-
-
                 }
             }
         }
     }
+}
+
+
+@Composable
+fun HotelScreen() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.LightGray) // Background for visualization
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            item {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    // 🔹 Large Image
+                    Image(
+                        painter = painterResource(id = R.drawable.hotel_images),
+                        contentDescription = "Hotel Image",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(800.dp) // Large image
+                    )
+
+                    // 🔹 White Box (Overlapping the Image)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.White)
+                            .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+                            .align(Alignment.BottomCenter) // ✅ Overlaps the image correctly
+                            .padding(top = 16.dp, bottom = 32.dp)
+                    ) {
+                        Spacer(modifier = Modifier.height(16.dp)) // 🔹 Push content down
+
+                        Text(
+                            text = "Hotel Details",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+
+                        Button(
+                            onClick = { /* Navigate to booking */ },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                        ) {
+                            Text(text = "Book Now")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewHotelScreen() {
+    HotelScreen()
 }

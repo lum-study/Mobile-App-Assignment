@@ -183,12 +183,12 @@ fun AppTheme( // Fixed typo
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (isDark) darkColorScheme else lightColorScheme
-    val rippleIndication = rememberRipple() // Fixed typo
+//    val rippleIndication = rememberRipple() // Fixed typo
     CompositionLocalProvider(
         LocalAppTypography provides typography, // Fixed typo
         LocalAppSize provides size,
         LocalAppColorSchema provides colorScheme,
-        LocalIndication provides rippleIndication,
+//        LocalIndication provides rippleIndication,
         LocalAppShape provides shape,
         LocalElevation provides Elevation(
             none = 0.dp,

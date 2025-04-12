@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.ui.utility.getWindowSizeClass
 import com.bookblitzpremium.upcomingproject.ui.utility.isMediumHeight
 import com.bookblitzpremium.upcomingproject.ui.utility.isTablet
@@ -32,7 +33,8 @@ fun DynamicLoginPage(onNextButtonClicked: () -> Unit, navController: NavControll
     }
 
     LoginPage(showTabletUI, onNextButtonClicked, navController)
-}
+
+    }
 
 @Composable
 fun PlaceholderUI() {

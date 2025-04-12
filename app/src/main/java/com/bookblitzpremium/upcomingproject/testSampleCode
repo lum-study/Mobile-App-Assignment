@@ -1,0 +1,245 @@
+//from BookingPeople
+
+@Composable
+fun PreviewBookingPeople(){
+//    ResolveButtonUp()
+}
+
+//
+//@Composable
+//fun PeopleSelected(
+//    modifier: Modifier
+//){
+//    Column(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .padding(bottom = 16.dp)
+//    ){
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(start = 16.dp)
+//        ){
+//            Column(
+//                modifier = Modifier
+//                    .fillMaxWidth(0.5f)
+//            ){
+//                Text(
+//                    text = "Not Selected",
+//                    fontStyle = FontStyle.Normal,
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = 16.sp,
+//                    modifier = Modifier.padding(top = 16.dp)
+//                )
+//
+//                Text(
+//                    text = "Ages below 13 ",
+//                    fontStyle = FontStyle.Normal,
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = 16.sp,
+//                    modifier = Modifier.padding(top = 16.dp)
+//                )
+//            }
+//
+//            Row(
+//                modifier = Modifier
+//                    .padding(top = 16.dp, end= 16.dp),
+//            ){
+//                Box(
+//                    modifier = Modifier
+//                        .border(BorderStroke(2.dp, Color.Black), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
+//                        .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
+//                        .padding(8.dp) // Optional padding
+//                ) {
+//                    Icon(
+//                        imageVector = Icons.Filled.Remove,
+//                        contentDescription = "Remove",
+//                        tint = Color.Black,
+//                        modifier = Modifier.size(24.dp)
+//                    )
+//                }
+//
+//                Text(
+//                    text = "1",
+//                    fontSize = 16.sp,
+//                    fontWeight = FontWeight.Bold,
+//                    modifier = Modifier
+//                        .padding(horizontal = 24.dp , vertical = 12.dp)
+//                )
+//
+//                Box(
+//                    modifier = Modifier
+//                        .border(BorderStroke(2.dp, Color.Black), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
+//                        .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
+//                        .padding(8.dp) // Optional padding
+//                ) {
+//                    Icon(
+//                        imageVector = Icons.Filled.Remove,
+//                        contentDescription = "Remove",
+//                        tint = Color.Black,
+//                        modifier = Modifier.size(24.dp)
+//                    )
+//                }
+//            }
+//
+//        }
+//
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(start = 16.dp)
+//        ){
+//
+//            Column(
+//                modifier = Modifier
+//                    .width(200.dp)
+//                    .padding(start =  16.dp)
+//            ){
+//                Text(
+//                    text = "Children",
+//                    fontStyle = FontStyle.Normal,
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = 16.sp,
+//                    modifier = Modifier.padding(top = 16.dp)
+//                )
+//
+//                Text(
+//                    text = "Ages below 13 ",
+//                    fontStyle = FontStyle.Normal,
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = 16.sp,
+//                    modifier = Modifier.padding(top = 16.dp)
+//                )
+//            }
+//
+//            Column(
+//                modifier = Modifier
+//                    .width(350.dp),
+//                verticalArrangement = Arrangement.Center,
+//            ) {
+//
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(top = 16.dp, end= 16.dp),
+//                ){
+//                    Box(
+//                        modifier = Modifier
+//                            .border(BorderStroke(2.dp, Color.Black), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
+//                            .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
+//                            .padding(8.dp) // Optional padding
+//                    ) {
+//                        Icon(
+//                            imageVector = Icons.Filled.Remove,
+//                            contentDescription = "Remove",
+//                            tint = Color.Black,
+//                            modifier = Modifier.size(24.dp)
+//                        )
+//                    }
+//
+//                    Text(
+//                        text = "1",
+//                        fontSize = 16.sp,
+//                        fontWeight = FontWeight.Bold,
+//                        modifier = Modifier
+//                            .padding(horizontal = 24.dp , vertical = 12.dp)
+//                    )
+//
+//                    Box(
+//                        modifier = Modifier
+//                            .border(BorderStroke(2.dp, Color.Black), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
+//                            .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
+//                            .padding(8.dp) // Optional padding
+//                    ) {
+//                        Icon(
+//                            imageVector = Icons.Filled.Remove,
+//                            contentDescription = "Remove",
+//                            tint = Color.Black,
+//                            modifier = Modifier.size(24.dp)
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(start = 16.dp)
+//        ){
+//
+//            Column(
+//                modifier = Modifier
+//                    .width(200.dp)
+//                    .padding(start =  16.dp)
+//            ){
+//                Text(
+//                    text = "Infant",
+//                    fontStyle = FontStyle.Normal,
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = 16.sp,
+//                    modifier = Modifier.padding(top = 16.dp)
+//                )
+//
+//                Text(
+//                    text = "Ages below 13 ",
+//                    fontStyle = FontStyle.Normal,
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = 16.sp,
+//                    modifier = Modifier.padding(top = 16.dp)
+//                )
+//            }
+//
+//            Column(
+//                modifier = Modifier
+//                    .width(350.dp),
+//                verticalArrangement = Arrangement.Center,
+//            ) {
+//
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(top = 16.dp, end= 16.dp),
+//                ){
+//                    Box(
+//                        modifier = Modifier
+//                            .border(BorderStroke(2.dp, Color.Black), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
+//                            .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
+//                            .padding(8.dp) // Optional padding
+//                    ) {
+//                        Icon(
+//                            imageVector = Icons.Filled.Remove,
+//                            contentDescription = "Remove",
+//                            tint = Color.Black,
+//                            modifier = Modifier.size(24.dp)
+//                        )
+//                    }
+//
+//                    Text(
+//                        text = "1",
+//                        fontSize = 16.sp,
+//                        fontWeight = FontWeight.Bold,
+//                        modifier = Modifier
+//                            .padding(horizontal = 24.dp , vertical = 12.dp)
+//                    )
+//
+//                    Box(
+//                        modifier = Modifier
+//                            .border(BorderStroke(2.dp, Color.Black), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
+//                            .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
+//                            .padding(8.dp) // Optional padding
+//                    ) {
+//                        Icon(
+//                            imageVector = Icons.Filled.Remove,
+//                            contentDescription = "Remove",
+//                            tint = Color.Black,
+//                            modifier = Modifier.size(24.dp)
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+
+

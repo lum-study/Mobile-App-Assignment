@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
@@ -36,16 +37,16 @@ fun OTPpage(showToggleToTablet: Boolean){
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFFFFF9E5), // Light yellow
+                        Color(0xFFE6F0FA)  // Light blue
+                    )
+                )
+            )
     ) {
 
-        VideoPlayer(
-            videoUri = videoUri,
-            modifier = Modifier
-                .fillMaxSize()
-
-        )
-
-        // 📝 Login UI - Positioned above the video
         Column(
             modifier = Modifier
                 .fillMaxHeight()

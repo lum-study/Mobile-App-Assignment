@@ -33,7 +33,11 @@ enum class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomBar
     Profile("Profile", hasTopBar = true, hasBottomBar = true),
 
     //Booking Date and people
-    BookingDate("BookingDate", hasTopBar = true, hasBottomBar = true),
-    BookingPeople("BookingPeople", hasTopBar = true, hasBottomBar = true),
-    BookingReview("BookingReview", hasTopBar = true, hasBottomBar = true)
+    BookingDate("BookingDate", hasTopBar = true, hasBottomBar = false),
+    BookingPeople("BookingPeople", hasTopBar = true, hasBottomBar = false),
+    BookingReview("BookingReview", hasTopBar = true, hasBottomBar = false),
+
+    //Entry Page
+    EntryPage("EntryPage",hasTopBar = false, hasBottomBar = false ),
+    EntryPage2("EntryPage2",hasTopBar = false, hasBottomBar = false )
 }
