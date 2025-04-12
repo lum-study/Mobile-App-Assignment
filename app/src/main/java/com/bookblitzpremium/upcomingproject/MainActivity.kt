@@ -11,6 +11,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.activity.viewModels
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -68,13 +74,6 @@ import com.bookblitzpremium.upcomingproject.ViewModel.RemoteDatabase
 import com.bookblitzpremium.upcomingproject.ViewModel.User2
 import com.bookblitzpremium.upcomingproject.ViewModel.UserLogin
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
-import com.bookblitzpremium.upcomingproject.presentation.GoogleUiClient
-import com.bookblitzpremium.upcomingproject.presentation.ProfileScreen
-import com.bookblitzpremium.upcomingproject.presentation.SignInScreen
-import com.bookblitzpremium.upcomingproject.presentation.SignInState
-import com.bookblitzpremium.upcomingproject.presentation.SignInUser
-import com.bookblitzpremium.upcomingproject.ui.navigation.AppNavigation
-import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.DataSnapshot
@@ -83,8 +82,10 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.firestore.auth.User
 import kotlinx.coroutines.launch
-
-
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.TripPackageViewModel
+import com.bookblitzpremium.upcomingproject.ui.navigation.AppNavigation
+import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import dagger.hilt.android.AndroidEntryPoint
 
 enum class TravelScreen() {
     LOGIN,
@@ -116,6 +117,7 @@ enum class TravelScreen() {
 //    Text(stringResource(R.string.next))
 //}
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val googleAuthClient by lazy {
