@@ -31,7 +31,7 @@ class RemoteScheduleRepository @Inject constructor(private val firestore: Fireba
         scheduleRef.document(id).delete().await()
     }
 
-    suspend fun getScheduleById(scheduleID: String): Schedule? {
+    suspend fun getScheduleByID(scheduleID: String): Schedule? {
         require(scheduleID.isNotEmpty()) { "Schedule ID cannot be empty" }
         return scheduleRef.document(scheduleID).get().await().toObject(Schedule::class.java)
     }

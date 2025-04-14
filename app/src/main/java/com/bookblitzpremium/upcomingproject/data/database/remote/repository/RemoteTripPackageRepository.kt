@@ -31,7 +31,7 @@ class RemoteTripPackageRepository @Inject constructor(private val firestore: Fir
         tripPackageRef.document(id).delete().await()
     }
 
-    suspend fun getTripPackageById(packageId: String): TripPackage? {
+    suspend fun getTripPackageByID(packageId: String): TripPackage? {
         require(packageId.isNotEmpty()) { "Package ID cannot be empty" }
         return tripPackageRef.document(packageId).get().await().toObject(TripPackage::class.java)
     }

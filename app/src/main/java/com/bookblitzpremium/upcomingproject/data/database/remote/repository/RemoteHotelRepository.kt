@@ -31,7 +31,7 @@ class RemoteHotelRepository @Inject constructor(private val firestore: FirebaseF
         hotelRef.document(id).delete().await()
     }
 
-    suspend fun getHotelById(hotelID: String): Hotel? {
+    suspend fun getHotelByID(hotelID: String): Hotel? {
         require(hotelID.isNotEmpty()) { "Hotel ID cannot be empty" }
         return hotelRef.document(hotelID).get().await().toObject(Hotel::class.java)
     }

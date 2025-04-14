@@ -3,16 +3,17 @@ package com.bookblitzpremium.upcomingproject.data.database.local.viewmodel
 import android.database.sqlite.SQLiteException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.TripPackage
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalFlightRepository
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalHotelRepository
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalTripPackageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,9 +23,6 @@ class LocalTripPackageViewModel @Inject constructor(
     private val flightRepository: LocalFlightRepository,
     private val hotelRepository: LocalHotelRepository
 ) : ViewModel() {
-    val tripList = tripPackageRepository.allTrips
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading.asStateFlow()
 
@@ -37,9 +35,9 @@ class LocalTripPackageViewModel @Inject constructor(
             _error.value = null
 
             val result = runCatching {
-                hotelRepository.getHotelById(trip.hotelID)
+                hotelRepository.getHotelByID(trip.hotelID)
                     ?: throw IllegalArgumentException("Invalid hotel ID")
-                flightRepository.getFlightById(trip.flightID)
+                flightRepository.getFlightByID(trip.flightID)
                     ?: throw IllegalArgumentException("Invalid flight ID")
 
                 tripPackageRepository.addOrUpdateTripPackage(trip)
@@ -70,4 +68,28 @@ class LocalTripPackageViewModel @Inject constructor(
             }
         }
     }
+
+    fun filterTripPackage(
+        input: String,
+        startPrice: Double = 0.0,
+        endPrice: Double = 0.0,
+        flightID: List<String>? = null,
+        startDate: String = "",
+        endDate: String = ""
+    ): Flow<PagingData<TripPackage>> {
+        return tripPackageRepository.getFilteredTripPackagesPagingFlow(
+            input = input,
+            startPrice = startPrice,
+            endPrice = endPrice,
+            flightID = flightID,
+            startDate = startDate,
+            endDate = endDate
+        ).cachedIn(viewModelScope)
+    }
+
+    fun getAllTripPackagesPagingFlow(): Flow<PagingData<TripPackage>> {
+        return tripPackageRepository.getTripPackagesPagingFlow()
+            .cachedIn(viewModelScope)
+    }
+
 }

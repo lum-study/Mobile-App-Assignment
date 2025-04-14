@@ -3,15 +3,16 @@ package com.bookblitzpremium.upcomingproject.data.database.local.viewmodel
 import android.database.sqlite.SQLiteException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Rating
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalHotelRepository
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalRatingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,9 +21,6 @@ class LocalRatingViewModel @Inject constructor(
     private val ratingRepository: LocalRatingRepository,
     private val hotelRepository: LocalHotelRepository
 ) : ViewModel() {
-    val ratingList = ratingRepository.allRatings
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading.asStateFlow()
 
@@ -36,7 +34,7 @@ class LocalRatingViewModel @Inject constructor(
 
             val result = runCatching {
                 // Validate hotel exists
-                hotelRepository.getHotelById(rating.hotelID)
+                hotelRepository.getHotelByID(rating.hotelID)
                     ?: throw IllegalArgumentException("Invalid hotel ID")
 
                 ratingRepository.addOrUpdateRating(rating)
@@ -67,4 +65,10 @@ class LocalRatingViewModel @Inject constructor(
             }
         }
     }
+
+    fun getRatingByHotelID(hotelID: String): Flow<PagingData<Rating>> {
+        return ratingRepository.getRatingsPagingFlowByHotel(hotelID)
+            .cachedIn(viewModelScope)
+    }
+
 }

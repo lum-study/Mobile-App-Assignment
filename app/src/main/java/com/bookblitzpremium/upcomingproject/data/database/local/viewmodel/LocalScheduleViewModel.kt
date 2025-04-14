@@ -3,15 +3,16 @@ package com.bookblitzpremium.upcomingproject.data.database.local.viewmodel
 import android.database.sqlite.SQLiteException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Schedule
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalScheduleRepository
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalTripPackageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,9 +21,6 @@ class LocalScheduleViewModel @Inject constructor(
     private val scheduleRepository: LocalScheduleRepository,
     private val tripPackageRepository: LocalTripPackageRepository
 ) : ViewModel() {
-    val scheduleList = scheduleRepository.allSchedules
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading.asStateFlow()
 
@@ -35,7 +33,7 @@ class LocalScheduleViewModel @Inject constructor(
             _error.value = null
 
             val result = runCatching {
-                tripPackageRepository.getTripById(schedule.tripPackageID)
+                tripPackageRepository.getTripByID(schedule.tripPackageID)
                     ?: throw IllegalArgumentException("Invalid trip package ID")
 
                 scheduleRepository.addOrUpdateSchedule(schedule)
@@ -66,4 +64,10 @@ class LocalScheduleViewModel @Inject constructor(
             }
         }
     }
+
+    fun getScheduleByTripPackage(tripPackageID: String): Flow<PagingData<Schedule>> {
+        return scheduleRepository.getSchedulesPagingFlowByTripPackage(tripPackageID)
+            .cachedIn(viewModelScope)
+    }
+
 }

@@ -10,5 +10,7 @@ class LocalFlightRepository @Inject constructor(private val flightDao: FlightDao
 
     suspend fun addOrUpdateFlight(flight: Flight) = flightDao.upsertFlight(flight)
     suspend fun deleteFlight(flight: Flight) = flightDao.deleteFlight(flight)
-    suspend fun getFlightById(id: String) = flightDao.getFlightById(id)
+    fun getFlightByID(id: String) = flightDao.getFlightByID(id)
+    fun getFlightIDByPlace(arrivalState: String, departState: String) =
+        flightDao.getFlightIDByPlace(arrivalState = arrivalState, departState = departState)
 }
