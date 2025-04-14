@@ -11,12 +11,13 @@ import kotlinx.coroutines.flow.Flow
 interface TripPackageDao {
     @Upsert()
     suspend fun upsertTrip(trip: TripPackage)
+
     @Delete
     suspend fun deleteTrip(trip: TripPackage)
 
-
     @Query("SELECT * FROM trip_package")
     fun getAllTrips(): Flow<List<TripPackage>>
+
     @Query("SELECT * FROM trip_package WHERE id = :id")
     suspend fun getTripById(id: String): TripPackage?
 }

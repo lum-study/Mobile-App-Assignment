@@ -1,0 +1,70 @@
+package com.bookblitzpremium.upcomingproject.data.database.local.viewmodel
+
+import android.database.sqlite.SQLiteException
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.Rating
+import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalHotelRepository
+import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalRatingRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class LocalRatingViewModel @Inject constructor(
+    private val ratingRepository: LocalRatingRepository,
+    private val hotelRepository: LocalHotelRepository
+) : ViewModel() {
+    val ratingList = ratingRepository.allRatings
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading.asStateFlow()
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+
+    fun addOrUpdateRating(rating: Rating) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+
+            val result = runCatching {
+                // Validate hotel exists
+                hotelRepository.getHotelById(rating.hotelID)
+                    ?: throw IllegalArgumentException("Invalid hotel ID")
+
+                ratingRepository.addOrUpdateRating(rating)
+            }
+            result.onFailure { e ->
+                _error.value = when (e) {
+                    is IllegalArgumentException -> e.message
+                    else -> "Failed to update rating"
+                }
+            }
+            _loading.value = false
+        }
+    }
+
+    fun deleteRating(rating: Rating) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+
+            try {
+                ratingRepository.deleteRating(rating)
+            } catch (e: SQLiteException) {
+                _error.value = "Database error: ${e.localizedMessage}"
+            } catch (e: Exception) {
+                _error.value = "Error deleting rating: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+}

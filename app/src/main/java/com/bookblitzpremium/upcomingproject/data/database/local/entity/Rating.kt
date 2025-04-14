@@ -6,33 +6,23 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.firebase.firestore.IgnoreExtraProperties
 
-
 @IgnoreExtraProperties
 @Entity(
-    tableName = "trip_package",
+    tableName = "rating",
     foreignKeys = [
         ForeignKey(
             entity = Hotel::class,
             parentColumns = ["id"],
             childColumns = ["hotelID"]
-        ),
-        ForeignKey(
-            entity = Flight::class,
-            parentColumns = ["id"],
-            childColumns = ["flightID"]
         )
     ],
-    indices = [Index(value = ["hotelID"]), Index(value = ["flightID"])]
+    indices = [Index(value = ["hotelID"])]
 )
-data class TripPackage(
+data class Rating(
     @PrimaryKey val id: String = "",
     val name: String = "",
-    val price: Double = 0.0,
-    val location: String = "",
     val description: String = "",
-    val slots: Int = 0,
-    val imageUrl: String = "",
+    val rating: Int = 0,
+    val icon: String = "",
     val hotelID: String = "",
-    val flightID: String = "",
-    val startDate: String = "",
 )
