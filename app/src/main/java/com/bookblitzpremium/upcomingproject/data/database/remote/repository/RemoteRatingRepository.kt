@@ -31,9 +31,14 @@ class RemoteRatingRepository @Inject constructor(private val firestore: Firebase
         ratingRef.document(id).delete().await()
     }
 
-    suspend fun getRatingById(ratingID: String): Rating? {
+    suspend fun getRatingByID(ratingID: String): Rating? {
         require(ratingID.isNotEmpty()) { "Rating ID cannot be empty" }
         return ratingRef.document(ratingID).get().await().toObject(Rating::class.java)
     }
 
+    suspend fun getRatingByHotelID(hotelID: String): List<Rating> {
+        require(hotelID.isNotEmpty()) { "Hotel ID cannot be empty" }
+        return ratingRef.whereEqualTo("hotelID", hotelID).get().await()
+            .toObjects(Rating::class.java)
+    }
 }

@@ -90,4 +90,31 @@ class RemoteTripPackageViewModel @Inject constructor(private val remoteTripPacka
         }
     }
 
+    fun filteredPackage(
+        input: String,
+        startPrice: Double = 0.0,
+        endPrice: Double = 0.0,
+        flightID: String = "",
+        startDate: String = "",
+        endDate: String = ""
+    ): List<TripPackage> {
+        return _packages.value.filter { tripPackage ->
+            val matchesText = input.isEmpty() ||
+                    tripPackage.name.contains(input, ignoreCase = true) ||
+                    tripPackage.description.contains(input, ignoreCase = true) ||
+                    tripPackage.location.contains(input, ignoreCase = true)
+
+            val matchesPrice = tripPackage.price in startPrice..endPrice
+
+            val matchDate = tripPackage.startDate in startDate..endDate
+
+            matchesText && matchesPrice && matchDate
+        }.sortedWith(
+            compareBy(
+                { it.price },
+                { if (startDate != "") it.startDate else null },
+                { it.name }
+            )
+        )
+    }
 }

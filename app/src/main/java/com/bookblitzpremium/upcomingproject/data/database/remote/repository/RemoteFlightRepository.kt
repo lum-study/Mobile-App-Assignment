@@ -31,7 +31,7 @@ class RemoteFlightRepository @Inject constructor(private val firestore: Firebase
         flightRef.document(id).delete().await()
     }
 
-    suspend fun getFlightById(flightID: String): Flight? {
+    suspend fun getFlightByID(flightID: String): Flight? {
         require(flightID.isNotEmpty()) { "Flight ID cannot be empty" }
         return flightRef.document(flightID).get().await().toObject(Flight::class.java)
     }

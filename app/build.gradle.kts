@@ -101,6 +101,8 @@ dependencies {
     testImplementation("androidx.room:room-testing:2.6.1")
     androidTestImplementation("androidx.room:room-testing:2.6.1")
     implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation (libs.androidx.paging.compose)
+    implementation(libs.androidx.room.paging)
 
     //hilt
     implementation(libs.hilt.android)

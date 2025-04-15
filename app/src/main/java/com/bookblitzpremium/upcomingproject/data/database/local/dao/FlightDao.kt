@@ -19,5 +19,8 @@ interface FlightDao {
     fun getAllFlights(): Flow<List<Flight>>
 
     @Query("SELECT * FROM flight WHERE id = :id")
-    suspend fun getFlightById(id: String): Flight?
+    fun getFlightByID(id: String): Flight?
+
+    @Query("SELECT id FROM flight WHERE arrivalState = :arrivalState AND departState = :departState")
+    fun getFlightIDByPlace(arrivalState: String, departState: String): List<String>
 }

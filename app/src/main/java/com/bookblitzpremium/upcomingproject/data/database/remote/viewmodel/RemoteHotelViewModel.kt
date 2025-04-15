@@ -90,4 +90,35 @@ class RemoteHotelViewModel @Inject constructor(private val remoteHotelRepository
         }
     }
 
+    fun filteredHotel(
+        input: String,
+        rating: Double = 0.0,
+        startPrice: Double = 0.0,
+        endPrice: Double = 0.0,
+        feature1: String = "",
+        feature2: String = ""
+    ): List<Hotel> {
+        return _hotel.value.filter { hotel ->
+            val matchesText = input.isEmpty() ||
+                    hotel.name.contains(input, ignoreCase = true) ||
+                    hotel.address.contains(input, ignoreCase = true)
+
+            val matchesRating = rating == 0.0 || hotel.rating >= rating
+
+            val matchesPrice = hotel.price in startPrice..endPrice
+
+            val matchesFeature1 = feature1.isEmpty() ||
+                    hotel.feature.contains(feature1)
+            val matchesFeature2 = feature2.isEmpty() ||
+                    hotel.feature.contains(feature2)
+
+            matchesText && matchesRating && matchesPrice && matchesFeature1 && matchesFeature2
+        }.sortedWith(
+            compareBy(
+                { it.price },
+                { if (rating != 0.0) it.rating else null },
+                { it.name }
+            )
+        )
+    }
 }

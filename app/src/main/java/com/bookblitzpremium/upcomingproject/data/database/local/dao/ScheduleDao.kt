@@ -1,11 +1,11 @@
 package com.bookblitzpremium.upcomingproject.data.database.local.dao
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Query
 import androidx.room.Upsert
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Schedule
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ScheduleDao {
@@ -15,9 +15,6 @@ interface ScheduleDao {
     @Delete
     suspend fun deleteSchedule(schedule: Schedule)
 
-    @Query("SELECT * FROM schedule")
-    fun getAllSchedules(): Flow<List<Schedule>>
-
-    @Query("SELECT * FROM schedule WHERE id = :id")
-    suspend fun getScheduleById(id: String): Schedule?
+    @Query("SELECT * FROM schedule WHERE tripPackageID = :tripPackageID")
+    fun getSchedulesByTripPackageID(tripPackageID: String): PagingSource<Int, Schedule>
 }

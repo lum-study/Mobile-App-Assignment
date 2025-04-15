@@ -3,23 +3,21 @@ package com.bookblitzpremium.upcomingproject.data.database.local.viewmodel
 import android.database.sqlite.SQLiteException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalHotelRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class LocalHotelViewModel @Inject constructor(private val hotelRepository: LocalHotelRepository) :
     ViewModel() {
-    val hotelList = hotelRepository.allHotels
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading.asStateFlow()
 
@@ -59,4 +57,28 @@ class LocalHotelViewModel @Inject constructor(private val hotelRepository: Local
             }
         }
     }
+
+    fun filterHotel(
+        input: String,
+        rating: Double = 0.0,
+        startPrice: Double = 0.0,
+        endPrice: Double = 0.0,
+        feature1: String = "",
+        feature2: String = ""
+    ): Flow<PagingData<Hotel>> {
+        return hotelRepository.getFilteredHotelsPagingFlow(
+            input = input,
+            rating = rating,
+            startPrice = startPrice,
+            endPrice = endPrice,
+            feature1 = feature1,
+            feature2 = feature2
+        ).cachedIn(viewModelScope)
+    }
+
+    fun getAllHotelsPagingFlow(): Flow<PagingData<Hotel>> {
+        return hotelRepository.getHotelsPagingFlow()
+            .cachedIn(viewModelScope)
+    }
+
 }

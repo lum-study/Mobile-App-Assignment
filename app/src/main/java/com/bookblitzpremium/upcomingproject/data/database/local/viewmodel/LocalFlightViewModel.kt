@@ -59,4 +59,16 @@ class LocalFlightViewModel @Inject constructor(private val flightRepository: Loc
             }
         }
     }
+
+    fun getFlightByID(id: String): Flight? {
+        return flightRepository.getFlightByID(id)
+    }
+
+    fun getFlightIDByPlace(
+        arrivalState: String, departState: String
+    ): List<String> {
+        return flightRepository.getFlightIDByPlace(
+            arrivalState = arrivalState, departState = departState
+        )
+    }
 }
