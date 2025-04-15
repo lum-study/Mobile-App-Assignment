@@ -5,6 +5,7 @@ import com.bookblitzpremium.upcomingproject.data.database.local.entity.TripPacka
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
+
 class TripPackageRepository @Inject constructor(private val tripPackageDao: TripPackageDao) {
     val allTrips: Flow<List<TripPackage>> = tripPackageDao.getAllTrips()
 
@@ -13,3 +14,5 @@ class TripPackageRepository @Inject constructor(private val tripPackageDao: Trip
     suspend fun delete(trip: TripPackage) = tripPackageDao.deleteTrip(trip)
     suspend fun getTripById(id: String) = tripPackageDao.getTripById(id)
 }
+
+

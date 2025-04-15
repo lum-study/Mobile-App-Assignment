@@ -1,6 +1,14 @@
 package com.bookblitzpremium.upcomingproject.ui.components
 
+import android.Manifest
+import android.app.Activity
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
+import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,6 +25,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
@@ -30,8 +39,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -44,9 +55,17 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.bookblitzpremium.upcomingproject.MainActivity
+import com.bookblitzpremium.upcomingproject.MyApplication.Companion.CHANNEL_ID
 import com.bookblitzpremium.upcomingproject.R
-import com.bookblitzpremium.upcomingproject.ViewModel.UserLogin
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.UserLogin
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 
 val videoUri = Uri.parse("android.resource://com.bookblitzpremium.upcomingproject/raw/entry_video")
@@ -55,13 +74,15 @@ val videoUri = Uri.parse("android.resource://com.bookblitzpremium.upcomingprojec
 @Composable
 fun PreviewDialog(){
 //    HotelFullNotication()
+
+     val navContoller = rememberNavController()
     CustomDialog(onDismissRequest = {}, onNextClick = {})
 }
 
 @Composable
 fun CustomDialog(
     onDismissRequest: () -> Unit,
-    onNextClick: () -> Unit
+    onNextClick: () -> Unit,
 ) {
     Dialog(
         onDismissRequest = { onDismissRequest() }
@@ -69,8 +90,11 @@ fun CustomDialog(
         Column(
             modifier = Modifier
                 .height(450.dp)
-                .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(16.dp))
-                .background(Color.White), // Make sure to set a background inside Dialog
+                .width(300.dp) // optional: define width for better shape
+                .clip(RoundedCornerShape(16.dp)) // apply rounded corners
+                .background(Color.White) // inner background
+                .border(2.dp, Color.Black, RoundedCornerShape(16.dp))
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
             ,horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -94,13 +118,14 @@ fun CustomDialog(
 
             Spacer(modifier = Modifier.weight(1f))
 
-//            ButtonHeader(
-//                textResId = R.string.next_button,
-//                valueHorizontal = 16.dp,
-//                userLogin = UserLogin(),
-//                email = email,
-//                password = password
-//            )
+            ButtonHeader(
+                textResId = R.string.next_button,
+                valueHorizontal = 16.dp,
+                userFunction = {
+                    onNextClick()
+                }
+            )
+
         }
     }
 }
@@ -199,13 +224,11 @@ fun LineOver() {
 fun ButtonHeader(
     textResId: Int,
     valueHorizontal: Dp,
-    userFunction: () -> Unit,
-    navigationPage: () -> Unit
+    userFunction: () -> Unit
 ){
     Button(
         onClick = {
             userFunction()
-            navigationPage()
         },
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Black, // Background color
@@ -222,6 +245,34 @@ fun ButtonHeader(
         )
     }
 }
+
+
+fun showNotification(context: Context, otpCode: String) {
+    val intent = Intent(context, MainActivity::class.java).apply {
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+    }
+
+    val pendingIntent = PendingIntent.getActivity(
+        context, 0, intent, PendingIntent.FLAG_IMMUTABLE
+    )
+
+    val fullScreenPendingIntent = PendingIntent.getActivity(
+        context, 0, intent, PendingIntent.FLAG_IMMUTABLE
+    )
+
+    val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+        .setSmallIcon(R.drawable.logo2)
+        .setContentTitle("OTP Code")
+        .setContentText(otpCode)
+        .setPriority(NotificationCompat.PRIORITY_HIGH)
+        .setContentIntent(pendingIntent)
+        .setAutoCancel(true)
+        .setFullScreenIntent(fullScreenPendingIntent, true)
+
+    NotificationManagerCompat.from(context).notify(1001, builder.build())
+}
+
+
 
 @Composable
 fun ClickableFun(

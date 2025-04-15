@@ -1,13 +1,18 @@
 package com.bookblitzpremium.upcomingproject.ui.screen
 
-import androidx.annotation.StringRes
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -16,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.R
-import com.bookblitzpremium.upcomingproject.ui.screen.NewsItem
 
 
 data class NewsItem(
@@ -28,7 +32,6 @@ data class NewsItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    navController: NavController
 ) {
     // Sample news items (replace with real data from your repository)
     val newsItems = listOf(
@@ -107,47 +110,92 @@ fun HomeScreen(
     }
 }
 
+
 @Composable
 fun NewsItemCard(newsItem: NewsItem) {
-    Card(
+
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .fillMaxSize()
+            .padding(16.dp)
+            .background(Color(0xFFF5F5F5)) // Light gray background
     ) {
-        Column {
-            // Image
-            Image(
-                painter = painterResource(id = newsItem.imageResId),
-                contentDescription = newsItem.title,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-                contentScale = ContentScale.Crop
-            )
-            // Title and Timestamp
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = newsItem.title,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
-                    ),
-                    color = MaterialTheme.colorScheme.onBackground
+        // Airplane Image
+        Image(
+            painter = painterResource(id = newsItem.imageResId), // Add this image
+            contentDescription = "Airplane",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .clip(RoundedCornerShape(16.dp))
+                ,
+            contentScale = ContentScale.Crop
+        )
+
+        // Edit Button
+        Button(
+            onClick = {
+                // TODO: Handle edit action (e.g., open an image picker)
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            shape = CircleShape,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.White,
+                contentColor = Color.Black
+            ),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Text(
+                text = "Edit",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
                 )
-                if (newsItem.timestamp.isNotEmpty()) {
-                    Text(
-                        text = newsItem.timestamp,
-                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 14.sp),
-                        color = Color.Gray,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-            }
+            )
         }
     }
+
+//    Card(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(horizontal = 16.dp),
+//        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+//    ) {
+//        Column {
+//            // Image
+//            Image(
+//                painter = painterResource(id = newsItem.imageResId),
+//                contentDescription = newsItem.title,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(200.dp),
+//                contentScale = ContentScale.Crop
+//            )
+//            // Title and Timestamp
+//            Column(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(16.dp)
+//            ) {
+//                Text(
+//                    text = newsItem.title,
+//                    style = MaterialTheme.typography.titleMedium.copy(
+//                        fontWeight = FontWeight.Bold,
+//                        fontSize = 18.sp
+//                    ),
+//                    color = MaterialTheme.colorScheme.onBackground
+//                )
+//                if (newsItem.timestamp.isNotEmpty()) {
+//                    Text(
+//                        text = newsItem.timestamp,
+//                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 14.sp),
+//                        color = Color.Gray,
+//                        modifier = Modifier.padding(top = 4.dp)
+//                    )
+//                }
+//            }
+//        }
+//    }
 }
