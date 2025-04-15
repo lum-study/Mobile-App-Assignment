@@ -14,25 +14,39 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.R
-import com.bookblitzpremium.upcomingproject.ViewModel.UserLogin
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.UserLogin
 import com.bookblitzpremium.upcomingproject.ui.components.ButtonHeader
+import com.bookblitzpremium.upcomingproject.ui.components.CustomDialog
 import com.bookblitzpremium.upcomingproject.ui.components.TextEmailSent
 import com.bookblitzpremium.upcomingproject.ui.components.TextHeader
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewForgetPassword() {
+    val navController = rememberNavController()
     ForgetPassword(
         showToggleToTablet = false, // Example value
-        onNextButtonClicked = {} // Empty lambda for preview
+        onNextButtonClicked = {} ,
+        viewModel = viewModel(),
+        navController = navController
     )
 }
 
@@ -40,36 +54,22 @@ fun PreviewForgetPassword() {
 @Composable
 fun ForgetPassword(
     showToggleToTablet: Boolean,
-    onNextButtonClicked: () -> Unit
+    onNextButtonClicked: () -> Unit,
+    viewModel: UserLogin,
+    navController: NavController
 ){
     val valueHorizontal = if (showToggleToTablet) 46.dp else 16.dp
     val maxSizeAvailable = if (showToggleToTablet) 0.4f else 1f
     val offsetValueX = if (showToggleToTablet) 620.dp else 0.dp
     val offsetValueY = if (showToggleToTablet) 120.dp else 200.dp
 
+    var emails by rememberSaveable { mutableStateOf("") }
+    var showDialog by rememberSaveable { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-//            .background(
-//                brush = Brush.verticalGradient(
-//                    colors = listOf(
-//                        Color(0xFFFFF9E5), // Light yellow
-//                        Color(0xFFE6F0FA)  // Light blue
-//                    )
-//                )
-//            )
     ) {
-
-
-
-
-
-//        VideoPlayer(
-//            videoUri = videoUri,
-//            modifier = Modifier
-//                .fillMaxSize()
-//
-//        )
 
         Column(
             modifier = Modifier
@@ -81,15 +81,6 @@ fun ForgetPassword(
             verticalArrangement = Arrangement.Center // Center content vertically
         ) {
 
-//            Image(
-//                painter = painterResource(id = R.drawable.forget_password),
-//                contentDescription = "Illustration",
-//                modifier = Modifier
-//                    .height(300.dp)
-//                    .width(380.dp)
-//                    .offset(x = -12.dp)
-//            )
-
             TextHeader( stringResource(R.string.forget_password) )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -99,8 +90,8 @@ fun ForgetPassword(
             Spacer(modifier = Modifier.height(16.dp))
 
             CustomTextField(
-                value = "",
-                onValueChange = { },
+                value = emails,
+                onValueChange = { emails = it },
                 label = "Enter",
                 placeholder = "Enter your Emails",
                 leadingIcon = Icons.Default.Email,
@@ -113,26 +104,24 @@ fun ForgetPassword(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-//            ButtonHeader( textResId = R.string.login , valueHorizontal )
+            ButtonHeader(
+                textResId = R.string.login,
+                valueHorizontal = valueHorizontal,
+                userFunction = {
+                    showDialog = true
+                }
+            )
 
-//            Spacer(modifier = Modifier.height(30.dp))
+            if (showDialog) {
 
-//            Divider(color = Color.Gray, thickness = 1.dp)
+                viewModel.sendEmailToChangePassword(emails)
 
-//            Text(
-//                text = "Or login with",
-//                style = AppTheme.typography.labelMedium,
-//                modifier = Modifier
-//                    .padding(vertical = 16.dp)
-//            )
+                CustomDialog(
+                    onDismissRequest = {  },
+                    onNextClick = { navController.navigate(AppScreen.Login.route) },
+                )
+            }
 
-//            ButtonHeader(
-//                R.string.login,
-//                valueHorizontal,
-//                UserLogin(),
-//                email,
-//                password
-//            )
         }
     }
 }

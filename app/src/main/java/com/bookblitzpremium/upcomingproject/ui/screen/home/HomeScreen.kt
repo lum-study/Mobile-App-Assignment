@@ -58,12 +58,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.UserLogin
 import com.bookblitzpremium.upcomingproject.model.Hotel
 import com.bookblitzpremium.upcomingproject.model.TripPackage
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
@@ -102,6 +105,7 @@ fun HomeScreen(navController: NavHostController) {
     )
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
+
     AppTheme {
         if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT) {
             Column(
@@ -110,6 +114,17 @@ fun HomeScreen(navController: NavHostController) {
                     .padding(end = 16.dp, bottom = 8.dp, start = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+
+                val viewModel = viewModel<UserLogin>()
+
+                Button(
+                    onClick = {
+                        viewModel.signout()
+                    }
+                ) {
+                    Text(text = "Sign Out")
+                    navController.navigate(AppScreen.Login.route)
+                }
 
                 GreetingProfile(username)
                 HorizontalDivider()
@@ -140,6 +155,9 @@ fun HomeScreen(navController: NavHostController) {
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.padding(16.dp)
                     ) {
+
+
+
                         GreetingProfile(username, Color.Black)
 
                         HorizontalDivider()
@@ -219,6 +237,9 @@ fun HomeScreen(navController: NavHostController) {
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.padding(16.dp)
                     ) {
+
+
+
                         GreetingProfile(username, Color.Black)
 
                         HorizontalDivider()
