@@ -24,15 +24,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.R
-import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.UserLogin
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.ButtonHeader
 import com.bookblitzpremium.upcomingproject.ui.components.CustomDialog
 import com.bookblitzpremium.upcomingproject.ui.components.TextEmailSent
@@ -55,7 +52,7 @@ fun PreviewForgetPassword() {
 fun ForgetPassword(
     showToggleToTablet: Boolean,
     onNextButtonClicked: () -> Unit,
-    viewModel: UserLogin,
+    viewModel: AuthViewModel,
     navController: NavController
 ){
     val valueHorizontal = if (showToggleToTablet) 46.dp else 16.dp
@@ -107,18 +104,18 @@ fun ForgetPassword(
             ButtonHeader(
                 textResId = R.string.login,
                 valueHorizontal = valueHorizontal,
-                userFunction = {
+                onClick = {
                     showDialog = true
                 }
             )
 
             if (showDialog) {
-
                 viewModel.sendEmailToChangePassword(emails)
-
                 CustomDialog(
                     onDismissRequest = {  },
-                    onNextClick = { navController.navigate(AppScreen.Login.route) },
+                    onNextClick = {
+                        onNextButtonClicked()
+                    }
                 )
             }
 

@@ -1,25 +1,16 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.auth
 
-import android.R
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,19 +24,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.model.OtpAction
 import com.bookblitzpremium.upcomingproject.data.model.OtpState
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.UserLogin
 import com.bookblitzpremium.upcomingproject.ui.RequestNotificationPermissions
-import com.bookblitzpremium.upcomingproject.ui.components.showNotification
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Preview(showBackground = true)
@@ -57,13 +46,13 @@ fun PreviewOtpScreen() {
     val state = OtpState()
 
     val focusRequesters = List(4) { FocusRequester() } // 6 focus requesters for the OTP fields
-    val viewModel = UserLogin() // You can mock your ViewModel or use a fake one for the preview
+    val userModel: AuthViewModel = hiltViewModel()
 
     OtpScreen(
         state = state,
         focusRequesters = focusRequesters,
         onAction = {},
-        viewModel = viewModel,
+        viewModel = userModel,
         navController = navController,
         modifier = Modifier
     )
@@ -75,7 +64,7 @@ fun PreviewOtpScreen() {
 fun OtpScreen(
     state: OtpState,
     focusRequesters: List<FocusRequester>,
-    viewModel: UserLogin,
+    viewModel: AuthViewModel,
     onAction: (OtpAction) -> Unit,
     navController: NavController,
     modifier: Modifier = Modifier
@@ -108,7 +97,6 @@ fun OtpScreen(
                     onFocusChanged = { if (it) onAction(OtpAction.OnChangeFieldFocused(index)) },
                     onNumberChanged = { newNumber -> onAction(OtpAction.OnEnterNumber(newNumber, index)) },
                     onKeyboardBack = { onAction(OtpAction.OnKeyboardBack) },
-                    modifier = Modifier.size(70.dp)
                 )
             }
         }

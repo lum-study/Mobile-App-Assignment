@@ -6,31 +6,28 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import androidx.annotation.RequiresApi
+import com.bookblitzpremium.upcomingproject.ui.components.NOTICATION_CHANNEL_ID
+import com.bookblitzpremium.upcomingproject.ui.components.NOTICATION_CHANNEL_NAME
 import dagger.hilt.android.HiltAndroidApp
 
 
 @HiltAndroidApp
-class MyApplication :  Application(){
+class MyApplication :Application(){
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
         super.onCreate()
-        createNotificationChannel()
-    }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = getString(R.string.channel_name) // 🔸 You must have this in your `strings.xml`
-            val descriptionText = getString(R.string.channel_description)
-            val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
-                description = descriptionText
-            }
+        val notificationManager : NotificationManager =
+            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
+        val notificationChannel = NotificationChannel(
+            NOTICATION_CHANNEL_ID,
+            NOTICATION_CHANNEL_NAME,
+            NotificationManager.IMPORTANCE_HIGH,
 
-    companion object {
-        const val CHANNEL_ID = "my_channel_id"
+            )
+
+        notificationManager.createNotificationChannel(notificationChannel)
     }
 }

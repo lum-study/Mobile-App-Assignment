@@ -1,72 +1,49 @@
 package com.bookblitzpremium.upcomingproject
 
-import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Card
+import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.Alignment
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import coil.compose.AsyncImage
-import com.bookblitzpremium.upcomingproject.MyApplication.Companion.CHANNEL_ID
-import com.bookblitzpremium.upcomingproject.ViewModel.RemoteDatabase
-import com.bookblitzpremium.upcomingproject.ViewModel.User2
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
-import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotels
-import com.bookblitzpremium.upcomingproject.data.database.local.entity.Response
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.HotelViewModel
-import com.bookblitzpremium.upcomingproject.di.HotelModule
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.ui.navigation.AppNavigation
-import com.bookblitzpremium.upcomingproject.ui.screen.HomeScreen
-import com.bookblitzpremium.upcomingproject.ui.screen.InvoiceScreen
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.google.firebase.FirebaseApp
 import dagger.hilt.android.AndroidEntryPoint
@@ -93,6 +70,8 @@ class MainActivity : ComponentActivity() {
             AppTheme{
                 App()
 //                InvoiceScreen()
+//                MainApp()
+//                Heelo()
             }
         }
     }
@@ -185,27 +164,99 @@ fun TitleBar(
     )
 }
 
-
-
-
-
-
 @Composable
-fun UserListScreen() {
-    val users = remember { mutableStateListOf<User2>() }
+fun HomeScreen(
+    onLogout: () -> Unit,
+    viewModel: AuthViewModel = hiltViewModel()
+) {
+    val user by viewModel.userDetails.collectAsState() // Fixed typo
 
-    val callViewModel = viewModel<RemoteDatabase>()
-
-    LaunchedEffect(true) {
-        callViewModel.readUsersFromDatabase {
-            users.clear()
-            users.addAll(it)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        if (user != null) { // Now correctly checks user.value
+            Text("Welcome, ${user?.displayName ?: "User"}!")
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Email: ${user?.email ?: "N/A"}")
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("UID: ${user?.uid}")
+            Spacer(modifier = Modifier.height(16.dp))
+            if (user?.isEmailVerified == false) {
+                Text("Please verify your email.")
+            }
+        } else {
+            Text("No user data available.")
         }
-    }
 
-    LazyColumn {
-        items(users) { user ->
-            Text(text = "${user.name} - ${user.course} - Age: ${user.age}")
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = onLogout) {
+            Text("Logout")
         }
     }
 }
+
+
+@Composable
+fun Heelo(){
+    Text(text = "dfgffhgf")
+}
+
+//@Composable
+//fun MainApp() {
+//    val navController = rememberNavController()
+//    val authViewModel: UserLogin = hiltViewModel()
+//
+//    // Observe navigation commands from AuthViewModel
+//    val navigationCommand by authViewModel.navigationCommand.collectAsState()
+//
+//    LaunchedEffect(navigationCommand) {
+//        navigationCommand?.let { destination ->
+//            Log.d("MainApp", "Navigating to $destination")
+//            navController.navigate(destination) {
+//                popUpTo(navController.graph.startDestinationId) {
+//                    inclusive = true
+//                }
+//                launchSingleTop = true
+//            }
+//            authViewModel.clearNavigationCommand()
+//        }
+//    }
+//
+//    NavHost(navController = navController, startDestination = AppScreen.AuthGraph.route) {
+//        authNavGraph(navController, authViewModel)
+//        homeNavGraph(navController, authViewModel)
+//    }
+//}
+//
+//fun NavGraphBuilder.authNavGraph(navController: NavController, authViewModel: UserLogin) {
+//    navigation(startDestination = AppScreen.Login.route, route = AppScreen.AuthGraph.route) {
+//        composable(AppScreen.Login.route) {
+//            Log.d("Navigation", "Navigating to LoginPage")
+//            LoginPage(
+//                showToggleToTablet = false,
+//                navController = navController,
+//                viewModel = authViewModel
+//            )
+//        }
+//        // Other routes like Register, OTP...
+//    }
+//}
+//
+//fun NavGraphBuilder.homeNavGraph(navController: NavController, authViewModel: UserLogin) {
+//    navigation(startDestination = AppScreen.Home.route, route = AppScreen.HomeGraph.route) {
+//        composable(AppScreen.Home.route) {
+//            Log.d("Navigation", "Navigating to HomeGraph")
+//            HomeScreen(
+//                onLogout = {
+//                    Log.d("Navigation", "Logging out, navigating to LoginPage")
+//                    authViewModel.signOut()
+//                }
+//            )
+//        }
+//    }
+//}

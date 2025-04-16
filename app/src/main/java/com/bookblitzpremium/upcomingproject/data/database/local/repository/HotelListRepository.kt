@@ -9,7 +9,7 @@ typealias AddHotelResponse = Response<Unit>
 typealias UpdateHotelResponse = Response<Unit>
 typealias DeleteHotelResponse = Response<Unit>
 
-interface HotelListRepository {
-    fun getHotelList(): Flow<HotelListResponse>
-
-}
+//interface HotelListRepository {
+//    fun getHotelList(): Flow<HotelListResponse>
+//
+//}

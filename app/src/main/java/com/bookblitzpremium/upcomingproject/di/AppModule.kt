@@ -1,7 +1,6 @@
 package com.bookblitzpremium.upcomingproject.di
 
-import com.bookblitzpremium.upcomingproject.data.database.local.RespositoryIml.FakeHotelListRepository
-import com.bookblitzpremium.upcomingproject.data.database.local.repository.HotelListRepository
+import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -10,10 +9,11 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object HotelModule {
+object AppModule {
+
     @Provides
     @Singleton
-    fun provideHotelListRepository(): HotelListRepository {
-        return FakeHotelListRepository()
+    fun provideFirebaseAuth(): FirebaseAuth {
+        return FirebaseAuth.getInstance()
     }
 }

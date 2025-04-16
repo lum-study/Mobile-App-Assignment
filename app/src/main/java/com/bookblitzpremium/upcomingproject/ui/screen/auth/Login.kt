@@ -18,14 +18,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -33,70 +32,95 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.util.Log
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.R
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.UserLogin
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.model.AuthState
-import com.bookblitzpremium.upcomingproject.ui.RequestNotificationPermissions
 import com.bookblitzpremium.upcomingproject.ui.components.ButtonHeader
-import com.bookblitzpremium.upcomingproject.ui.components.CustomDialog
+import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
+import com.bookblitzpremium.upcomingproject.ui.components.CustomTextFieldPassword
 import com.bookblitzpremium.upcomingproject.ui.components.SignInWithGoogle
-import com.bookblitzpremium.upcomingproject.ui.components.showNotification
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
-import kotlinx.coroutines.flow.StateFlow
 
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-fun LoginPage(showToggleToTablet: Boolean ,onNextButtonClicked: () -> Unit, navController: NavController,viewModel: UserLogin){
-
-    val valueHorizontal = if (showToggleToTablet) 46.dp else 16.dp
-    val offsetValueX = if (showToggleToTablet) 620.dp else 0.dp
-    val maxSizeAvailable = if (showToggleToTablet) 0.4f else 1f
-
+fun LoginPage(
+    showToggleToTablet: Boolean,
+    navController: NavController,
+    viewModel: AuthViewModel
+) {
+    val valueHorizontal: Dp = if (showToggleToTablet) 46.dp else 16.dp
+    val offsetValueX: Dp = if (showToggleToTablet) 620.dp else 0.dp
+    val maxSizeAvailable: Float = if (showToggleToTablet) 0.4f else 1f
 
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     val authState by viewModel.authState.collectAsState()
     val context = LocalContext.current
 
-//    var showDialog by remember { mutableStateOf(false) }
+    // Show error message if authState is Error
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Error) {
+            val errorMessage = (authState as AuthState.Error).message
+            Log.d("LoginPage", "authState is Error: $errorMessage")
+            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    //validation
+    fun getPasswordErrorMessage(password: String): String? {
+        if (password.length < 8) {
+            return "Password must be at least 8 characters long"
+        }
+        if (!password.contains(Regex(".*[A-Z].*[A-Z].*"))) {
+            return "Password must contain at least 2 uppercase letters"
+        }
+        if (!password.contains(Regex(".*[!@#$&*].*"))) {
+            return "Password must contain at least 1 special character (!@#$&*)"
+        }
+        if (!password.contains(Regex(".*[0-9].*[0-9].*"))) {
+            return "Password must contain at least 2 digits"
+        }
+        if (!password.contains(Regex(".*[a-z].*[a-z].*[a-z].*"))) {
+            return "Password must contain at least 3 lowercase letters"
+        }
+        return null
+    }
+
+
+    fun isFormValid(): Boolean {
+        if (email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(context, "Please enter a valid email address", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        getPasswordErrorMessage(password)?.let { errorMessage ->
+            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        return true
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-//            .background(
-//                brush = Brush.verticalGradient(
-//                    colors = listOf(
-//                        Color(0xFFFFF9E5), // Light yellow
-//                        Color(0xFFE6F0FA)  // Light blue
-//                    )
-//                )
-//            )
     ) {
-
-//        VideoPlayer(
-//            videoUri = videoUri,
-//            modifier = Modifier
-//                .fillMaxSize()
-//
-//        )
-
-
         Column(
             modifier = Modifier
                 .fillMaxHeight()
-                .fillMaxWidth(maxSizeAvailable) // 40% width for a "column" effect
-                .padding(horizontal = 28.dp,)
+                .fillMaxWidth(maxSizeAvailable)
+                .padding(horizontal = 28.dp)
                 .offset(x = offsetValueX),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center // Center content vertically
-        ){
-
+            verticalArrangement = Arrangement.Center
+        ) {
             Text(
                 text = "Welcome Back!",
                 style = AppTheme.typography.largeBold,
@@ -119,17 +143,15 @@ fun LoginPage(showToggleToTablet: Boolean ,onNextButtonClicked: () -> Unit, navC
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            CustomTextField(
+            CustomTextFieldPassword(
                 value = password,
-                onValueChange = {  password = it },
+                onValueChange = { password = it },
                 label = "Password",
                 placeholder = "Enter your Password",
                 leadingIcon = Icons.Default.Lock,
-                trailingIcon = Icons.Default.Clear,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = valueHorizontal, vertical = 16.dp)
-
             )
 
             Text(
@@ -140,49 +162,35 @@ fun LoginPage(showToggleToTablet: Boolean ,onNextButtonClicked: () -> Unit, navC
                     .align(Alignment.End)
                     .padding(start = valueHorizontal, top = 0.dp)
                     .clickable {
-                        navController.navigate(AppScreen.OTP.route)
+                        Log.e("Navigation", "Navigating to OTP screen")
+                        navController.navigate(AppScreen.OTP.route) {
+                            launchSingleTop = true
+                        }
                     }
             )
 
             Column(
-               verticalArrangement = Arrangement.spacedBy(10.dp)
-               , modifier = Modifier
-                   .padding(top = 40.dp)
-           ){
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.padding(top = 40.dp)
+            ) {
+                ButtonHeader(
+                    textResId = R.string.login,
+                    valueHorizontal = valueHorizontal,
+                    onClick = {
+                        if(isFormValid()){
+                            viewModel.login(email, password)
+                        }
+                    }
+                )
 
-               ButtonHeader(
-                   textResId = R.string.login,
-                   valueHorizontal = valueHorizontal,
-                   userFunction = {
-                       viewModel.login(email,password)
-                   }
-               )
-
-LaunchedEffect(authState) {
-    if (authState is AuthState.Authenticated) {
-        navController.navigate(AppScreen.Home.route)
-    }
-}
-
-
-
-
-//               if (showDialog) {
-//                   CustomDialog(
-//                       onDismissRequest = { showDialog = false },
-//                       onNextClick = { showDialog = false /* or navigate elsewhere */ }
-//                   )
-//               }
-
-               if (authState is AuthState.Error) {
-                   val errorMessage = (authState as AuthState.Error).message
-                   LaunchedEffect(errorMessage) {
-                       Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
-                       viewModel.signout()  // optional: reset the error state
-                   }
-               }
-
-                SignInWithGoogle(valueHorizontal, UserLogin(),email, password)
+                if (authState !is AuthState.Authenticated) {
+                    SignInWithGoogle(
+                        valueHorizontal = valueHorizontal,
+                        viewModel = viewModel,
+                        email = email,
+                        password = password
+                    )
+                }
 
                 Text(
                     text = stringResource(R.string.register_account),
@@ -192,13 +200,20 @@ LaunchedEffect(authState) {
                         .align(Alignment.Start)
                         .padding(start = valueHorizontal, top = 30.dp)
                         .clickable {
+                            Log.d("Navigation", "Navigating to Register screen")
                             navController.navigate(AppScreen.Register.route)
                         }
                 )
-           }
+            }
         }
+
+        CheckStatusLoading(
+            isLoading = authState is AuthState.Loading,
+            backgroundAlpha = 0.5f,
+            indicatorColor = MaterialTheme.colorScheme.primary,
+        )
+
     }
 }
-
 
 //if enter more than three times assume forget passwrod pop up forget passwrpd

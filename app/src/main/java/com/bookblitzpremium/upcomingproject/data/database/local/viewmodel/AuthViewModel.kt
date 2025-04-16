@@ -26,7 +26,7 @@ import kotlin.collections.mapIndexed
 
 
 @HiltViewModel
-class UserModel @Inject constructor(
+class AuthViewModel @Inject constructor(
     private val auth: FirebaseAuth
 ): ViewModel(){
 
