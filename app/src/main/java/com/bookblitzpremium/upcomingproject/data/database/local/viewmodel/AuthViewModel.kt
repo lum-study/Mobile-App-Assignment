@@ -1,135 +1,121 @@
 package com.bookblitzpremium.upcomingproject.data.database.local.viewmodel
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
-import android.credentials.GetCredentialException
-import android.net.Uri
-import android.os.Build
 import android.util.Log
-import androidx.compose.material3.Icon
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.core.content.ContextCompat.getString
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bookblitzpremium.upcomingproject.MainActivity
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.model.OtpAction
 import com.bookblitzpremium.upcomingproject.data.model.OtpState
 import com.bookblitzpremium.upcomingproject.data.model.AuthState
-import com.bookblitzpremium.upcomingproject.ui.components.showNotification
+import com.bookblitzpremium.upcomingproject.data.model.SignupState
+import com.bookblitzpremium.upcomingproject.data.model.User
+import com.bookblitzpremium.upcomingproject.ui.components.NotificationService
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 import kotlin.collections.getOrNull
 import kotlin.collections.mapIndexed
-import kotlin.jvm.java
 
-class UserLogin: ViewModel() {
 
-    private val auth : FirebaseAuth = FirebaseAuth.getInstance()
+@HiltViewModel
+class UserModel @Inject constructor(
+    private val auth: FirebaseAuth
+): ViewModel(){
 
-    private val _authState = MutableStateFlow<AuthState>(AuthState.Unauthenticated)
-    val authState: StateFlow<AuthState> = _authState.asStateFlow()
-
-    // Define a StateFlow for countError to be reactive
+    //count the fail time
     private val _countError = MutableStateFlow(0) // Use MutableStateFlow here
-
     var countError: StateFlow<Int> = _countError // Expose it as StateFlow
-
-    init {
-        ChangeState2()
-        checkAuthStatus()
-    }
-
-    fun checkAuthStatus(){
-        if(auth.currentUser==null){
-            _authState.value = AuthState.Unauthenticated
-        }else{
-            _authState.value = AuthState.Authenticated
-        }
-    }
-
-    fun VerifyEmpty(email: String, password: String): Boolean {
-        return when {
-            email.isEmpty() -> {
-                _authState.value = AuthState.Error("Email can't be empty")
-                false
-            }
-            password.isEmpty() -> {
-                _authState.value = AuthState.Error("Password can't be empty")
-                false
-            }
-            else -> true
-        }
-    }
-
-    fun login(email: String, password: String){
-
-        if (!VerifyEmpty(email, password)) return
-
-        _authState.value = AuthState.Loading
-        auth.signInWithEmailAndPassword(email,password)
-            .addOnCompleteListener{task->   //return the complete task
-                if (task.isSuccessful){
-                    _authState.value = AuthState.Authenticated
-                    ChangeState()
-                }else{
-                    _authState.value = AuthState.Error(task.exception?.message?:"Something went wrong")
-                    _countError.value++
-                }
-            }
-    }
 
     fun updateErrorToZero(){
         _countError.update { 0 }
     }
 
-    fun ChangeState2() {
-        _authState.update {
-            AuthState.Unauthenticated
+    init {
+        viewModelScope.launch {
+            checkAuthStatus()
         }
     }
 
-    fun ChangeState() {
-        _authState.update {
-            AuthState.Yes
-        }
-    }
+    //firebase
+    private val _authState = MutableStateFlow<AuthState>(AuthState.Unauthenticated)
+    val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
-    fun signup(email : String,password : String){
+    // Navigation command
+    private val _navigationCommand = MutableStateFlow<String?>(null)
+    val navigationCommand: StateFlow<String?> = _navigationCommand.asStateFlow()
 
-        if (!VerifyEmpty(email, password)) return
+    //Sign up
+    private val _signupState = MutableStateFlow<SignupState>(SignupState.Idle)
+    val signupState: StateFlow<SignupState> = _signupState.asStateFlow()
 
-        _authState.value = AuthState.Loading
-        auth.createUserWithEmailAndPassword(email,password)
-            .addOnCompleteListener{task->
-                if (task.isSuccessful){
-                    _authState.value = AuthState.Authenticated
-                }else{
-                    _authState.value = AuthState.Error(task.exception?.message?:"Something went wrong")
-                }
-            }
-    }
-
-    fun signout(){
-        auth.signOut()
-        _authState.value = AuthState.Unauthenticated
-    }
-
+    //OTP
     private val _state = MutableStateFlow(OtpState())
     val state = _state.asStateFlow()
+
+    fun checkAuthStatus() {
+        if (auth.currentUser == null) {
+            _authState.value = AuthState.Unauthenticated
+            Log.d("UserLogin", "User is unauthenticated, authState: ${_authState.value}")
+        } else {
+            _authState.value = AuthState.Authenticated
+            Log.d("UserLogin", "User is authenticated, authState: ${_authState.value}")
+        }
+    }
+
+    fun login(email: String, password: String) {
+        viewModelScope.launch {
+            _authState.value = AuthState.Loading
+            Log.d("AuthViewModel", "Login started, authState: ${_authState.value}")
+            auth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        _authState.value = AuthState.Authenticated
+                        Log.d("AuthViewModel", "Login successful, authState: ${_authState.value}")
+                        _navigationCommand.value = AppScreen.HomeGraph.route
+                    } else {
+                        _authState.value = AuthState.Error(task.exception?.message ?: "Something went wrong")
+                        _countError.value++
+                        Log.e("AuthViewModel", "Login failed: ${task.exception?.message}, authState: ${_authState.value}")
+                    }
+                }
+        }
+    }
+
+    fun signup(email: String, password: String) {
+        viewModelScope.launch {
+            _signupState.value = SignupState.Loading
+            try {
+                auth.createUserWithEmailAndPassword(email, password)
+                _signupState.value = SignupState.Success
+            } catch (e: Exception) {
+                _signupState.value = SignupState.Error("Signup failed: ${e.message}")
+            }
+        }
+    }
+
+
+    fun signOut() {
+        auth.signOut()
+        _authState.value = AuthState.Unauthenticated
+        Log.d("AuthViewModel", "User signed out, authState: ${_authState.value}")
+        _navigationCommand.value = AppScreen.AuthGraph.route
+    }
+
+    fun clearNavigationCommand() {
+        _navigationCommand.value = null
+    }
+
+    fun resetSignupState() {
+        _signupState.value = SignupState.Idle
+    }
 
     internal fun sendOTP(length: Int = 4): String {
         val digits = "0123456789"
@@ -150,6 +136,8 @@ class UserLogin: ViewModel() {
         startOtpTimer() // Start the countdown
         return generated
     }
+
+
 
     private fun startOtpTimer() {
         viewModelScope.launch {
@@ -176,11 +164,10 @@ class UserLogin: ViewModel() {
     }
 
 
-
-
     fun sendOTP(context: Context) {
+        val noticationService = NotificationService(context)
         val otp = sendOTP()
-        showNotification(context, otp)
+        noticationService.showNotification("OTP services", otp)
     }
 
 
@@ -321,7 +308,58 @@ class UserLogin: ViewModel() {
     }
 
 
+    //see the user details
+    private val _user = MutableStateFlow<User?>(null)
+    val userDetails: StateFlow<User?> = _user.asStateFlow()
+
+    init {
+        // Check initial auth state
+        updateAuthState(auth.currentUser)
+
+        // Listen to Firebase Auth state changes
+        viewModelScope.launch {
+            auth.addAuthStateListener { firebaseAuth ->
+                Log.d("AuthViewModel", "Auth state changed, currentUser: ${firebaseAuth.currentUser?.email ?: "null"}")
+                updateAuthState(firebaseAuth.currentUser)
+            }
+        }
+    }
+
+    private fun updateAuthState(firebaseUser: com.google.firebase.auth.FirebaseUser?) {
+        if (firebaseUser != null) {
+            _authState.value = AuthState.Authenticated
+            _user.value = User(
+                uid = firebaseUser.uid,
+                email = firebaseUser.email,
+                displayName = firebaseUser.displayName,
+                photoUrl = firebaseUser.photoUrl?.toString(),
+                isEmailVerified = firebaseUser.isEmailVerified
+            )
+            Log.d("AuthViewModel", "User is authenticated, authState: ${_authState.value}, user: ${_user.value}")
+            _navigationCommand.value = AppScreen.HomeGraph.route
+        } else {
+            _authState.value = AuthState.Unauthenticated
+            _user.value = null
+            Log.d("AuthViewModel", "User is unauthenticated, authState: ${_authState.value}")
+            _navigationCommand.value = AppScreen.AuthGraph.route
+        }
+    }
 
     //over 30 second
 }
 
+//private fun verifyEmpty(email: String, password: String): Boolean {
+//    return when {
+//        email.isEmpty() -> {
+//            _authState.value = AuthState.Error("Email can't be empty")
+//            Log.d("AuthViewModel", "Email is empty, authState: ${_authState.value}")
+//            false
+//        }
+//        password.isEmpty() -> {
+//            _authState.value = AuthState.Error("Password can't be empty")
+//            Log.d("AuthViewModel", "Password is empty, authState: ${_authState.value}")
+//            false
+//        }
+//        else -> true
+//    }
+//}
