@@ -1,14 +1,6 @@
 package com.bookblitzpremium.upcomingproject.ui.components
 
-import android.Manifest
-import android.app.Activity
-import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
-import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -42,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -55,17 +46,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
-import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.bookblitzpremium.upcomingproject.MainActivity
-import com.bookblitzpremium.upcomingproject.MyApplication.Companion.CHANNEL_ID
 import com.bookblitzpremium.upcomingproject.R
-import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.UserLogin
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 
 val videoUri = Uri.parse("android.resource://com.bookblitzpremium.upcomingproject/raw/entry_video")
@@ -121,7 +104,7 @@ fun CustomDialog(
             ButtonHeader(
                 textResId = R.string.next_button,
                 valueHorizontal = 16.dp,
-                userFunction = {
+                onClick = {
                     onNextClick()
                 }
             )
@@ -220,21 +203,20 @@ fun LineOver() {
     }
 }
 
+
 @Composable
 fun ButtonHeader(
     textResId: Int,
     valueHorizontal: Dp,
-    userFunction: () -> Unit
-){
+    onClick: () -> Unit
+) {
     Button(
-        onClick = {
-            userFunction()
-        },
+        onClick = onClick,
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Black, // Background color
-            contentColor = Color.White    // Text color (optional)
+            containerColor = Color.Black,
+            contentColor = Color.White
         ),
-        border = BorderStroke(2.dp, Color.Black), // Black border
+        border = BorderStroke(2.dp, Color.Black),
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp, horizontal = valueHorizontal)
@@ -245,32 +227,31 @@ fun ButtonHeader(
         )
     }
 }
-
-
-fun showNotification(context: Context, otpCode: String) {
-    val intent = Intent(context, MainActivity::class.java).apply {
-        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-    }
-
-    val pendingIntent = PendingIntent.getActivity(
-        context, 0, intent, PendingIntent.FLAG_IMMUTABLE
-    )
-
-    val fullScreenPendingIntent = PendingIntent.getActivity(
-        context, 0, intent, PendingIntent.FLAG_IMMUTABLE
-    )
-
-    val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-        .setSmallIcon(R.drawable.logo2)
-        .setContentTitle("OTP Code")
-        .setContentText(otpCode)
-        .setPriority(NotificationCompat.PRIORITY_HIGH)
-        .setContentIntent(pendingIntent)
-        .setAutoCancel(true)
-        .setFullScreenIntent(fullScreenPendingIntent, true)
-
-    NotificationManagerCompat.from(context).notify(1001, builder.build())
-}
+//
+//fun showNotification(context: Context, otpCode: String) {
+//    val intent = Intent(context, MainActivity::class.java).apply {
+//        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+//    }
+//
+//    val pendingIntent = PendingIntent.getActivity(
+//        context, 0, intent, PendingIntent.FLAG_IMMUTABLE
+//    )
+//
+//    val fullScreenPendingIntent = PendingIntent.getActivity(
+//        context, 0, intent, PendingIntent.FLAG_IMMUTABLE
+//    )
+//
+//    val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+//        .setSmallIcon(R.drawable.logo2)
+//        .setContentTitle("OTP Code")
+//        .setContentText(otpCode)
+//        .setPriority(NotificationCompat.PRIORITY_HIGH)
+//        .setContentIntent(pendingIntent)
+//        .setAutoCancel(true)
+//        .setFullScreenIntent(fullScreenPendingIntent, true)
+//
+//    NotificationManagerCompat.from(context).notify(1001, builder.build())
+//}
 
 
 
@@ -291,7 +272,7 @@ fun ClickableFun(
 
 
 @Composable
-fun SignInWithGoogle(valueHorizontal: Dp, viewModel: UserLogin, email: String, password: String){
+fun SignInWithGoogle(valueHorizontal: Dp, viewModel: AuthViewModel, email: String, password: String){
     Button(
         onClick = {
 

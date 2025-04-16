@@ -76,7 +76,8 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer:1.2.0")
     implementation("androidx.media3:media3-ui:1.2.0")
 
-    implementation("com.google.accompanist:accompanist-systemuicontroller:0.30.1")
+    //notication
+    implementation("com.google.accompanist:accompanist-permissions:0.30.1")
     implementation(libs.androidx.constraintlayout)
     implementation(libs.material)
 

@@ -12,8 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.UserLogin
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.ui.utility.getWindowSizeClass
 import com.bookblitzpremium.upcomingproject.ui.utility.isMediumHeight
 import com.bookblitzpremium.upcomingproject.ui.utility.isTablet
@@ -21,7 +20,7 @@ import com.bookblitzpremium.upcomingproject.ui.utility.isTablet
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @SuppressLint("ContextCastToActivity")
 @Composable
-fun DynamicLoginPage(onNextButtonClicked: () -> Unit, navController: NavController, userLoginViewModel: UserLogin ) {
+fun DynamicLoginPage(onNextButtonClicked: () -> Unit, navController: NavController, userModel: AuthViewModel ) {
     val activity = LocalContext.current as? Activity ?: return PlaceholderUI()
 
     val windowSizeClass = getWindowSizeClass(activity)
@@ -36,7 +35,7 @@ fun DynamicLoginPage(onNextButtonClicked: () -> Unit, navController: NavControll
         else -> false
     }
 
-    LoginPage(showTabletUI, onNextButtonClicked, navController,userLoginViewModel)
+//    LoginPage(showTabletUI, onNextButtonClicked, navController,userLoginViewModel)
 
     }
 

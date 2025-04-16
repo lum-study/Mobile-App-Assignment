@@ -58,7 +58,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -66,7 +65,7 @@ import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.UserLogin
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.model.Hotel
 import com.bookblitzpremium.upcomingproject.model.TripPackage
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
@@ -115,11 +114,11 @@ fun HomeScreen(navController: NavHostController) {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
-                val viewModel = viewModel<UserLogin>()
+                val viewModel = viewModel<AuthViewModel>()
 
                 Button(
                     onClick = {
-                        viewModel.signout()
+                        viewModel.signOut()
                     }
                 ) {
                     Text(text = "Sign Out")

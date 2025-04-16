@@ -1,3 +1,8 @@
 package com.bookblitzpremium.upcomingproject.data.model
 
-data class SignupState()
+sealed class SignupState {
+    object Idle : SignupState()
+    object Loading : SignupState()
+    object Success : SignupState()
+    data class Error(val message: String) : SignupState()
+}

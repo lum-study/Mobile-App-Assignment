@@ -1,5 +1,6 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.auth
 
+import android.opengl.Matrix.length
 import android.view.KeyEvent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -30,6 +31,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -49,7 +51,6 @@ fun OtpInputField(
     onFocusChanged: (Boolean) -> Unit,
     onNumberChanged: (Int?) -> Unit,
     onKeyboardBack: () -> Unit,
-    modifier: Modifier = Modifier
 ) {
     val text by remember(number) {
         mutableStateOf(
@@ -65,8 +66,9 @@ fun OtpInputField(
         mutableStateOf(false)
     }
 
+
     Box(
-        modifier = modifier
+        modifier = Modifier
             .border(
                 width = 1.dp,
                 color = Color.Gray
@@ -82,7 +84,7 @@ fun OtpInputField(
                     onNumberChanged(newNumber.toIntOrNull())
                 }
             },
-            cursorBrush = SolidColor(Color.Gray),
+            cursorBrush = SolidColor(Color.Black),
             singleLine = true,
             textStyle = TextStyle(
                 textAlign = TextAlign.Center,
@@ -94,7 +96,8 @@ fun OtpInputField(
                 keyboardType = KeyboardType.NumberPassword
             ),
             modifier = Modifier
-                .padding(10.dp)
+                .size(65.dp, 65.dp)
+                .padding(25.dp)
                 .focusRequester(focusRequester)
                 .onFocusChanged {
                     isFocused = it.isFocused
@@ -135,8 +138,6 @@ private fun OtpInputFieldPreview() {
         onFocusChanged = {},
         onKeyboardBack = {},
         onNumberChanged = {},
-        modifier = Modifier
-            .size(20.dp)
     )
 }
 

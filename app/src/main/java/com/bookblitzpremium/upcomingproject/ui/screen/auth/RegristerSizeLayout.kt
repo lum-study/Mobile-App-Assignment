@@ -5,15 +5,14 @@ import android.app.Activity
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.UserLogin
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.ui.utility.getWindowSizeClass
 import com.bookblitzpremium.upcomingproject.ui.utility.isMediumHeight
 import com.bookblitzpremium.upcomingproject.ui.utility.isTablet
-import com.google.firebase.firestore.auth.User
 
 @SuppressLint("ContextCastToActivity")
 @Composable
-fun DynamicRegisterPage(onNextButtonClicked: () -> Unit, navController: NavController, userLoginViewModel: UserLogin) {
+fun DynamicRegisterPage(onNextButtonClicked: () -> Unit, navController: NavController, userModel: AuthViewModel) {
     val activity = LocalContext.current as? Activity ?: return PlaceholderUI()
 
     val windowSizeClass = getWindowSizeClass(activity)
@@ -28,5 +27,5 @@ fun DynamicRegisterPage(onNextButtonClicked: () -> Unit, navController: NavContr
         else -> false
     }
 
-    RegristerPage(showTabletUI, onNextButtonClicked, navController ,userLoginViewModel)
+//    RegisterPage( navController ,userLoginViewModel)
 }
