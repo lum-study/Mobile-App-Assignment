@@ -24,7 +24,7 @@ import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthVi
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @SuppressLint("ContextCastToActivity")
 @Composable
-fun DynamicOTPPage(onNextButtonClicked: () -> Unit, navController: NavController, userModel: AuthViewModel) {
+fun DynamicOTPPage( navController: NavController, userModel: AuthViewModel) {
     val activity = LocalContext.current as? Activity ?: return PlaceholderUI()
 
     val windowSizeClass = getWindowSizeClass(activity)
@@ -44,6 +44,7 @@ fun DynamicOTPPage(onNextButtonClicked: () -> Unit, navController: NavController
     val focusRequesters = remember {
         List(4) { FocusRequester() }
     }
+
     val focusManager = LocalFocusManager.current
     val keyboardManager = LocalSoftwareKeyboardController.current
 
