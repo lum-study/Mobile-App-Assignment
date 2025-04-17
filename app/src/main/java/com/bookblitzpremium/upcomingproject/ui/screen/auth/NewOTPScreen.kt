@@ -33,11 +33,13 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -85,9 +87,6 @@ fun OtpScreen2(
             launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
         }
     }
-
-
-
 
     Box(
         modifier = modifier
@@ -226,47 +225,147 @@ fun OtpInputField(
     onFocusChanged: (Boolean) -> Unit,
     onNumberChanged: (Int?) -> Unit,
     onKeyboardBack: () -> Unit,
-    modifier: Modifier = Modifier
 ) {
-    var isFocused by remember { mutableStateOf(false) }
-    val text = remember(number) { TextFieldValue(number?.toString() ?: "") }
+    val text by remember(number) {
+        mutableStateOf(
+            TextFieldValue(
+                text = number?.toString().orEmpty(),
+                selection = TextRange(
+                    index = if(number != null) 1 else 0
+                )
+            )
+        )
+    }
+    var isFocused by remember {
+        mutableStateOf(false)
+    }
 
-    BasicTextField(
-        value = text,
-        onValueChange = { newText ->
-            val newNumber = newText.text
-            if (newNumber.length <= 1 && newNumber.isDigitsOnly()) {
-                onNumberChanged(newNumber.toIntOrNull())
-            }
-        },
-        cursorBrush = SolidColor(Color.Black),
-        singleLine = true,
-        textStyle = TextStyle(
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp,
-            color = Color.Black
-        ),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-        modifier = modifier
-            .size(48.dp, 48.dp)
-            .background(Color(0xFFE0E0E0), RoundedCornerShape(8.dp))
-            .focusRequester(focusRequester)
-            .onFocusChanged {
-                isFocused = it.isFocused
-                onFocusChanged(it.isFocused)
-            }
-            .onKeyEvent { event ->
-                val didPressDelete = event.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DEL
-                if (didPressDelete && number == null) {
-                    onKeyboardBack()
+
+    Box(
+        modifier = Modifier
+            .border(
+                width = 1.dp,
+                color = Color.Gray
+            )
+            .background(Color.White),
+        contentAlignment = Alignment.Center
+    ) {
+        BasicTextField(
+            value = text,
+            onValueChange = { newText ->
+                val newNumber = newText.text
+                if(newNumber.length <= 1 && newNumber.isDigitsOnly()) {
+                    onNumberChanged(newNumber.toIntOrNull())
                 }
-                false
             },
-        decorationBox = { innerBox ->
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+            cursorBrush = SolidColor(Color.Black),
+            singleLine = true,
+            textStyle = TextStyle(
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Light,
+                fontSize = 16.sp,
+                color = Color.Black
+            ),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.NumberPassword
+            ),
+            modifier = Modifier
+                .size(65.dp, 65.dp)
+                .padding(25.dp)
+                .focusRequester(focusRequester)
+                .onFocusChanged {
+                    isFocused = it.isFocused
+                    onFocusChanged(it.isFocused)
+                }
+                .onKeyEvent { event ->
+                    val didPressDelete = event.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DEL
+                    if(didPressDelete && number == null) {
+                        onKeyboardBack()
+                    }
+                    false
+                },
+            decorationBox = { innerBox ->
                 innerBox()
+                if(!isFocused && number == null) {
+                    Text(
+                        text = "-",
+                        textAlign = TextAlign.Center,
+                        color = Color.Black,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Light,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .wrapContentSize()
+                    )
+                }
             }
-        }
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun OtpInputFieldPreview() {
+    OtpInputField(
+        number = null,
+        focusRequester = remember { FocusRequester() },
+        onFocusChanged = {},
+        onKeyboardBack = {},
+        onNumberChanged = {},
     )
 }
+
+
+
+//
+//@Composable
+//fun OtpInputField(
+//    number: Int?,
+//    focusRequester: FocusRequester,
+//    onFocusChanged: (Boolean) -> Unit,
+//    onNumberChanged: (Int?) -> Unit,
+//    onKeyboardBack: () -> Unit,
+//    modifier: Modifier = Modifier
+//) {
+//    var isFocused by remember { mutableStateOf(false) }
+//    val text = remember(number) { TextFieldValue(number?.toString() ?: "") }
+//
+//    BasicTextField(
+//        value = text,
+//        onValueChange = { newText ->
+//            val newNumber = newText.text
+//            if (newNumber.length <= 1 && newNumber.isDigitsOnly()) {
+//                onNumberChanged(newNumber.toIntOrNull())
+//            }
+//        },
+//        cursorBrush = SolidColor(Color.Black),
+//        singleLine = true,
+//        textStyle = TextStyle(
+//            textAlign = TextAlign.Center,
+//            fontWeight = FontWeight.Bold,
+//            fontSize = 20.sp,
+//            color = Color.Black
+//        ),
+//        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+//        modifier = modifier
+//            .size(48.dp, 48.dp)
+//            .background(Color(0xFFE0E0E0), RoundedCornerShape(8.dp))
+//            .focusRequester(focusRequester)
+//            .onFocusChanged {
+//                isFocused = it.isFocused
+//                onFocusChanged(it.isFocused)
+//            }
+//            .onKeyEvent { event ->
+//                val didPressDelete = event.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DEL
+//                if (didPressDelete && number == null) {
+//                    onKeyboardBack()
+//                }
+//                false
+//            },
+//        decorationBox = { innerBox ->
+//            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+//                innerBox()
+//            }
+//        }
+//    )
+//}

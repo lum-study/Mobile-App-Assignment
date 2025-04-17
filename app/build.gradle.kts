@@ -58,6 +58,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.6.0")
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
     implementation(libs.androidx.core.ktx)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx")
 
     implementation("androidx.compose.material3:material3-window-size-class:1.0.1")
     implementation(libs.androidx.lifecycle.runtime.ktx)

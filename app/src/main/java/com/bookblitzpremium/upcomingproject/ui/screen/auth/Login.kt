@@ -183,14 +183,14 @@ fun LoginPage(
                     }
                 )
 
-                if (authState !is AuthState.Authenticated) {
-                    SignInWithGoogle(
-                        valueHorizontal = valueHorizontal,
-                        viewModel = viewModel,
-                        email = email,
-                        password = password
-                    )
-                }
+//                if (authState !is AuthState.Authenticated) {
+//                    SignInWithGoogle(
+//                        valueHorizontal = valueHorizontal,
+//                        viewModel = viewModel,
+//                        email = email,
+//                        password = password
+//                    )
+//                }
 
                 Text(
                     text = stringResource(R.string.register_account),
