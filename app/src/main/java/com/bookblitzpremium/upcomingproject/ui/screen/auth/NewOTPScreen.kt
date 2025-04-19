@@ -3,24 +3,36 @@ package com.bookblitzpremium.upcomingproject.ui.screen.auth
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Build
-import com.bookblitzpremium.upcomingproject.R
 import android.view.KeyEvent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,15 +57,13 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
+import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.model.OtpAction
 import com.bookblitzpremium.upcomingproject.data.model.OtpState
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
 
 @SuppressLint("ObsoleteSdkInt")
-@OptIn(ExperimentalPermissionsApi::class)
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun OtpScreen2(
     state: OtpState,
@@ -62,14 +72,15 @@ fun OtpScreen2(
     onAction: (OtpAction) -> Unit,
     navController: NavController,
     modifier: Modifier = Modifier
-){
+) {
 
     val context = LocalContext.current
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-        if (!isGranted) {
-            Toast.makeText(context, "Please allow notifications", Toast.LENGTH_SHORT).show()
+    val launcher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (!isGranted) {
+                Toast.makeText(context, "Please allow notifications", Toast.LENGTH_SHORT).show()
+            }
         }
-    }
 
     // Check if permission is granted (for UI feedback)
     val permissionGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -142,28 +153,45 @@ fun OtpScreen2(
 
             Text(
                 text = "OTP Verification",
-                style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black),
+                style = TextStyle(
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                ),
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .padding(vertical = 30.dp)
             )
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 24.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 24.dp)
             ) {
                 state.code.forEachIndexed { index, number ->
                     OtpInputField(
                         number = number,
                         focusRequester = focusRequesters[index],
                         onFocusChanged = { if (it) onAction(OtpAction.OnChangeFieldFocused(index)) },
-                        onNumberChanged = { newNumber -> onAction(OtpAction.OnEnterNumber(newNumber, index)) },
+                        onNumberChanged = { newNumber ->
+                            onAction(
+                                OtpAction.OnEnterNumber(
+                                    newNumber,
+                                    index
+                                )
+                            )
+                        },
                         onKeyboardBack = { onAction(OtpAction.OnKeyboardBack) },
                     )
                 }
             }
             Text(
                 text = "Resend OTP",
-                style = TextStyle(fontSize = 16.sp, color = Color(0xFF673AB7), fontWeight = FontWeight.Medium),
+                style = TextStyle(
+                    fontSize = 16.sp,
+                    color = Color(0xFF673AB7),
+                    fontWeight = FontWeight.Medium
+                ),
                 modifier = Modifier
                     .padding(top = 24.dp)
                     .border(
@@ -176,44 +204,53 @@ fun OtpScreen2(
                         if (permissionGranted) {
                             viewModel.sendOTP(context)
                         } else {
-                            Toast.makeText(context, "Please allow notifications", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Please allow notifications",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
             )
 
-                if(state.isValid != null || state.isExpired) {
-                    LaunchedEffect(key1 = state.isValid, key2 = state.isExpired) {
-                        if (state.isExpired) {
-                            Toast.makeText(context, "OTP expired. Please request a new one.", Toast.LENGTH_SHORT).show()
-                        } else if (state.isValid == true) {
-                            Toast.makeText(context, "Valid code", Toast.LENGTH_SHORT).show()
-                            navController.navigate(AppScreen.ForgotPassword.route) {
-                                popUpTo(0){
-                                    inclusive = true
-                                }
-                                launchSingleTop = true
+            if (state.isValid != null || state.isExpired) {
+                LaunchedEffect(key1 = state.isValid, key2 = state.isExpired) {
+                    if (state.isExpired) {
+                        Toast.makeText(
+                            context,
+                            "OTP expired. Please request a new one.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else if (state.isValid == true) {
+                        Toast.makeText(context, "Valid code", Toast.LENGTH_SHORT).show()
+                        navController.navigate(AppScreen.ForgotPassword.route) {
+                            popUpTo(0) {
+                                inclusive = true
                             }
-
-                        } else {
-                            Toast.makeText(context, "Invalid code", Toast.LENGTH_SHORT).show()
-                            navController.navigate(AppScreen.Login.route) {
-                                popUpTo(AppScreen.AuthGraph.route) {
-                                    inclusive = true
-                                }
-                                launchSingleTop = true // prevents multiple instances of the same screen from being created.
-                            }
-                            viewModel.updateStateOfOTP()
+                            launchSingleTop = true
                         }
+
+                    } else {
+                        Toast.makeText(context, "Invalid code", Toast.LENGTH_SHORT).show()
+                        navController.navigate(AppScreen.Login.route) {
+                            popUpTo(AppScreen.AuthGraph.route) {
+                                inclusive = true
+                            }
+                            launchSingleTop =
+                                true // prevents multiple instances of the same screen from being created.
+                        }
+                        viewModel.updateStateOfOTP()
                     }
                 }
+            }
 
-                if (state.isExpired) {
-                    Text(
-                        text = "OTP expired. Please request a new one.",
-                        color = Color.Red,
-                        fontSize = 16.sp
-                    )
-                }
+            if (state.isExpired) {
+                Text(
+                    text = "OTP expired. Please request a new one.",
+                    color = Color.Red,
+                    fontSize = 16.sp
+                )
+            }
         }
     }
 }
@@ -231,7 +268,7 @@ fun OtpInputField(
             TextFieldValue(
                 text = number?.toString().orEmpty(),
                 selection = TextRange(
-                    index = if(number != null) 1 else 0
+                    index = if (number != null) 1 else 0
                 )
             )
         )
@@ -254,7 +291,7 @@ fun OtpInputField(
             value = text,
             onValueChange = { newText ->
                 val newNumber = newText.text
-                if(newNumber.length <= 1 && newNumber.isDigitsOnly()) {
+                if (newNumber.length <= 1 && newNumber.isDigitsOnly()) {
                     onNumberChanged(newNumber.toIntOrNull())
                 }
             },
@@ -279,14 +316,14 @@ fun OtpInputField(
                 }
                 .onKeyEvent { event ->
                     val didPressDelete = event.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DEL
-                    if(didPressDelete && number == null) {
+                    if (didPressDelete && number == null) {
                         onKeyboardBack()
                     }
                     false
                 },
             decorationBox = { innerBox ->
                 innerBox()
-                if(!isFocused && number == null) {
+                if (!isFocused && number == null) {
                     Text(
                         text = "-",
                         textAlign = TextAlign.Center,
@@ -314,7 +351,6 @@ private fun OtpInputFieldPreview() {
         onNumberChanged = {},
     )
 }
-
 
 
 //

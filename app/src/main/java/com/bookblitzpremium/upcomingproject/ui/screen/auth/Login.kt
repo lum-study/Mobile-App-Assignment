@@ -1,8 +1,6 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.auth
 
-import android.os.Build
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,11 +42,9 @@ import com.bookblitzpremium.upcomingproject.ui.components.ButtonHeader
 import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextFieldPassword
-import com.bookblitzpremium.upcomingproject.ui.components.SignInWithGoogle
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun LoginPage(
     showToggleToTablet: Boolean,
@@ -68,7 +64,6 @@ fun LoginPage(
     LaunchedEffect(authState) {
         if (authState is AuthState.Error) {
             val errorMessage = (authState as AuthState.Error).message
-            Log.d("LoginPage", "authState is Error: $errorMessage")
             Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
         }
     }
@@ -162,7 +157,6 @@ fun LoginPage(
                     .align(Alignment.End)
                     .padding(start = valueHorizontal, top = 0.dp)
                     .clickable {
-                        Log.e("Navigation", "Navigating to OTP screen")
                         navController.navigate(AppScreen.OTP.route) {
                             launchSingleTop = true
                         }
@@ -177,7 +171,7 @@ fun LoginPage(
                     textResId = R.string.login,
                     valueHorizontal = valueHorizontal,
                     onClick = {
-                        if(isFormValid()){
+                        if (isFormValid()) {
                             viewModel.login(email, password)
                         }
                     }
@@ -200,7 +194,6 @@ fun LoginPage(
                         .align(Alignment.Start)
                         .padding(start = valueHorizontal, top = 30.dp)
                         .clickable {
-                            Log.d("Navigation", "Navigating to Register screen")
                             navController.navigate(AppScreen.Register.route)
                         }
                 )

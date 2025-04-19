@@ -1,7 +1,6 @@
 package com.bookblitzpremium.upcomingproject.data.database.local.viewmodel
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
@@ -36,27 +35,22 @@ class AuthViewModel @Inject constructor(
     fun checkAuthStatus() {
         if (auth.currentUser == null) {
             _authState.value = AuthState.Unauthenticated
-            Log.d("UserLogin", "User is unauthenticated, authState: ${_authState.value}")
         } else {
             _authState.value = AuthState.Authenticated
-            Log.d("UserLogin", "User is authenticated, authState: ${_authState.value}")
         }
     }
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
-            Log.d("AuthViewModel", "Login started, authState: ${_authState.value}")
             auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         _authState.value = AuthState.Authenticated
-                        Log.d("AuthViewModel", "Login successful, authState: ${_authState.value}")
                         _navigationCommand.value = AppScreen.HomeGraph.route
                     } else {
                         _authState.value = AuthState.Error(task.exception?.message ?: "Something went wrong")
 //                        _countError.value++
-                        Log.e("AuthViewModel", "Login failed: ${task.exception?.message}, authState: ${_authState.value}")
                     }
                 }
         }
@@ -73,7 +67,6 @@ class AuthViewModel @Inject constructor(
         // Listen to Firebase Auth state changes
         viewModelScope.launch {
             auth.addAuthStateListener { firebaseAuth ->
-                Log.d("AuthViewModel", "Auth state changed, currentUser: ${firebaseAuth.currentUser?.email ?: "null"}")
                 updateAuthState(firebaseAuth.currentUser)
             }
         }
@@ -89,12 +82,10 @@ class AuthViewModel @Inject constructor(
                 photoUrl = firebaseUser.photoUrl?.toString(),
                 isEmailVerified = firebaseUser.isEmailVerified
             )
-            Log.d("AuthViewModel", "User is authenticated, authState: ${_authState.value}, user: ${_user.value}")
             _navigationCommand.value = AppScreen.HomeGraph.route
         } else {
             _authState.value = AuthState.Unauthenticated
             _user.value = null
-            Log.d("AuthViewModel", "User is unauthenticated, authState: ${_authState.value}")
             _navigationCommand.value = AppScreen.AuthGraph.route
         }
     }
@@ -106,7 +97,6 @@ class AuthViewModel @Inject constructor(
     fun signOut() {
         auth.signOut()
         _authState.value = AuthState.Unauthenticated
-        Log.d("AuthViewModel", "User signed out, authState: ${_authState.value}")
         _navigationCommand.value = AppScreen.AuthGraph.route
     }
 
@@ -115,9 +105,7 @@ class AuthViewModel @Inject constructor(
         auth.sendPasswordResetEmail(email)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Log.d("FirebaseAuth", "Password reset email sent.")
                 } else {
-                    Log.e("FirebaseAuth", "Failed to send password reset email: ${task.exception?.message}")
                 }
             }
     }
@@ -173,14 +161,12 @@ class AuthViewModel @Inject constructor(
 
             while (System.currentTimeMillis() < endTime) {
                 val secondsLeft = (endTime - System.currentTimeMillis()) / 1000
-                Log.d("OtpTimer", "Seconds left: $secondsLeft")
                 delay(1000L)
             }
 
             _state.update { current ->
                 val expired = System.currentTimeMillis() - current.otpGeneratedTime >= 30_000
                 if (expired) {
-                    Log.d("OtpTimer", "OTP expired after 30 seconds.")
                     current.copy(isExpired = true, isValid = false)
                 } else {
                     current
