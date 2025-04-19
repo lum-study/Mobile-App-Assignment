@@ -3,8 +3,10 @@ package com.bookblitzpremium.upcomingproject.ui.navigation
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import androidx.navigation.navArgument
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.booking.BookingAmount
 import com.bookblitzpremium.upcomingproject.ui.screen.booking.BookingDatePage
@@ -23,16 +25,38 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
         composable(AppScreen.Home.route) {
             HomeScreen(navController)
         }
-        composable(AppScreen.TripPackage.route) {
-            TripPackageScreen(navController)
+        composable(
+            route = "${AppScreen.TripPackage.route}/{tripPackageID}",
+            arguments = listOf(navArgument("tripPackageID") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val tripPackageID = backStackEntry.arguments?.getString("tripPackageID") ?: ""
+            TripPackageScreen(navController = navController, tripPackageID = tripPackageID)
         }
-        composable(AppScreen.Schedule.route) {
-            ScheduleScreen(navController)
+        composable(
+            route = "${AppScreen.Schedule.route}/{tripPackageID}/{startDate}",
+            arguments = listOf(
+                navArgument("tripPackageID") { type = NavType.StringType },
+                navArgument("startDate") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val tripPackageID = backStackEntry.arguments?.getString("tripPackageID") ?: ""
+            val startDate = backStackEntry.arguments?.getString("startDate") ?: ""
+            ScheduleScreen(tripPackageID = tripPackageID, startDate = startDate)
         }
-        composable(AppScreen.Flight.route) {
-            FlightScreen(navController)
+        composable(
+            route = "${AppScreen.Flight.route}/{flightID}/{bookingID}",
+            arguments = listOf(
+                navArgument("flightID") { type = NavType.StringType },
+                navArgument("bookingID") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val flightID = backStackEntry.arguments?.getString("flightID") ?: ""
+            val bookingID = backStackEntry.arguments?.getString("bookingID") ?: ""
+            FlightScreen(flightID = flightID, bookingID = bookingID)
         }
-        composable(AppScreen.Hotel.route) {
+        composable(
+            route = "${AppScreen.Hotel.route}/{hotelID}/{tripPackageID}"
+        ) { backStackEntry ->
+            val tripPackageID = backStackEntry.arguments?.getString("tripPackageID") ?: ""
+            val hotelID = backStackEntry.arguments?.getString("hotelID") ?: ""
             OverlappingContentTest(2, navController)
         }
         composable(AppScreen.BookingDate.route) {

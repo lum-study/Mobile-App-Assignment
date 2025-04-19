@@ -23,7 +23,8 @@ class LocalTripPackageRepository @Inject constructor(private val tripPackageDao:
         input: String,
         startPrice: Double,
         endPrice: Double,
-        flightID: List<String>?,
+        departure: String,
+        arrival: String,
         startDate: String,
         endDate: String
     ): Flow<PagingData<TripPackage>> {
@@ -37,9 +38,26 @@ class LocalTripPackageRepository @Inject constructor(private val tripPackageDao:
                     input = input,
                     startPrice = startPrice,
                     endPrice = endPrice,
-                    flightID = flightID,
+                    departure = departure,
+                    arrival = arrival,
                     startDate = startDate,
                     endDate = endDate
+                )
+            }
+        ).flow
+    }
+
+    fun getFilterByKeyword(
+        input: String,
+    ): Flow<PagingData<TripPackage>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = {
+                tripPackageDao.filterByKeyword(
+                    input = input,
                 )
             }
         ).flow
@@ -48,4 +66,5 @@ class LocalTripPackageRepository @Inject constructor(private val tripPackageDao:
     suspend fun addOrUpdateTripPackage(trip: TripPackage) = tripPackageDao.upsertTrip(trip)
     suspend fun deleteTripPackage(trip: TripPackage) = tripPackageDao.deleteTrip(trip)
     suspend fun getTripByID(id: String) = tripPackageDao.getTripByID(id)
+    suspend fun getTripPackageInformation(id: String) = tripPackageDao.getTripPackageInformation(id)
 }

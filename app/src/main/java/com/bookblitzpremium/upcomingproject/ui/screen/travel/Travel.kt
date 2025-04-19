@@ -64,8 +64,8 @@ fun TravelHeaderTable() {
 
     // List of tab items
     val tabs: List<TripPackageTabs> = listOf(
-        TripPackageTabs("Schedule", Icons.Outlined.Task, {ScheduleScreen(navController = rememberNavController())}),
-        TripPackageTabs("Flight", Icons.Outlined.Flight, { FlightScreen(navController = rememberNavController()) }),
+        TripPackageTabs("Schedule", Icons.Outlined.Task, {ScheduleScreen()}),
+        TripPackageTabs("Flight", Icons.Outlined.Flight, { FlightScreen()}),
         TripPackageTabs("Hotel", Icons.Outlined.HomeWork, {  MobieLayout(2, 500.dp, 500.dp) }),
     )
 

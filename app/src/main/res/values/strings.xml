@@ -50,9 +50,12 @@
     <string name="trip_packages">Trip Packages</string>
     <string name="hot_package">Hot Package</string>
     <string name="filter_price_title">Pricing Range</string>
-    <string name="filter_region_title">Region</string>
-    <string name="filter_state_title">State</string>
+    <string name="filter_departure">Departure</string>
+    <string name="filter_arrival">Arrival</string>
     <string name="filter_type">Type</string>
+    <string name="filter_rating">Rating %f</string>
+    <string name="filter_rating_title">Rating</string>
+    <string name="filter_feature">Feature (Choose 2)</string>
     <string name="schedule">Schedule</string>
     <string name="flight">Flight</string>
     <string name="hotel">Hotels</string>
@@ -65,7 +68,7 @@
     <string name="hotel_image">Hotel Image</string>
     <string name="profile_image">Profile Image</string>
     <string name="trip_package_image">Trip Package Image</string>
-    <string name="rating_icon">Rating Icon</string>
+    <string name="price_icon">Price Icon</string>
     <string name="location_icon">Location Icon</string>
     <string name="card_background">Card Background</string>
     <string name="mastercard_icon">Mastercard Icon</string>
@@ -102,6 +105,13 @@
     <string name="edit">Edit</string>
     <string name="transaction_completed">Transaction Completed</string>
     <string name="clear_all">Clear all</string>
+
+    <!-- Navigation Button -->
+    <string name="home_button">Home Button</string>
+    <string name="search_button">Home Button</string>
+    <string name="schedule_button">Schedule</string>
+    <string name="profile_button">Profile Button</string>
+
     <!-- Message -->
     <string name="no_record">No Record Founded</string>
     <string name="price_value">%s%.2f</string>
@@ -112,4 +122,8 @@
     <string name="already_have_an_account_login">Already have an account? Login</string>
     <string name="pick_date">Pick Date</string>
     <string name="register_account">Register Account</string>
+
+    <!-- Formatter -->
+    <string name="price">RM %.2f</string>
+    <string name="from_to">%s to %s</string>
 </resources>

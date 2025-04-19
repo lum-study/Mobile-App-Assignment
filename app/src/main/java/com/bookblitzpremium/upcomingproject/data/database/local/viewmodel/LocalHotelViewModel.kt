@@ -60,11 +60,11 @@ class LocalHotelViewModel @Inject constructor(private val hotelRepository: Local
 
     fun filterHotel(
         input: String,
-        rating: Double = 0.0,
-        startPrice: Double = 0.0,
-        endPrice: Double = 0.0,
-        feature1: String = "",
-        feature2: String = ""
+        rating: Double,
+        startPrice: Double,
+        endPrice: Double,
+        feature1: String,
+        feature2: String
     ): Flow<PagingData<Hotel>> {
         return hotelRepository.getFilteredHotelsPagingFlow(
             input = input,
@@ -81,4 +81,8 @@ class LocalHotelViewModel @Inject constructor(private val hotelRepository: Local
             .cachedIn(viewModelScope)
     }
 
+    fun getByKeyword(keyword: String): Flow<PagingData<Hotel>>{
+        return hotelRepository.getByKeyword(keyword)
+            .cachedIn(viewModelScope)
+    }
 }
