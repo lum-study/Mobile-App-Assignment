@@ -35,7 +35,6 @@
 //import com.bookblitzpremium.upcomingproject.data.model.OtpState
 //import com.bookblitzpremium.upcomingproject.ui.RequestNotificationPermissions
 //
-//@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 //@Preview(showBackground = true)
 //@Composable
 //fun PreviewOtpScreen() {
@@ -58,7 +57,6 @@
 //}
 //
 //
-//@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 //@Composable
 //fun OtpScreen(
 //    state: OtpState,

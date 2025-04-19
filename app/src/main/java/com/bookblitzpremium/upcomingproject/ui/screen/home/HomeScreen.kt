@@ -82,7 +82,6 @@ fun HomeScreenPreview() {
 
 @Composable
 fun HomeScreen(navController: NavHostController) {
-    Log.d("HomeScreen", "HomeScreen Composable Loaded")
     val username = "Abu Bakar"
     val tripPackageList: List<TripPackage> = listOf(
         TripPackage(R.drawable.green_mountain, "Trip to Bali", "RM99999"),

@@ -1,8 +1,6 @@
 package com.bookblitzpremium.upcomingproject.ui.navigation
 
 import android.annotation.SuppressLint
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
@@ -15,7 +13,6 @@ import com.bookblitzpremium.upcomingproject.ui.screen.auth.LoginPage
 import com.bookblitzpremium.upcomingproject.ui.screen.auth.RegristerPage
 
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @SuppressLint("UnrememberedGetBackStackEntry")
 fun NavGraphBuilder.authNavGraph(navController: NavHostController, userModel: AuthViewModel) {
 

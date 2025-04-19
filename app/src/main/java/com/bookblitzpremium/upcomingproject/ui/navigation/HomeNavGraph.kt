@@ -1,6 +1,5 @@
 package com.bookblitzpremium.upcomingproject.ui.navigation
 
-import android.util.Log
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -10,21 +9,19 @@ import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.booking.BookingAmount
 import com.bookblitzpremium.upcomingproject.ui.screen.booking.BookingDatePage
 import com.bookblitzpremium.upcomingproject.ui.screen.booking.ReviewFinalPackageSelected
-import com.bookblitzpremium.upcomingproject.HomeScreen
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
+import com.bookblitzpremium.upcomingproject.ui.screen.home.HomeScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.hotel.OverlappingContentTest
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.FlightScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.ScheduleScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.TripPackageScreen
 
-fun NavGraphBuilder.homeNavGraph(navController: NavHostController, userModel: AuthViewModel) {
+fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
     navigation(
         startDestination = AppScreen.Home.route,
         route = AppScreen.HomeGraph.route
     ) {
         composable(AppScreen.Home.route) {
-            Log.d("Navigation", "Navigating to HomeGraph")
-            HomeScreen(onLogout = { userModel.signOut()},userModel)
+            HomeScreen(navController)
         }
         composable(AppScreen.TripPackage.route) {
             TripPackageScreen(navController)
@@ -43,7 +40,7 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController, userModel: Au
         }
 
         composable(AppScreen.BookingPeople.route) {
-            BookingAmount(modifier = Modifier,navController)
+            BookingAmount(modifier = Modifier, navController)
         }
 
         composable(AppScreen.BookingReview.route) {
