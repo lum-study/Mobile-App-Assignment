@@ -1,6 +1,5 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.home
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -58,14 +57,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.model.Hotel
 import com.bookblitzpremium.upcomingproject.model.TripPackage
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
@@ -112,18 +109,6 @@ fun HomeScreen(navController: NavHostController) {
                     .padding(end = 16.dp, bottom = 8.dp, start = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-
-                val viewModel = viewModel<AuthViewModel>()
-
-                Button(
-                    onClick = {
-                        viewModel.signOut()
-                    }
-                ) {
-                    Text(text = "Sign Out")
-                    navController.navigate(AppScreen.Login.route)
-                }
-
                 GreetingProfile(username)
                 HorizontalDivider()
                 TripPackageSection(
