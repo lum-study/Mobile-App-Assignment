@@ -10,7 +10,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 
-
 @Composable
 fun AppNavigation(
     navController: NavHostController,
@@ -37,11 +36,10 @@ fun AppNavigation(
         startDestination = startDestination,
         modifier = modifier,
     ) {
-
         authNavGraph(navController, userModel)
         homeNavGraph(navController)
         searchNavGraph(navController)
+        scheduleNavGraph(navController)
         profileNavGraph(navController)
     }
 }
-

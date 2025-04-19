@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Flight
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalFlightRepository
+import com.bookblitzpremium.upcomingproject.data.model.FlightInformation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -60,11 +61,15 @@ class LocalFlightViewModel @Inject constructor(private val flightRepository: Loc
         }
     }
 
-    fun getFlightByID(id: String): Flight? {
+    suspend fun getFlightByID(id: String): Flight? {
         return flightRepository.getFlightByID(id)
     }
 
-    fun getFlightIDByPlace(
+    suspend fun getFlightInformationByID(id: String): FlightInformation? {
+        return flightRepository.getFlightInformationByID(id)
+    }
+
+    suspend fun getFlightIDByPlace(
         arrivalState: String, departState: String
     ): List<String> {
         return flightRepository.getFlightIDByPlace(

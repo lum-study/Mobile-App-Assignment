@@ -6,6 +6,7 @@ import com.bookblitzpremium.upcomingproject.data.database.local.AppDatabase
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.FlightDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.HotelDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.RatingDao
+import com.bookblitzpremium.upcomingproject.data.database.local.dao.RecentSearchDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.ScheduleDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.TripPackageDao
 import com.google.firebase.firestore.FirebaseFirestore
@@ -57,6 +58,12 @@ object DatabaseModule {
     @Singleton
     fun provideTripPackageDao(appDatabase: AppDatabase): TripPackageDao {
         return appDatabase.tripPackageDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRecentSearch(appDatabase: AppDatabase): RecentSearchDao {
+        return appDatabase.recentSearchDao()
     }
 
     @Provides

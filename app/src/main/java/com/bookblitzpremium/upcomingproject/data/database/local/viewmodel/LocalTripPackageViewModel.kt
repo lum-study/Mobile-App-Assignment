@@ -9,6 +9,7 @@ import com.bookblitzpremium.upcomingproject.data.database.local.entity.TripPacka
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalFlightRepository
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalHotelRepository
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalTripPackageRepository
+import com.bookblitzpremium.upcomingproject.data.model.TripPackageInformation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -73,7 +74,8 @@ class LocalTripPackageViewModel @Inject constructor(
         input: String,
         startPrice: Double = 0.0,
         endPrice: Double = 0.0,
-        flightID: List<String>? = null,
+        departure: String = "",
+        arrival: String = "",
         startDate: String = "",
         endDate: String = ""
     ): Flow<PagingData<TripPackage>> {
@@ -81,7 +83,8 @@ class LocalTripPackageViewModel @Inject constructor(
             input = input,
             startPrice = startPrice,
             endPrice = endPrice,
-            flightID = flightID,
+            departure = departure,
+            arrival = arrival,
             startDate = startDate,
             endDate = endDate
         ).cachedIn(viewModelScope)
@@ -92,4 +95,19 @@ class LocalTripPackageViewModel @Inject constructor(
             .cachedIn(viewModelScope)
     }
 
+    fun getFilterByKeyword(
+        input: String,
+    ): Flow<PagingData<TripPackage>> {
+        return tripPackageRepository.getFilterByKeyword(
+            input = input
+        ).cachedIn(viewModelScope)
+    }
+
+    suspend fun getTripPackageByID(id: String): TripPackage?{
+        return tripPackageRepository.getTripByID(id)
+    }
+
+    suspend fun getTripPackageInformation(id: String): TripPackageInformation{
+        return tripPackageRepository.getTripPackageInformation(id)
+    }
 }

@@ -1,43 +1,88 @@
 package com.bookblitzpremium.upcomingproject.common.enums
 
-import androidx.annotation.StringRes
-import com.bookblitzpremium.upcomingproject.R
-import com.google.android.material.bottomappbar.BottomAppBar
-
-enum class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomBar: Boolean) {
+sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomBar: Boolean) {
     // Auth Screens
-    AuthGraph("AuthGraph", hasTopBar = false, hasBottomBar = true),
-    Login("Login", hasTopBar = false, hasBottomBar = false),
-    Register("Register", hasTopBar = false, hasBottomBar = false),
-    OTP("OTP", hasTopBar = false, hasBottomBar = false),
-    ForgotPassword("ForgotPassword", hasTopBar = false, hasBottomBar = false),
-    ChangePassword("ChangePassword", hasTopBar = false, hasBottomBar = false),
+    data object AuthGraph : AppScreen("AuthGraph", hasTopBar = false, hasBottomBar = true)
+    data object Login : AppScreen("Login", hasTopBar = false, hasBottomBar = false)
+    data object Register : AppScreen("Register", hasTopBar = false, hasBottomBar = false)
+    data object OTP : AppScreen("OTP", hasTopBar = false, hasBottomBar = false)
+    data object ForgotPassword :
+        AppScreen("ForgotPassword", hasTopBar = false, hasBottomBar = false)
+
+    data object ChangePassword :
+        AppScreen("ChangePassword", hasTopBar = false, hasBottomBar = false)
 
     // Home Screens
-    HomeGraph("HomeGraph", hasTopBar = false, hasBottomBar = false),
-    Home("Home", hasTopBar = false, hasBottomBar = true),
+    data object HomeGraph : AppScreen("HomeGraph", hasTopBar = false, hasBottomBar = false)
+    data object Home : AppScreen("Home", hasTopBar = false, hasBottomBar = true)
 
-    TripPackage("TripPackage", hasTopBar = true, hasBottomBar = false),
-    Schedule("Schedule", hasTopBar = true, hasBottomBar = false),
-    Flight("Flight", hasTopBar = true, hasBottomBar = false),
-    Hotel("Hotel", hasTopBar = false, hasBottomBar = false),
+    data object TripPackage : AppScreen("TripPackage", hasTopBar = true, hasBottomBar = false)
+    data object Schedule : AppScreen("Schedule", hasTopBar = true, hasBottomBar = false)
+    data object Flight : AppScreen("Flight", hasTopBar = true, hasBottomBar = false)
+    data object Hotel : AppScreen("Hotel", hasTopBar = false, hasBottomBar = false)
 
     // Search Screens
-    SearchGraph("SearchGraph", hasTopBar = false, hasBottomBar = false),
-    Search("Search", hasTopBar = true, hasBottomBar = true),
-    Result("Result", hasTopBar = true, hasBottomBar = true),
-    Filter("Filter", hasTopBar = true, hasBottomBar = true),
+    data object SearchGraph : AppScreen("SearchGraph", hasTopBar = false, hasBottomBar = false)
+    data object Search : AppScreen("Search", hasTopBar = false, hasBottomBar = true)
+    data object Result : AppScreen("Result", hasTopBar = true, hasBottomBar = true)
+    data object Filter : AppScreen("Filter", hasTopBar = true, hasBottomBar = false)
 
     // Profile Screens
-    ProfileGraph("ProfileGraph", hasTopBar = false, hasBottomBar = false),
-    Profile("Profile", hasTopBar = true, hasBottomBar = true),
+    data object ProfileGraph : AppScreen("ProfileGraph", hasTopBar = false, hasBottomBar = false)
+    data object Profile : AppScreen("Profile", hasTopBar = true, hasBottomBar = true)
 
     //Booking Date and people
-    BookingDate("BookingDate", hasTopBar = true, hasBottomBar = false),
-    BookingPeople("BookingPeople", hasTopBar = true, hasBottomBar = false),
-    BookingReview("BookingReview", hasTopBar = true, hasBottomBar = false),
+    data object BookingDate : AppScreen("BookingDate", hasTopBar = true, hasBottomBar = false)
+    data object BookingPeople : AppScreen("BookingPeople", hasTopBar = true, hasBottomBar = false)
+    data object BookingReview : AppScreen("BookingReview", hasTopBar = true, hasBottomBar = false)
 
     //Entry Page
-    EntryPage("EntryPage",hasTopBar = false, hasBottomBar = false ),
-    EntryPage2("EntryPage2",hasTopBar = false, hasBottomBar = false )
+    data object EntryPage : AppScreen("EntryPage", hasTopBar = false, hasBottomBar = false)
+    data object EntryPage2 : AppScreen("EntryPage2", hasTopBar = false, hasBottomBar = false)
+
+    //schedule
+    data object ScheduleGraph : AppScreen("ScheduleGraph", hasTopBar = false, hasBottomBar = true)
+    data object TestRoute : AppScreen("TestRoute", hasTopBar = false, hasBottomBar = true)
+
+    fun passData(vararg args: String): String {
+        return buildString {
+            append(route)
+            args.forEach { arg ->
+                append("/$arg")
+            }
+        }
+    }
+
+    companion object {
+        fun fromRoute(route: String?): AppScreen {
+            val baseRoute = route?.substringBefore('/') ?: AuthGraph.route
+
+            return when (baseRoute) {
+                AuthGraph.route -> AuthGraph
+                Login.route -> Login
+                Register.route -> Register
+                OTP.route -> OTP
+                ForgotPassword.route -> ForgotPassword
+                ChangePassword.route -> ChangePassword
+                HomeGraph.route -> HomeGraph
+                Home.route -> Home
+                TripPackage.route -> TripPackage
+                Schedule.route -> Schedule
+                Flight.route -> Flight
+                Hotel.route -> Hotel
+                SearchGraph.route -> SearchGraph
+                Search.route -> Search
+                Result.route -> Result
+                Filter.route -> Filter
+                ProfileGraph.route -> ProfileGraph
+                Profile.route -> Profile
+                BookingDate.route -> BookingDate
+                BookingPeople.route -> BookingPeople
+                BookingReview.route -> BookingReview
+                EntryPage.route -> EntryPage
+                EntryPage2.route -> EntryPage2
+                else -> AuthGraph
+            }
+        }
+    }
 }
