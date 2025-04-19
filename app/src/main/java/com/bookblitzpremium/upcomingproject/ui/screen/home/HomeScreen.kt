@@ -1,6 +1,5 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.home
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -80,7 +79,6 @@ fun HomeScreenPreview() {
 
 @Composable
 fun HomeScreen(navController: NavHostController) {
-    Log.d("HomeScreen", "HomeScreen Composable Loaded")
     val username = "Abu Bakar"
     val tripPackageList: List<TripPackage> = listOf(
         TripPackage(R.drawable.green_mountain, "Trip to Bali", "RM99999"),
@@ -102,6 +100,7 @@ fun HomeScreen(navController: NavHostController) {
     )
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
+
     AppTheme {
         if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT) {
             Column(
@@ -110,7 +109,6 @@ fun HomeScreen(navController: NavHostController) {
                     .padding(end = 16.dp, bottom = 8.dp, start = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-
                 GreetingProfile(username)
                 HorizontalDivider()
                 TripPackageSection(
@@ -140,6 +138,9 @@ fun HomeScreen(navController: NavHostController) {
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.padding(16.dp)
                     ) {
+
+
+
                         GreetingProfile(username, Color.Black)
 
                         HorizontalDivider()
@@ -219,6 +220,9 @@ fun HomeScreen(navController: NavHostController) {
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.padding(16.dp)
                     ) {
+
+
+
                         GreetingProfile(username, Color.Black)
 
                         HorizontalDivider()

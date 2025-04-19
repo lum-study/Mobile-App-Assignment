@@ -1,7 +1,5 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,12 +19,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.AccessTime
-import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -44,17 +40,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.model.Activity
 import com.bookblitzpremium.upcomingproject.model.Schedule
-import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import java.time.LocalDate
 import java.time.LocalTime
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true, widthDp = 360, heightDp = 700)
 @Composable
 fun SchedulePreview() {
@@ -249,7 +243,6 @@ fun ScheduleScreen(navController: NavHostController) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TimeAndDestinationRow(
     time: String,

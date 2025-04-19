@@ -1,7 +1,5 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.search
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
@@ -11,10 +9,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
-
 import com.bookblitzpremium.upcomingproject.ui.screen.home.HomeScreen
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun SearchNavigation(navController: NavHostController, modifier: Modifier) {
     NavHost(
