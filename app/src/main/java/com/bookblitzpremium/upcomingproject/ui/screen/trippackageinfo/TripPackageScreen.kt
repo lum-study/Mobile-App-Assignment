@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
@@ -25,6 +26,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,34 +41,31 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
-import com.bookblitzpremium.upcomingproject.model.TripPackage
-import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
-import com.bookblitzpremium.upcomingproject.ui.screen.hotel.DynamicHotelDetails
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalTripPackageViewModel
+import com.bookblitzpremium.upcomingproject.data.model.TripPackageInformation
+import com.bookblitzpremium.upcomingproject.ui.components.Base64Image
+import com.bookblitzpremium.upcomingproject.ui.components.SkeletonLoader
 import com.bookblitzpremium.upcomingproject.ui.screen.travel.TravelHeaderTable
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
-
-@Preview(showBackground = true, widthDp = 360, heightDp = 806)
-@Composable
-fun TripPackageScreenPreview() {
-
-    TripPackageScreen(rememberNavController())
-}
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
-fun TripPackageScreen(navController: NavController) {
-    val tripPackage =
-        TripPackage(R.drawable.green_mountain, "Trip to Bali", "Enjoy a relaxing vacation")
-    val description =
-        "Blue Lagoon Drive from Reykjavík, the capital of Iceland, to the southeast for about an houryou can reach Blue Lagoon, the famous"
-    val availableSlot = 50
+fun TripPackageScreen(navController: NavController, tripPackageID: String) {
+    val localTripPackageViewModel: LocalTripPackageViewModel = hiltViewModel()
+    var selectedTripPackage: TripPackageInformation? by remember { mutableStateOf(null) }
+
+    LaunchedEffect(Unit) {
+        selectedTripPackage = localTripPackageViewModel.getTripPackageInformation(tripPackageID)
+    }
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
     AppTheme {
@@ -70,29 +73,63 @@ fun TripPackageScreen(navController: NavController) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = 8.dp)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    UrlImage(
-                        imageUrl = "https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_534,q_40,w_800/hotelier-images/f8/82/68daae48a411dcceee76ab32031f064521a58b08d043926dd1b291f2f91f.jpeg",
-                        modifier = Modifier.height(200.dp).fillMaxWidth(),
-                        contentScale = ContentScale.FillBounds,
-                    )
-                    Text(
-                        text = tripPackage.packageDesc,
-                        style = AppTheme.typography.smallRegular,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(start = 16.dp, end = 16.dp)
-                    )
-                    Text(
-                        text = stringResource(R.string.available_slot, availableSlot),
-                        style = AppTheme.typography.mediumSemiBold,
-                        modifier = Modifier.padding(start = 16.dp, end = 16.dp)
-                    )
+                    if (selectedTripPackage != null) {
+                        Base64Image(
+                            base64String = selectedTripPackage!!.imageUrl,
+                            modifier = Modifier
+                                .height(200.dp)
+                                .fillMaxWidth(),
+                            contentScale = ContentScale.FillBounds,
+                        )
+                        Text(
+                            text = selectedTripPackage!!.name,
+                            style = AppTheme.typography.largeSemiBold,
+                            modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+                        )
+                        Text(
+                            text = stringResource(R.string.price, selectedTripPackage!!.price),
+                            style = AppTheme.typography.mediumSemiBold,
+                            modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+                        )
+                        Text(
+                            text = selectedTripPackage!!.description,
+                            style = AppTheme.typography.smallRegular,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+                        )
+                        Text(
+                            text = stringResource(
+                                R.string.available_slot,
+                                selectedTripPackage!!.slots
+                            ),
+                            style = AppTheme.typography.mediumSemiBold,
+                            modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+                        )
+                    } else {
+                        SkeletonLoader(
+                            modifier = Modifier
+                                .height(200.dp)
+                                .fillMaxWidth()
+                        )
+                        SkeletonLoader(
+                            modifier = Modifier
+                                .padding(start = 16.dp, end = 16.dp)
+                                .fillMaxWidth()
+                                .height(20.dp)
+                        )
+                        SkeletonLoader(
+                            modifier = Modifier
+                                .padding(start = 16.dp, end = 16.dp)
+                                .fillMaxWidth()
+                                .height(20.dp)
+                        )
+                    }
                 }
                 Column(
                     modifier = Modifier
@@ -100,49 +137,77 @@ fun TripPackageScreen(navController: NavController) {
                         .fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text(
-                        text = stringResource(R.string.information),
-                        style = AppTheme.typography.mediumSemiBold,
-                    )
-                    InformationData(
-                        imageVector = Icons.Outlined.Task,
-                        title = stringResource(R.string.schedule),
-                        description = "Stay tuned Stay tuned Stay tunedStay tuned Stay tuned Stay tuned Stay tuned Stay tuned Stay tuned",
-                        onRowClick = { navController.navigate(AppScreen.Schedule.route) }
-                    )
-                    Divider(
-                        color = Color.Gray,
-                        thickness = 1.dp,
-                    )
-                    InformationData(
-                        imageVector = Icons.Outlined.Flight,
-                        title = stringResource(R.string.flight),
-                        description = "Stay tuned Stay tuned Stay tunedStay tuned Stay tuned Stay tuned Stay tuned Stay tuned Stay tuned",
-                        rotateDeg = 45f,
-                        onRowClick = { navController.navigate(AppScreen.Flight.route) }
-                    )
-                    Divider(
-                        color = Color.Gray,
-                        thickness = 1.dp,
-                    )
-                    InformationData(
-                        imageVector = Icons.Outlined.HomeWork,
-                        title = stringResource(R.string.hotel),
-                        description = "Stay tuned Stay tuned Stay tunedStay tuned Stay tuned Stay tuned Stay tuned Stay tuned Stay tuned",
-                        onRowClick = { navController.navigate(AppScreen.Hotel.route) }
-                    )
-                    Button(
-                        onClick = {},
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                    if (selectedTripPackage != null) {
                         Text(
-                            text = stringResource(R.string.apply_button)
+                            text = stringResource(R.string.information),
+                            style = AppTheme.typography.mediumSemiBold,
                         )
+
+                        val startDate = LocalDate.parse(selectedTripPackage!!.startDate)
+                        val endDate =
+                            startDate.plusDays(selectedTripPackage!!.scheduleDay.toLong() - 1)
+                        val formatter = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)
+
+                        InformationData(
+                            imageVector = Icons.Outlined.Task,
+                            title = stringResource(R.string.schedule),
+                            description = stringResource(
+                                R.string.from_to,
+                                startDate.format(formatter).toString(),
+                                endDate.format(formatter).toString()
+                            ),
+                            onRowClick = {
+                                navController.navigate(
+                                    AppScreen.Schedule.passData(
+                                        selectedTripPackage!!.id,
+                                        selectedTripPackage!!.startDate
+                                    )
+                                )
+                            }
+                        )
+                        Divider(
+                            color = Color.Gray,
+                            thickness = 1.dp,
+                        )
+                        InformationData(
+                            imageVector = Icons.Outlined.Flight,
+                            title = stringResource(R.string.flight),
+                            description = stringResource(
+                                R.string.from_to,
+                                selectedTripPackage!!.flightDepart,
+                                selectedTripPackage!!.flightArrival
+                            ),
+                            rotateDeg = 45f,
+                            onRowClick = { navController.navigate(AppScreen.Flight.passData(selectedTripPackage!!.flightID, "")) }
+                        )
+                        Divider(
+                            color = Color.Gray,
+                            thickness = 1.dp,
+                        )
+                        InformationData(
+                            imageVector = Icons.Outlined.HomeWork,
+                            title = stringResource(R.string.hotel),
+                            description = selectedTripPackage!!.hotelName,
+                            onRowClick = { navController.navigate(AppScreen.Hotel.passData(selectedTripPackage!!.hotelID, selectedTripPackage!!.id)) }
+                        )
+
+                        Button(
+                            onClick = {},
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(R.string.apply_button)
+                            )
+                        }
+                    }
+                    else{
+                        SkeletonLoader(modifier = Modifier.height(400.dp).fillMaxWidth().padding(horizontal = 8.dp).clip(
+                            RoundedCornerShape(24.dp)
+                        ))
                     }
                 }
             }
-        }
-        else if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED && windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.EXPANDED) {
+        } else if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED && windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.EXPANDED) {
             val configuration = LocalConfiguration.current
             val isPortrait = configuration.screenWidthDp < configuration.screenHeightDp
             TravelHeaderTable()
@@ -172,7 +237,7 @@ fun InformationData(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(Color.White) // Light pink
+                .background(Color.White)
         ) {
             Icon(
                 imageVector = imageVector,

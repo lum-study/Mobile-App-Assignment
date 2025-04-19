@@ -25,13 +25,13 @@ interface HotelDao {
         """
         SELECT * FROM hotel 
         WHERE (name LIKE '%' || :input || '%' OR address LIKE '%' || :input || '%')
-        AND (:rating = 0.0 OR rating >= :rating)
+        AND (rating >= :rating)
         AND (price BETWEEN :startPrice AND :endPrice)
-        AND (:feature1 = "" OR feature LIKE '%' || :feature1 || '%') 
-        AND (:feature1 = "" OR feature LIKE '%' || :feature2 || '%' ) 
+        AND (:feature1 = '' OR feature LIKE '%' || :feature1 || '%') 
+        AND (:feature2 = '' OR feature LIKE '%' || :feature2 || '%' ) 
         ORDER BY 
         price,
-        CASE WHEN :startPrice = 0.0 AND :rating != 0.0 THEN rating ELSE NULL END,
+        CASE WHEN :rating != 0.0 THEN rating ELSE NULL END,
         name ASC
         """
     )
@@ -43,4 +43,11 @@ interface HotelDao {
         feature1: String = "",
         feature2: String = ""
     ): PagingSource<Int, Hotel>
+
+    @Query("""
+        SELECT * FROM hotel 
+        WHERE (name LIKE '%' || :input || '%' OR address LIKE '%' || :input || '%')
+    """)
+
+    fun filterByKeyword(input: String): PagingSource<Int, Hotel>
 }

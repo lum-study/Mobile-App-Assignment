@@ -45,6 +45,16 @@ class LocalHotelRepository @Inject constructor(private val hotelDao: HotelDao) {
         ).flow
     }
 
+    fun getByKeyword(keyword: String): Flow<PagingData<Hotel>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { hotelDao.filterByKeyword(input = keyword) }
+        ).flow
+    }
+
     suspend fun addOrUpdateHotel(hotel: Hotel) = hotelDao.upsertHotel(hotel)
     suspend fun deleteHotel(hotel: Hotel) = hotelDao.deleteHotel(hotel)
     suspend fun getHotelByID(id: String) = hotelDao.getHotelByID(id)

@@ -1,17 +1,20 @@
 package com.bookblitzpremium.upcomingproject
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.BottomAppBar
@@ -25,8 +28,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -35,13 +40,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.bookblitzpremium.upcomingproject.ViewModel.RemoteDatabase
-import com.bookblitzpremium.upcomingproject.ViewModel.User2
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.common.enums.BottomNavigation
 import com.bookblitzpremium.upcomingproject.ui.navigation.AppNavigation
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.google.firebase.FirebaseApp
@@ -61,12 +64,11 @@ enum class TravelScreen() {
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        Log.d("MainActivity", "onCreate started")
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         FirebaseApp.initializeApp(this)
         setContent {
-            AppTheme{
+            AppTheme {
                 App()
             }
         }
@@ -81,9 +83,8 @@ fun App(
 ) {
     val startDestination = AppScreen.AuthGraph.route
     val backStackEntry by navController.currentBackStackEntryAsState()
-    // Get the name of the current screen
-    val currentScreen = AppScreen.valueOf(
-        backStackEntry?.destination?.route ?: AppScreen.AuthGraph.route
+    val currentScreen = AppScreen.fromRoute(
+        backStackEntry?.destination?.route
     )
 
     Scaffold(
@@ -94,25 +95,12 @@ fun App(
                     canNavigateBack = navController.previousBackStackEntry != null,
                     navigateUp = { navController.navigateUp() },
                     modifier = Modifier.padding(start = 20.dp)
-
                 )
             }
         },
         bottomBar = {
-            if(currentScreen.hasBottomBar){
-            BottomAppBar(
-                containerColor = Color(0xFFC4C4C4),
-                contentColor = Color.White,
-                modifier = Modifier.height(65.dp)
-            ) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    text = "Bottom app bar",
-                    color = Color.Black
-                )
-            }
+            if (currentScreen.hasBottomBar) {
+                BottomNavigationBar(navController)
             }
         }
     ) { innerPadding ->
@@ -131,18 +119,19 @@ fun TitleBar(
     CenterAlignedTopAppBar(
         title = {
             Text(
-                text = currentScreen.name.replace(Regex("([a-z])([A-Z])"), "$1 $2"),
+                text = currentScreen.route.replace(Regex("([a-z])([A-Z])"), "$1 $2"),
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
-                textAlign = TextAlign.Center, // ✅ Ensure text is centered
-                modifier = Modifier.fillMaxWidth()
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
                     .offset(x = -20.dp)
             )
         },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
             containerColor = Color.Transparent
         ),
-        modifier = modifier.height(74.dp), // ✅ Set correct height
+        modifier = modifier.height(74.dp),
         navigationIcon = {
             if (canNavigateBack) {
                 IconButton(
@@ -152,7 +141,7 @@ fun TitleBar(
                     Icon(
                         imageVector = Icons.Filled.ArrowBack,
                         contentDescription = stringResource(R.string.back_button),
-                        modifier = Modifier.size(24.dp) // ✅ Adjust icon size
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
@@ -160,24 +149,66 @@ fun TitleBar(
     )
 }
 
-
-
 @Composable
-fun UserListScreen() {
-    val users = remember { mutableStateListOf<User2>() }
+fun BottomNavigationBar(navController: NavHostController){
+    BottomAppBar(
+        modifier = Modifier.height(90.dp),
+        containerColor = Color.Transparent
+    ) {
+        val navItems = BottomNavigation.entries.toTypedArray()
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.parent?.route
+        var selectedIndex by remember { mutableIntStateOf(0) }
 
-    val callViewModel = viewModel<RemoteDatabase>()
-
-    LaunchedEffect(true) {
-        callViewModel.readUsersFromDatabase {
-            users.clear()
-            users.addAll(it)
+        LaunchedEffect(currentRoute) {
+            selectedIndex = navItems.indexOfFirst { it.navigation.route == currentRoute }
         }
-    }
-
-    LazyColumn {
-        items(users) { user ->
-            Text(text = "${user.name} - ${user.course} - Age: ${user.age}")
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .height(64.dp),
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                navItems.forEachIndexed { index, item ->
+                    Column(
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .clickable(
+                                enabled = index != selectedIndex,
+                            ) {
+                                selectedIndex = index
+                                navController.navigate(item.navigation.route){
+                                    popUpTo(AppScreen.Home.route){
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                            .size(64.dp)
+                    ) {
+                        Icon(
+                            imageVector = item.icon,
+                            contentDescription = null,
+                            tint = if (index == selectedIndex) AppTheme.colorScheme.primary else Color.Gray,
+                            modifier = Modifier
+                                .size(32.dp)
+                        )
+                        Text(
+                            text = item.title,
+                            style = AppTheme.typography.smallRegular,
+                            color = if (index == selectedIndex) AppTheme.colorScheme.primary else Color.Gray,
+                        )
+                    }
+                }
+            }
         }
     }
 }
