@@ -5,6 +5,7 @@ import com.bookblitzpremium.upcomingproject.data.database.local.entity.TripPacka
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
+
 class TripPackageRepository @Inject constructor(private val tripPackageDao: TripPackageDao) {
     val allTrips: Flow<List<TripPackage>> = tripPackageDao.getAllTrips()
 
