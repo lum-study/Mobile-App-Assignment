@@ -22,8 +22,7 @@ fun AppNavigation(
     LaunchedEffect(navigationCommand) {
         navigationCommand?.let { destination ->
             navController.navigate(destination) {
-                popUpTo(navController.graph.startDestinationId) {
-                    inclusive = true
+                popUpTo(navController.graph.id) {
                 }
                 launchSingleTop = true
             }

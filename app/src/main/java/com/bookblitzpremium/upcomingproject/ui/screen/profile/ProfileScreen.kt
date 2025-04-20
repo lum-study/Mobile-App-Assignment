@@ -26,14 +26,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.R
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.InformationData
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 
 //@Preview(showBackground = true, widthDp = 360, heightDp = 700)
 @Composable
 fun ProfileScreen(navController: NavController) {
+    val authViewModel: AuthViewModel = hiltViewModel()
     val username = "Esther Howard"
     AppTheme {
         Column(
@@ -55,7 +59,7 @@ fun ProfileScreen(navController: NavController) {
                 InformationData(
                     imageVector = Icons.Outlined.PersonOutline,
                     title = "My Profile",
-                    onRowClick = {},
+                    onRowClick = { navController.navigate(AppScreen.EditProfile.route) },
                     modifier = Modifier.height(70.dp),
                 )
                 HorizontalDivider()
@@ -69,7 +73,7 @@ fun ProfileScreen(navController: NavController) {
                 InformationData(
                     imageVector = Icons.Outlined.Logout,
                     title = "Log Out",
-                    onRowClick = {},
+                    onRowClick = { authViewModel.signOut() },
                     modifier = Modifier.height(70.dp),
                 )
             }
