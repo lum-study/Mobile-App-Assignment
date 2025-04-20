@@ -23,11 +23,21 @@ class RemoteScheduleViewModel @Inject constructor(private val remoteScheduleRepo
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    init {
-        fetchSchedules()
+    suspend fun getScheduleIfNotLoaded(): List<Schedule> {
+        return try {
+            _loading.value = true
+            _error.value = null
+            _schedule.value = remoteScheduleRepository.getAllSchedule()
+            _schedule.value
+        } catch (e: Exception) {
+            _error.value = e.localizedMessage ?: "Failed to load schedule"
+            emptyList()
+        } finally {
+            _loading.value = false
+        }
     }
 
-    private fun fetchSchedules() {
+    private fun getSchedules() {
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
@@ -42,20 +52,22 @@ class RemoteScheduleViewModel @Inject constructor(private val remoteScheduleRepo
         }
     }
 
-    fun addSchedule(schedule: Schedule) {
+    fun addSchedule(schedule: Schedule): String {
+        var id: String = ""
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
 
             try {
-                remoteScheduleRepository.addSchedule(schedule)
-                fetchSchedules()
+                id = remoteScheduleRepository.addSchedule(schedule)
+                _schedule.value += schedule
             } catch (e: Exception) {
                 _error.value = "Failed to add schedule: ${e.localizedMessage}"
             } finally {
                 _loading.value = false
             }
         }
+        return id
     }
 
     fun updateSchedule(schedule: Schedule) {
@@ -65,7 +77,9 @@ class RemoteScheduleViewModel @Inject constructor(private val remoteScheduleRepo
 
             try {
                 remoteScheduleRepository.updateSchedule(schedule)
-                fetchSchedules()
+                _schedule.value = _schedule.value.map {
+                    if (it.id == schedule.id) schedule else it
+                }
             } catch (e: Exception) {
                 _error.value = "Failed to update schedule: ${e.localizedMessage}"
             } finally {
@@ -81,7 +95,7 @@ class RemoteScheduleViewModel @Inject constructor(private val remoteScheduleRepo
 
             try {
                 remoteScheduleRepository.deleteSchedule(id)
-                fetchSchedules()
+                _schedule.value = _schedule.value.filter { it.id != id }
             } catch (e: Exception) {
                 _error.value = "Failed to delete schedule: ${e.localizedMessage}"
             } finally {

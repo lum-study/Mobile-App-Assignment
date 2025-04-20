@@ -1,12 +1,12 @@
 package com.bookblitzpremium.upcomingproject.data.database.local.dao
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Query
 import androidx.room.Upsert
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Flight
 import com.bookblitzpremium.upcomingproject.data.model.FlightInformation
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FlightDao {
@@ -17,7 +17,7 @@ interface FlightDao {
     suspend fun deleteFlight(flight: Flight)
 
     @Query("SELECT * FROM flight")
-    fun getAllFlights(): Flow<List<Flight>>
+    fun getAllFlights(): PagingSource<Int, Flight>
 
     @Query("SELECT * FROM flight WHERE id = :id")
     suspend fun getFlightByID(id: String): Flight?
@@ -25,7 +25,8 @@ interface FlightDao {
     @Query("SELECT id FROM flight WHERE arrivalState = :arrivalState AND departState = :departState")
     suspend fun getFlightIDByPlace(arrivalState: String, departState: String): List<String>
 
-    @Query("""
+    @Query(
+        """
         SELECT f.*, tp.startDate AS endDate, s.time AS endTime
         FROM flight f 
         INNER JOIN trip_package tp ON f.id = tp.flightID
@@ -42,6 +43,7 @@ interface FlightDao {
             CAST(SUBSTR(time, INSTR(time, ':') + 1) AS INTEGER)
             LIMIT 1
         )
-        """)
+        """
+    )
     suspend fun getFlightInformationByID(id: String): FlightInformation?
 }

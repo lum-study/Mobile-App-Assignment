@@ -23,11 +23,21 @@ class RemoteTripPackageViewModel @Inject constructor(private val remoteTripPacka
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    init {
-        fetchPackages()
+    suspend fun getTripPackageIfNotLoaded(): List<TripPackage> {
+        return try {
+            _loading.value = true
+            _error.value = null
+            _packages.value = remoteTripPackageRepository.getAllTripPackages()
+            _packages.value
+        } catch (e: Exception) {
+            _error.value = e.localizedMessage ?: "Failed to load trip package"
+            emptyList()
+        } finally {
+            _loading.value = false
+        }
     }
 
-    private fun fetchPackages() {
+    private fun getPackages() {
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
@@ -42,20 +52,22 @@ class RemoteTripPackageViewModel @Inject constructor(private val remoteTripPacka
         }
     }
 
-    fun addPackage(pkg: TripPackage) {
+    fun addPackage(pkg: TripPackage): String {
+        var id: String = ""
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
 
             try {
-                remoteTripPackageRepository.addTripPackage(pkg)
-                fetchPackages()
+                id = remoteTripPackageRepository.addTripPackage(pkg)
+                _packages.value += pkg
             } catch (e: Exception) {
                 _error.value = "Failed to add package: ${e.localizedMessage}"
             } finally {
                 _loading.value = false
             }
         }
+        return id
     }
 
     fun updatePackage(pkg: TripPackage) {
@@ -65,7 +77,9 @@ class RemoteTripPackageViewModel @Inject constructor(private val remoteTripPacka
 
             try {
                 remoteTripPackageRepository.updateTripPackage(pkg)
-                fetchPackages()
+                _packages.value = _packages.value.map {
+                    if (it.id == pkg.id) pkg else it
+                }
             } catch (e: Exception) {
                 _error.value = "Failed to update package: ${e.localizedMessage}"
             } finally {
@@ -81,7 +95,7 @@ class RemoteTripPackageViewModel @Inject constructor(private val remoteTripPacka
 
             try {
                 remoteTripPackageRepository.deleteTripPackage(id)
-                fetchPackages()
+                _packages.value = _packages.value.filter { it.id != id }
             } catch (e: Exception) {
                 _error.value = "Failed to delete package: ${e.localizedMessage}"
             } finally {
@@ -90,31 +104,4 @@ class RemoteTripPackageViewModel @Inject constructor(private val remoteTripPacka
         }
     }
 
-    fun filteredPackage(
-        input: String,
-        startPrice: Double = 0.0,
-        endPrice: Double = 0.0,
-        flightID: String = "",
-        startDate: String = "",
-        endDate: String = ""
-    ): List<TripPackage> {
-        return _packages.value.filter { tripPackage ->
-            val matchesText = input.isEmpty() ||
-                    tripPackage.name.contains(input, ignoreCase = true) ||
-                    tripPackage.description.contains(input, ignoreCase = true) ||
-                    tripPackage.location.contains(input, ignoreCase = true)
-
-            val matchesPrice = tripPackage.price in startPrice..endPrice
-
-            val matchDate = tripPackage.startDate in startDate..endDate
-
-            matchesText && matchesPrice && matchDate
-        }.sortedWith(
-            compareBy(
-                { it.price },
-                { if (startDate != "") it.startDate else null },
-                { it.name }
-            )
-        )
-    }
 }
