@@ -24,7 +24,7 @@ import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.Remot
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
 import com.bookblitzpremium.upcomingproject.data.datastore.DataStoreManager
 import com.bookblitzpremium.upcomingproject.data.datastore.DataStoreViewModel
-import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.delay
 
 @Composable
 fun InitializeDatabase(
@@ -53,6 +53,7 @@ fun InitializeDatabase(
             if (hotels.isNotEmpty()) {
                 hotels.forEach { localHotelViewModel.addOrUpdateHotel(it) }
                 Log.d("runtime", "Hotel data initialized.")
+                delay(3000)
             }
 
             // Flight
@@ -60,31 +61,31 @@ fun InitializeDatabase(
             if (flights.isNotEmpty()) {
                 flights.forEach { localFlightViewModel.addOrUpdateFlight(it) }
                 Log.d("runtime", "Flight data initialized.")
-            }
-
-            // Rating
-            val ratings = remoteRatingViewModel.getRatingsIfNotLoaded()
-            if (ratings.isNotEmpty() && localHotelViewModel.getAllHotelsPagingFlow().count() > 0) {
-                ratings.forEach { localRatingViewModel.addOrUpdateRating(it) }
-                Log.d("runtime", "Rating data initialized.")
+                delay(3000)
             }
 
             // Trip Package
             val trips = remoteTripPackageViewModel.getTripPackageIfNotLoaded()
-            if (trips.isNotEmpty() && localHotelViewModel.getAllHotelsPagingFlow()
-                    .count() > 0 && localFlightViewModel.getAllFlightPagingFlow().count() > 0
-            ) {
+            if (trips.isNotEmpty()) {
                 trips.forEach { localTripPackageViewModel.addOrUpdateTrip(it) }
                 Log.d("runtime", "Trip Package data initialized.")
+                delay(3000)
             }
 
             // Schedule
             val schedules = remoteScheduleViewModel.getScheduleIfNotLoaded()
-            if (schedules.isNotEmpty() && localTripPackageViewModel.getAllTripPackagesPagingFlow()
-                    .count() > 0
-            ) {
+            if (schedules.isNotEmpty()) {
+                Log.d("runtime", schedules.size.toString())
                 schedules.forEach { localScheduleViewModel.addOrUpdateSchedule(it) }
                 Log.d("runtime", "Schedule data initialized.")
+                delay(3000)
+            }
+
+            // Rating
+            val ratings = remoteRatingViewModel.getRatingsIfNotLoaded()
+            if (ratings.isNotEmpty()) {
+                ratings.forEach { localRatingViewModel.addOrUpdateRating(it) }
+                Log.d("runtime", "Rating data initialized.")
             }
 
             dataStoreManager.setFirstLaunch(false)
