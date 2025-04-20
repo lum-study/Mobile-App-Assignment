@@ -23,8 +23,18 @@ class RemoteFlightViewModel @Inject constructor(private val remoteFlightReposito
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    init {
-        getFlights()
+    suspend fun getFlightsIfNotLoaded(): List<Flight> {
+        return try {
+            _loading.value = true
+            _error.value = null
+            _flights.value = remoteFlightRepository.getAllFlight()
+            flights.value
+        } catch (e: Exception) {
+            _error.value = e.localizedMessage ?: "Failed to load flight"
+            emptyList()
+        } finally {
+            _loading.value = false
+        }
     }
 
     private fun getFlights() {
@@ -42,20 +52,22 @@ class RemoteFlightViewModel @Inject constructor(private val remoteFlightReposito
         }
     }
 
-    fun addFlight(flight: Flight) {
+    fun addFlight(flight: Flight): String {
+        var id: String = ""
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
 
             try {
-                remoteFlightRepository.addFlight(flight)
-                getFlights()
+                id = remoteFlightRepository.addFlight(flight)
+                _flights.value += flight
             } catch (e: Exception) {
                 _error.value = "Failed to add flight: ${e.localizedMessage}"
             } finally {
                 _loading.value = false
             }
         }
+        return id
     }
 
     fun updateFlight(flight: Flight) {
@@ -65,7 +77,9 @@ class RemoteFlightViewModel @Inject constructor(private val remoteFlightReposito
 
             try {
                 remoteFlightRepository.updateFlight(flight)
-                getFlights()
+                _flights.value = _flights.value.map {
+                    if (it.id == flight.id) flight else it
+                }
             } catch (e: Exception) {
                 _error.value = "Failed to update flight: ${e.localizedMessage}"
             } finally {
@@ -81,7 +95,7 @@ class RemoteFlightViewModel @Inject constructor(private val remoteFlightReposito
 
             try {
                 remoteFlightRepository.deleteFlight(id)
-                getFlights()
+                _flights.value = _flights.value.filter { it.id != id }
             } catch (e: Exception) {
                 _error.value = "Failed to delete flight: ${e.localizedMessage}"
             } finally {

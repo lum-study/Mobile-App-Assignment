@@ -23,11 +23,21 @@ class RemoteHotelViewModel @Inject constructor(private val remoteHotelRepository
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    init {
-        fetchHotels()
+    suspend fun getHotelsIfNotLoaded(): List<Hotel> {
+        return try {
+            _loading.value = true
+            _error.value = null
+            _hotel.value = remoteHotelRepository.getAllHotel()
+            _hotel.value
+        } catch (e: Exception) {
+            _error.value = e.localizedMessage ?: "Failed to load hotels"
+            emptyList()
+        } finally {
+            _loading.value = false
+        }
     }
 
-    private fun fetchHotels() {
+    private fun getHotels() {
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
@@ -42,20 +52,22 @@ class RemoteHotelViewModel @Inject constructor(private val remoteHotelRepository
         }
     }
 
-    fun addHotel(hotel: Hotel) {
+    fun addHotel(hotel: Hotel): String {
+        var id: String = ""
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
 
             try {
-                remoteHotelRepository.addHotel(hotel)
-                fetchHotels()
+                id = remoteHotelRepository.addHotel(hotel)
+                _hotel.value += hotel
             } catch (e: Exception) {
                 _error.value = "Failed to add hotel: ${e.localizedMessage}"
             } finally {
                 _loading.value = false
             }
         }
+        return id
     }
 
     fun updateHotel(hotel: Hotel) {
@@ -65,7 +77,9 @@ class RemoteHotelViewModel @Inject constructor(private val remoteHotelRepository
 
             try {
                 remoteHotelRepository.updateHotel(hotel)
-                fetchHotels()
+                _hotel.value = _hotel.value.map {
+                    if (it.id == hotel.id) hotel else it
+                }
             } catch (e: Exception) {
                 _error.value = "Failed to update hotel: ${e.localizedMessage}"
             } finally {
@@ -81,7 +95,7 @@ class RemoteHotelViewModel @Inject constructor(private val remoteHotelRepository
 
             try {
                 remoteHotelRepository.deleteHotel(id)
-                fetchHotels()
+                _hotel.value = _hotel.value.filter { it.id != id }
             } catch (e: Exception) {
                 _error.value = "Failed to delete hotel: ${e.localizedMessage}"
             } finally {
@@ -90,35 +104,4 @@ class RemoteHotelViewModel @Inject constructor(private val remoteHotelRepository
         }
     }
 
-    fun filteredHotel(
-        input: String,
-        rating: Double = 0.0,
-        startPrice: Double = 0.0,
-        endPrice: Double = 0.0,
-        feature1: String = "",
-        feature2: String = ""
-    ): List<Hotel> {
-        return _hotel.value.filter { hotel ->
-            val matchesText = input.isEmpty() ||
-                    hotel.name.contains(input, ignoreCase = true) ||
-                    hotel.address.contains(input, ignoreCase = true)
-
-            val matchesRating = rating == 0.0 || hotel.rating >= rating
-
-            val matchesPrice = hotel.price in startPrice..endPrice
-
-            val matchesFeature1 = feature1.isEmpty() ||
-                    hotel.feature.contains(feature1)
-            val matchesFeature2 = feature2.isEmpty() ||
-                    hotel.feature.contains(feature2)
-
-            matchesText && matchesRating && matchesPrice && matchesFeature1 && matchesFeature2
-        }.sortedWith(
-            compareBy(
-                { it.price },
-                { if (rating != 0.0) it.rating else null },
-                { it.name }
-            )
-        )
-    }
 }

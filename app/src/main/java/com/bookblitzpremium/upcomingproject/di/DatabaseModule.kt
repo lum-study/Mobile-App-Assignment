@@ -5,10 +5,13 @@ import androidx.room.Room
 import com.bookblitzpremium.upcomingproject.data.database.local.AppDatabase
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.FlightDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.HotelDao
+import com.bookblitzpremium.upcomingproject.data.database.local.dao.PaymentDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.RatingDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.RecentSearchDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.ScheduleDao
+import com.bookblitzpremium.upcomingproject.data.database.local.dao.TPBookingDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.TripPackageDao
+import com.bookblitzpremium.upcomingproject.data.database.local.dao.UserDao
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
@@ -44,8 +47,20 @@ object DatabaseModule {
 
     @Provides
     @Singleton
+    fun providePaymentDao(appDatabase: AppDatabase): PaymentDao {
+        return appDatabase.paymentDao()
+    }
+
+    @Provides
+    @Singleton
     fun provideRatingDao(appDatabase: AppDatabase): RatingDao {
         return appDatabase.ratingDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRecentSearch(appDatabase: AppDatabase): RecentSearchDao {
+        return appDatabase.recentSearchDao()
     }
 
     @Provides
@@ -56,14 +71,20 @@ object DatabaseModule {
 
     @Provides
     @Singleton
+    fun provideTPBooking(appDatabase: AppDatabase): TPBookingDao {
+        return appDatabase.tpBookingDao()
+    }
+
+    @Provides
+    @Singleton
     fun provideTripPackageDao(appDatabase: AppDatabase): TripPackageDao {
         return appDatabase.tripPackageDao()
     }
 
     @Provides
     @Singleton
-    fun provideRecentSearch(appDatabase: AppDatabase): RecentSearchDao {
-        return appDatabase.recentSearchDao()
+    fun provideUserDao(appDatabase: AppDatabase): UserDao {
+        return appDatabase.userDao()
     }
 
     @Provides
