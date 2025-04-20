@@ -29,7 +29,8 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
 
     // Profile Screens
     data object ProfileGraph : AppScreen("ProfileGraph", hasTopBar = false, hasBottomBar = false)
-    data object Profile : AppScreen("Profile", hasTopBar = true, hasBottomBar = true)
+    data object Profile : AppScreen("Profile", hasTopBar = false, hasBottomBar = true)
+    data object EditProfile : AppScreen("EditProfile", hasTopBar = true, hasBottomBar = false)
 
     //Booking Date and people
     data object BookingDate : AppScreen("BookingDate", hasTopBar = true, hasBottomBar = false)
@@ -76,6 +77,7 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
                 Filter.route -> Filter
                 ProfileGraph.route -> ProfileGraph
                 Profile.route -> Profile
+                EditProfile.route -> EditProfile
                 BookingDate.route -> BookingDate
                 BookingPeople.route -> BookingPeople
                 BookingReview.route -> BookingReview

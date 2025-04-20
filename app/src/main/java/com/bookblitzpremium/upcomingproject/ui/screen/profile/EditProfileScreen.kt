@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -42,18 +43,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.bookblitzpremium.upcomingproject.R
 
 @Composable
-fun EditProfileScreen(windowSizeClass: WindowSizeClass) {
+fun EditProfileScreen() {
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val isTablet = windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.COMPACT
 
     var username by remember { mutableStateOf("Emul_Ezep") }
@@ -111,7 +116,8 @@ private fun TabletLayout(
             Image(
                 imageVector = Icons.Default.ArrowBack,
                 contentDescription = "Back Button",
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier
+                    .size(40.dp)
                     .padding(start = 16.dp)
             )
 
@@ -175,10 +181,6 @@ private fun TabletLayout(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                         .height(48.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2196F3), // Blue color
-                        contentColor = Color.White
-                    ),
                     shape = MaterialTheme.shapes.medium
                 ) {
                     Text(
@@ -201,28 +203,12 @@ private fun PhoneLayout(
     onDobChange: (String) -> Unit,
     onAddressChange: (String) -> Unit
 ) {
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(horizontal = 24.dp)) {
-        Spacer(modifier = Modifier.height(32.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Back Button",
-                modifier = Modifier.size(40.dp)
-            )
-
-            Text(
-                "Edit Profile",
-                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier.padding(start = 16.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp)
+    ) {
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Profile image centered
         ProfileImageSection(isPhone = true)
@@ -237,50 +223,43 @@ private fun PhoneLayout(
             // Form Fields
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 fields.forEach { (label, value) ->
-                    // Modified ProfileField with left-aligned label and right-aligned input
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                label,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.weight(1f) // Takes available space
-                            )
-                            BasicTextField(
-                                value = value,
-                                onValueChange = { newValue ->
-                                    when (label) {
-                                        "Username" -> onUsernameChange(newValue)
-                                        "Email" -> onEmailChange(newValue)
-                                        "Phone" -> onPhoneChange(newValue)
-                                        "Date of Birth" -> onDobChange(newValue)
-                                        "Address" -> onAddressChange(newValue)
-                                    }
-                                },
-                                textStyle = MaterialTheme.typography.bodyMedium.copy(
-                                    textAlign = TextAlign.End
-                                ),
-                                modifier = Modifier
-                                    .weight(1f) // Takes equal space
-                                    .padding(start = 16.dp) // Space between label and field
-                            )
-                        }
-                        HorizontalDivider(
-                            thickness = 1.dp,
-                            color = Color.LightGray,
-                            modifier = Modifier.padding(vertical = 8.dp)
+                        Text(
+                            label,
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        BasicTextField(
+                            value = value,
+                            onValueChange = { newValue ->
+                                when (label) {
+                                    "Username" -> onUsernameChange(newValue)
+                                    "Email" -> onEmailChange(newValue)
+                                    "Phone" -> onPhoneChange(newValue)
+                                    "Date of Birth" -> onDobChange(newValue)
+                                    "Address" -> onAddressChange(newValue)
+                                }
+                            },
+                            textStyle = MaterialTheme.typography.bodyMedium.copy(
+                                textAlign = TextAlign.End
+                            ),
+                            modifier = Modifier
+                                .weight(1f) // Takes equal space
+                                .padding(start = 16.dp) // Space between label and field
                         )
                     }
+                    HorizontalDivider(
+                        thickness = 1.dp,
+                        color = Color.LightGray,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
                 }
             }
         }
@@ -299,7 +278,8 @@ private fun PhoneLayout(
         ) {
             Text(
                 text = "Save Changes",
-                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+            )
         }
     }
 }
@@ -358,7 +338,9 @@ private fun ProfileImageSection(isPhone: Boolean = false) {
         Image(
             painter = painterResource(R.drawable.beach2),
             contentDescription = "Profile Image",
-            modifier = Modifier.size(if (isPhone) 100.dp else 200.dp)
+            modifier = Modifier
+                .size(if (isPhone) 120.dp else 200.dp)
+                .clip(RoundedCornerShape(100.dp))
         )
         Surface(
             color = Color.Cyan,
@@ -422,7 +404,6 @@ fun ProfileField(label: String, value: String, onValueChange: (String) -> Unit) 
 @Composable
 fun PhonePortraitPreviewEditProfile() {
     EditProfileScreen(
-        windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     )
 }
 
@@ -430,14 +411,18 @@ fun PhonePortraitPreviewEditProfile() {
 @Composable
 fun TabletPortraitPreviewEditProfile() {
     EditProfileScreen(
-        windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+
     )
 }
 
-@Preview(showBackground = true, name = "Tablet Landscape", device = "spec:width=1280dp,height=800dp")
+@Preview(
+    showBackground = true,
+    name = "Tablet Landscape",
+    device = "spec:width=1280dp,height=800dp"
+)
 @Composable
 fun TabletLandscapePreviewEditProfile() {
     EditProfileScreen(
-        windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+
     )
 }
