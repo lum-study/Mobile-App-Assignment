@@ -9,6 +9,7 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object Register : AppScreen("Register", hasTopBar = false, hasBottomBar = false)
     data object OTP : AppScreen("OTP", hasTopBar = false, hasBottomBar = false)
     data object ForgotPassword : AppScreen("ForgotPassword", hasTopBar = false, hasBottomBar = false)
+    data object VerifyEmailWaiting : AppScreen("VerifyEmailWaiting", hasTopBar = false, hasBottomBar = false)
     data object ChangePassword : AppScreen("ChangePassword", hasTopBar = false, hasBottomBar = false)
 
     // Home Screens
@@ -69,6 +70,7 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
                 Register.route -> Register
                 OTP.route -> OTP
                 ForgotPassword.route -> ForgotPassword
+                VerifyEmailWaiting.route -> VerifyEmailWaiting
                 ChangePassword.route -> ChangePassword
                 HomeGraph.route -> HomeGraph
                 Home.route -> Home

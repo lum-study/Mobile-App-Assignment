@@ -1,16 +1,21 @@
 package com.bookblitzpremium.upcomingproject.data.database.local.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.model.AuthState
 import com.bookblitzpremium.upcomingproject.data.model.OtpAction
 import com.bookblitzpremium.upcomingproject.data.model.OtpState
+import com.bookblitzpremium.upcomingproject.data.model.PasswordResetState
 import com.bookblitzpremium.upcomingproject.data.model.SignupState
-import com.bookblitzpremium.upcomingproject.data.model.User
 import com.bookblitzpremium.upcomingproject.ui.components.NotificationService
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,26 +23,58 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
 ) : ViewModel() {
 
+    // Authentication state
     private val _authState = MutableStateFlow<AuthState>(AuthState.Unauthenticated)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
-    private val _navigationCommand = MutableStateFlow<String?>(null)
-    val navigationCommand: StateFlow<String?> = _navigationCommand.asStateFlow()
+    // User details
+    private val _user = MutableStateFlow<User?>(null)
+    val userDetails: StateFlow<User?> = _user.asStateFlow()
+
+    // Navigation command
+    private val _newNavigationCommand = MutableStateFlow<Boolean>(false)
+    val newNavigationCommand: StateFlow<Boolean> = _newNavigationCommand.asStateFlow()
+
+    fun getUserId() : String{
+        return auth.currentUser?.uid ?: ""
+    }
+
+    init{
+        auth.signOut()
+        checkAuthStatus()
+    }
+
+    fun signOut() {
+        clearAuthenticatedState()
+        auth.signOut()
+        clearSignUpState()
+        clearNavigationCommand()
+        resetPasswordState()
+    }
+
+    val uid = getUserId()
 
     fun checkAuthStatus() {
         if (auth.currentUser == null) {
             _authState.value = AuthState.Unauthenticated
+            _newNavigationCommand.value = false
         } else {
             _authState.value = AuthState.Authenticated
+            _newNavigationCommand.value = true
         }
+    }
+
+    fun getCurrentUser(): FirebaseUser? {
+        return auth.currentUser
     }
 
     fun login(email: String, password: String) {
@@ -47,97 +84,83 @@ class AuthViewModel @Inject constructor(
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         _authState.value = AuthState.Authenticated
-                        _navigationCommand.value = AppScreen.HomeGraph.route
+                        _newNavigationCommand.value = true
                     } else {
                         _authState.value = AuthState.Error(task.exception?.message ?: "Something went wrong")
-//                        _countError.value++
                     }
                 }
         }
     }
 
-    //see the user details
-    private val _user = MutableStateFlow<User?>(null)
-    val userDetails: StateFlow<User?> = _user.asStateFlow()
-
-    init {
-        // Check initial auth state
-
-//        signOut()
-        updateAuthState(auth.currentUser)
-
-        // Listen to Firebase Auth state changes
-        viewModelScope.launch {
-            auth.addAuthStateListener { firebaseAuth ->
-                updateAuthState(firebaseAuth.currentUser)
-            }
-        }
-    }
-
-    private fun updateAuthState(firebaseUser: com.google.firebase.auth.FirebaseUser?) {
-        if (firebaseUser != null) {
-            _authState.value = AuthState.Authenticated
-            _user.value = User(
-                uid = firebaseUser.uid,
-                email = firebaseUser.email,
-                displayName = firebaseUser.displayName,
-                photoUrl = firebaseUser.photoUrl?.toString(),
-                isEmailVerified = firebaseUser.isEmailVerified
-            )
-            _navigationCommand.value = AppScreen.HomeGraph.route
-        } else {
-            _authState.value = AuthState.Unauthenticated
-            _user.value = null
-            _navigationCommand.value = AppScreen.AuthGraph.route
-        }
-    }
-
-    fun clearNavigationCommand() {
-        _navigationCommand.value = null
-    }
-
-    fun signOut() {
-        auth.signOut()
-        _authState.value = AuthState.Unauthenticated
-        _navigationCommand.value = AppScreen.AuthGraph.route
-    }
-
-    //update password
-    fun sendEmailToChangePassword(email: String){
-        auth.sendPasswordResetEmail(email)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                } else {
-                }
-            }
-    }
-
-
-    //Sign up
+    // Sign up
     private val _signupState = MutableStateFlow<SignupState>(SignupState.Idle)
     val signupState: StateFlow<SignupState> = _signupState.asStateFlow()
 
-    fun signup(email: String, password: String) {
-        viewModelScope.launch {
-            _signupState.value = SignupState.Loading
-            try {
-                auth.createUserWithEmailAndPassword(email, password)
-                _signupState.value = SignupState.Success
-            } catch (e: Exception) {
-                _signupState.value = SignupState.Error("Signup failed: ${e.message}")
-            }
+    suspend fun signup(email: String, password: String): String {
+        _signupState.value = SignupState.Loading
+        return try {
+            auth.createUserWithEmailAndPassword(email, password).await()
+            val uid = getUserId()
+            _signupState.value = SignupState.Success
+            _newNavigationCommand.value = true
+            uid
+        } catch (e: FirebaseAuthUserCollisionException) {
+            _signupState.value = SignupState.Error("Email is already registered")
+            ""
+        } catch (e: FirebaseAuthInvalidCredentialsException) {
+            _signupState.value = SignupState.Error("Invalid email format")
+            ""
+        } catch (e: Exception) {
+            _signupState.value = SignupState.Error("Signup failed: ${e.message}")
+            ""
         }
+    }
+
+    fun setSignupError(message: String) {
+        _signupState.value = SignupState.Error(message)
+    }
+
+    // Password reset state
+    private val _passwordResetState = MutableStateFlow<PasswordResetState>(PasswordResetState.Idle)
+    val passwordResetState: StateFlow<PasswordResetState> = _passwordResetState.asStateFlow()
+
+    fun sendPasswordResetEmail(email: String) {
+        viewModelScope.launch {
+            _passwordResetState.value = PasswordResetState.Loading
+            try {
+                // Send the password reset email
+                auth.sendPasswordResetEmail(email).await()
+                _passwordResetState.value = PasswordResetState.Success
+                Log.d("PasswordResetViewModel", "Password reset email sent to $email")
+            } catch (e: FirebaseAuthException) {
+                when (e.errorCode) {
+                    "ERROR_USER_NOT_FOUND" -> {
+                        _passwordResetState.value = PasswordResetState.Error("No account found with this email")
+                    }
+                    "ERROR_INVALID_EMAIL" -> {
+                        _passwordResetState.value = PasswordResetState.Error("Invalid email format")
+                    }
+                    else -> {
+                        _passwordResetState.value = PasswordResetState.Error("Unknown error: ${e.message}")
+                    }
+                }
+                Log.e("PasswordResetViewModel", "Error: ${e.message}")
+            }
+
+        }
+    }
+
+    fun resetPasswordState() {
+        _passwordResetState.value = PasswordResetState.Idle
     }
 
     //OTP
     private val _state = MutableStateFlow(OtpState())
     val state = _state.asStateFlow()
-
     internal fun sendOTP(length: Int = 4): String {
         val digits = "0123456789"
         val generated = (1..length).map { digits.random() }.joinToString("")
         val now = System.currentTimeMillis()
-
         _state.update {
             it.copy(
                 generatedOtp = generated,
@@ -148,24 +171,19 @@ class AuthViewModel @Inject constructor(
                 focusedIndex = 0
             )
         }
-
         startOtpTimer() // Start the countdown
         return generated
     }
-
-
 
     private fun startOtpTimer() {
         viewModelScope.launch {
             val startTime = System.currentTimeMillis()
             val duration = 30_000L
             val endTime = startTime + duration
-
             while (System.currentTimeMillis() < endTime) {
                 val secondsLeft = (endTime - System.currentTimeMillis()) / 1000
                 delay(1000L)
             }
-
             _state.update { current ->
                 val expired = System.currentTimeMillis() - current.otpGeneratedTime >= 30_000
                 if (expired) {
@@ -176,15 +194,11 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
-
-
     fun sendOTP(context: Context) {
         val noticationService = NotificationService(context)
         val otp = sendOTP()
         noticationService.showNotification("OTP services", otp)
     }
-
-
     fun onAction(action: OtpAction) {
         when (action) {
             is OtpAction.OnChangeFieldFocused -> {
@@ -206,19 +220,16 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
-
     fun updateStateOfOTP(){
         _state.update {
             OtpState() // Reset everything to default values
         }
     }
-
     private fun enterNumber(number: Int?, index: Int) {
         val otp = _state.value.generatedOtp
         val newCode = state.value.code.mapIndexed { currentIndex, currentNumber ->
             if (currentIndex == index) number else currentNumber
         }
-
         val wasNumberRemoved = number == null
         _state.update {
             it.copy(
@@ -234,13 +245,9 @@ class AuthViewModel @Inject constructor(
             )
         }
     }
-
-
     private fun getPreviousFocusedIndex(currentIndex: Int?): Int? {
         return (currentIndex?.minus(1))?.takeIf { it >= 0 }
     }
-
-
     private fun getNextFocusedTextFieldIndex(
         currentCode: List<Int?>,
         currentFocusedIndex: Int?
@@ -248,17 +255,14 @@ class AuthViewModel @Inject constructor(
         if(currentFocusedIndex == null) {
             return null
         }
-
         if(currentFocusedIndex == 3) {
             return currentFocusedIndex
         }
-
         return getFirstEmptyFieldIndexAfterFocusedIndex(
             code = currentCode,
             currentFocusedIndex = currentFocusedIndex
         )
     }
-
     private fun getFirstEmptyFieldIndexAfterFocusedIndex(
         code: List<Int?>,
         currentFocusedIndex: Int
@@ -274,5 +278,17 @@ class AuthViewModel @Inject constructor(
         return currentFocusedIndex
     }
 
+
+    fun clearNavigationCommand() {
+        _newNavigationCommand.value = false
+    }
+
+    fun clearAuthenticatedState(){
+        _authState.value = AuthState.Unauthenticated
+    }
+
+    fun clearSignUpState() {
+        _signupState.value = SignupState.Idle
+    }
 
 }

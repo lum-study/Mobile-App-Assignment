@@ -177,19 +177,19 @@ fun LoginPage(
                         .padding(horizontal = valueHorizontal, vertical = 16.dp)
                 )
 
-                Text(
-                    text = "Forgot Password?",
-                    style = AppTheme.typography.bodyLarge,
-                    textDecoration = TextDecoration.Underline,
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .padding(start = valueHorizontal, top = 0.dp)
-                        .clickable {
-                            navController.navigate(AppScreen.OTP.route) {
-                                launchSingleTop = true
-                            }
+            Text(
+                text = "Forgot Password?",
+                style = AppTheme.typography.bodyLarge,
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(start = valueHorizontal, top = 0.dp)
+                    .clickable {
+                        navController.navigate(AppScreen.ForgotPassword.route) {
+                            launchSingleTop = true
                         }
-                )
+                    }
+            )
 
                 Column(
                     verticalArrangement = Arrangement.spacedBy(10.dp),

@@ -16,7 +16,6 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,10 +26,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.R
-import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
 import com.bookblitzpremium.upcomingproject.data.model.SignupState
 import com.bookblitzpremium.upcomingproject.ui.components.ButtonHeader
 import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
@@ -38,20 +38,53 @@ import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextFieldPassword
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 
-
 @Composable
 fun RegristerPage(
     viewModel: AuthViewModel,
     navController: NavController,
 ){
-
+    val localViewModel: LocalUserViewModel = hiltViewModel()
+    val userError = localViewModel.loading.collectAsState()
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var confirmPassword by rememberSaveable { mutableStateOf("") }
     val context = LocalContext.current
+    val signupState by viewModel.signupState.collectAsState()
+    var hello by rememberSaveable { mutableStateOf(false) }
 
-    val hello by rememberSaveable { mutableStateOf(false) }
-    val signupState by viewModel.signupState.collectAsState() // Example: StateFlow<SignupState>
+//    LaunchedEffect(verifyEmailState, navigationCommand) {
+//        when (verifyEmailState) {
+//            is VerifyEmail.WaitingForVerification -> {
+//                navController.navigate(AppScreen.VerifyEmailWaiting.route) {
+//                    popUpTo(navController.graph.startDestinationId) {
+//                        inclusive = true
+//                    }
+//                    launchSingleTop = true
+//                }
+//            }
+//            is VerifyEmail.Success -> {
+//                if (navigationCommand) {
+//                    navController.navigate(AppScreen.Home.route) {
+//                        popUpTo(navController.graph.startDestinationId) {
+//                            inclusive = true
+//                        }
+//                        launchSingleTop = true
+//                    }
+//                    viewModel.clearNavigationCommand()
+//                }
+//            }
+//            is VerifyEmail.Error -> {
+//                if ((verifyEmailState as VerifyEmail.Error).message == "User not signed in. Please sign in again.") {
+//                    navController.navigate(AppScreen.Register.route) {
+//                        popUpTo(navController.graph.startDestinationId) {
+//                            inclusive = true
+//                        }
+//                    }
+//                }
+//            }
+//            else -> { /* Idle or Loading state, do nothing */ }
+//        }
+//    }
 
     //validation
     fun getPasswordErrorMessage(password: String): String? {
@@ -154,19 +187,22 @@ fun RegristerPage(
             )
 
             ButtonHeader(
-                textResId = R.string.login,
+                textResId = R.string.register_text,
                 valueHorizontal = 16.dp,
                 onClick = {
                     if(isFormValid()){
                         viewModel.signup(email, password)
-                        hello == true
+                        hello = true
                     }
                 }
             )
 
-
-
             if(hello) {
+                CheckStatusLoading(
+                    isLoading = signupState is SignupState.Loading,
+                    backgroundAlpha = 0.5f,
+                    indicatorColor = MaterialTheme.colorScheme.primary,
+                )
 
                 CheckStatusLoading(
                     isLoading = signupState is SignupState.Loading,
@@ -175,18 +211,6 @@ fun RegristerPage(
                 )
 
                 when (signupState) {
-
-                    is SignupState.Success -> {
-                        // Navigate to the next screen on success
-                        LaunchedEffect(Unit) {
-                            navController.navigate(AppScreen.Login.route) {
-                                popUpTo(navController.graph.startDestinationId) {
-                                    inclusive = true
-                                }
-                                launchSingleTop = true
-                            }
-                        }
-                    }
                     is SignupState.Error -> {
                         Text(
                             text = (signupState as SignupState.Error).message,
@@ -194,8 +218,51 @@ fun RegristerPage(
                             modifier = Modifier.padding(16.dp)
                         )
                     }
-                    else -> { /* Idle state, do nothing */ }
+                    else -> { /* Idle or Success state, do nothing */ }
                 }
+
+//                // Handle email verification state
+//                when (verifyEmailState) {
+//                    is VerifyEmail.Success -> {
+//                        Text(
+//                            text = "Verification email sent! Please check your inbox.",
+//                            color = Color.Green,
+//                            modifier = Modifier.padding(16.dp)
+//                        )
+//                    }
+//                    is VerifyEmail.Error -> {
+//                        Text(
+//                            text = (verifyEmailState as VerifyEmail.Error).message,
+//                            color = Color.Red,
+//                            modifier = Modifier.padding(16.dp)
+//                        )
+//                    }
+//                    else -> { /* Idle or Loading state, do nothing */ }
+//                }
+
+//                when (signupState) {
+//                    is SignupState.Success -> {
+//                        // Navigate to the next screen on success
+////                        LaunchedEffect(Unit) {
+////                            navController.navigate(AppScreen.HomeGraph.route) {
+////                                popUpTo(navController.graph.startDestinationId) {
+////                                    inclusive = true
+////                                }
+////                                launchSingleTop = true
+////                            }
+////                        }
+//
+//                        viewModel.NavigationCommandToHome()
+//                    }
+//                    is SignupState.Error -> {
+//                        Text(
+//                            text = (signupState as SignupState.Error).message,
+//                            color = Color.Red,
+//                            modifier = Modifier.padding(16.dp)
+//                        )
+//                    }
+//                    else -> { /* Idle state, do nothing */ }
+//                }
             }
         }
     }

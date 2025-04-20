@@ -21,7 +21,7 @@ import com.bookblitzpremium.upcomingproject.ui.utility.isTablet
 
 @SuppressLint("ContextCastToActivity")
 @Composable
-fun DynamicOTPPage(navController: NavController, userModel: AuthViewModel) {
+fun DynamicOTPPage(navController: NavController, userModel: AuthViewModel,email: String) {
     val activity = LocalContext.current as? Activity ?: return PlaceholderUI()
 
     val windowSizeClass = getWindowSizeClass(activity)
@@ -79,7 +79,8 @@ fun DynamicOTPPage(navController: NavController, userModel: AuthViewModel) {
         },
         viewModel = userModel,
         navController = navController,
-        modifier = Modifier
+        modifier = Modifier,
+        email = email
     )
 
 }
