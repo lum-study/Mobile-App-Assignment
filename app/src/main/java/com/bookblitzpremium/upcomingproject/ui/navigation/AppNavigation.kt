@@ -14,29 +14,29 @@ import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthVi
 fun AppNavigation(
     navController: NavHostController,
     startDestination: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: AuthViewModel
 ) {
-    val userModel: AuthViewModel = hiltViewModel()
-    val navigationCommand by userModel.navigationCommand.collectAsState()
-
-    LaunchedEffect(navigationCommand) {
-        navigationCommand?.let { destination ->
-            navController.navigate(destination) {
-                popUpTo(navController.graph.startDestinationId) {
-                    inclusive = true
-                }
-                launchSingleTop = true
-            }
-            userModel.clearNavigationCommand()
-        }
-    }
+//    val navigationCommand by userModel.navigationCommand.collectAsState()
+//
+//    LaunchedEffect(navigationCommand) {
+//        navigationCommand?.let { destination ->
+//            navController.navigate(destination) {
+//                popUpTo(navController.graph.startDestinationId) {
+//                    inclusive = true
+//                }
+//                launchSingleTop = true
+//            }
+//            userModel.clearNavigationCommand()
+//        }
+//    }
 
     NavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier,
     ) {
-        authNavGraph(navController, userModel)
+        authNavGraph(navController, viewModel)
         homeNavGraph(navController)
         searchNavGraph(navController)
         scheduleNavGraph(navController)

@@ -1,6 +1,7 @@
 package com.bookblitzpremium.upcomingproject
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -9,24 +10,33 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -40,15 +50,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.common.enums.BottomNavigation
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
+
 import com.bookblitzpremium.upcomingproject.ui.navigation.AppNavigation
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.google.firebase.FirebaseApp
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.UUID
 
 enum class TravelScreen() {
     LOGIN,
@@ -69,20 +85,120 @@ class MainActivity : ComponentActivity() {
         FirebaseApp.initializeApp(this)
         setContent {
             AppTheme {
+
                 App()
+//                PermissionRequestScreen()
             }
         }
     }
 }
 
+@Composable
+fun UserScreen(
+    viewModel: LocalUserViewModel = hiltViewModel()
+) {
+    val users by viewModel.selectAllUser().collectAsState(initial = emptyList())
+    val loading by viewModel.loading.collectAsState()
+    val error by viewModel.error.collectAsState()
+    val success by viewModel.success.collectAsState()
+    val scrollState = rememberScrollState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Users",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        error?.let {
+            Text(
+                text = it,
+                color = Color.Red,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+        }
+
+        success?.let {
+            Text(
+                text = it,
+                color = Color.Green,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+        }
+
+        if (loading) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+        } else {
+            if (users.isEmpty()) {
+                Text(
+                    text = "No users found",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    textAlign = TextAlign.Center
+                )
+            } else {
+                Column(
+                    modifier = Modifier
+                        .verticalScroll(scrollState)
+                ) {
+                    users.forEach { user ->
+                        Text(
+                            text = "Email: ${user.email ?: "N/A"}, Name: ${user.displayName ?: "Anonymous"}",
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+        // Button to insert a test user
+        Button(
+            onClick = {
+                val newUser = User(
+                    uid = UUID.randomUUID().toString(),
+                    email = "test${System.currentTimeMillis()}@example.com",
+                    displayName = "Test User",
+                    photoUrl = null
+                )
+                viewModel.checkAndInsertUsers(listOf(newUser))
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text("Insert Test User")
+        }
+    }
+}
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 806)
 @Composable
 fun App(
     navController: NavHostController = rememberNavController()
 ) {
-    val startDestination = AppScreen.AuthGraph.route
+    val viewModel: AuthViewModel = hiltViewModel()
+
+    val naviagtionRoute = viewModel.navigationCommand.collectAsState()
+
+    Log.e("Login","it is came from the home" + naviagtionRoute.value.toString())
+
+    val startDestination = if(naviagtionRoute.value) AppScreen.HomeGraph.route else AppScreen.AuthGraph.route
+
     val backStackEntry by navController.currentBackStackEntryAsState()
+
     val currentScreen = AppScreen.fromRoute(
         backStackEntry?.destination?.route
     )
@@ -104,7 +220,7 @@ fun App(
             }
         }
     ) { innerPadding ->
-        AppNavigation(navController, startDestination, Modifier.padding(innerPadding))
+        AppNavigation(navController, startDestination, Modifier.padding(innerPadding), viewModel)
     }
 }
 

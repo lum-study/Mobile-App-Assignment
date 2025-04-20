@@ -8,7 +8,7 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object OTP : AppScreen("OTP", hasTopBar = false, hasBottomBar = false)
     data object ForgotPassword :
         AppScreen("ForgotPassword", hasTopBar = false, hasBottomBar = false)
-
+    data object VerifyEmailWaiting : AppScreen("VerifyEmailWaiting", hasTopBar = false, hasBottomBar = false)
     data object ChangePassword :
         AppScreen("ChangePassword", hasTopBar = false, hasBottomBar = false)
 

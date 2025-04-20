@@ -9,6 +9,7 @@ import com.bookblitzpremium.upcomingproject.data.database.local.dao.RatingDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.RecentSearchDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.ScheduleDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.TripPackageDao
+import com.bookblitzpremium.upcomingproject.data.database.local.dao.UserDao
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
@@ -64,6 +65,12 @@ object DatabaseModule {
     @Singleton
     fun provideRecentSearch(appDatabase: AppDatabase): RecentSearchDao {
         return appDatabase.recentSearchDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideLocalUser(appDatabase: AppDatabase): UserDao {
+        return appDatabase.userDao()
     }
 
     @Provides

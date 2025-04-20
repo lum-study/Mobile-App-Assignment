@@ -13,13 +13,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,8 +34,11 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.R
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
+import com.bookblitzpremium.upcomingproject.data.model.VerifyEmail
 import com.bookblitzpremium.upcomingproject.ui.components.ButtonHeader
+import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
 import com.bookblitzpremium.upcomingproject.ui.components.CustomDialog
 import com.bookblitzpremium.upcomingproject.ui.components.TextEmailSent
 import com.bookblitzpremium.upcomingproject.ui.components.TextHeader
@@ -55,13 +63,13 @@ fun ForgetPassword(
     viewModel: AuthViewModel,
     navController: NavController
 ){
+    val verifyEmail = viewModel.verifyEmail.collectAsState()
     val valueHorizontal = if (showToggleToTablet) 46.dp else 16.dp
     val maxSizeAvailable = if (showToggleToTablet) 0.4f else 1f
     val offsetValueX = if (showToggleToTablet) 620.dp else 0.dp
     val offsetValueY = if (showToggleToTablet) 120.dp else 200.dp
 
     var emails by rememberSaveable { mutableStateOf("") }
-    var showDialog by rememberSaveable { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -100,25 +108,33 @@ fun ForgetPassword(
             )
 
             Spacer(modifier = Modifier.height(10.dp))
-
             ButtonHeader(
                 textResId = R.string.login,
                 valueHorizontal = valueHorizontal,
                 onClick = {
-                    showDialog = true
+                    navController.navigate("${AppScreen.OTP.route}/$emails")
+//                    viewModel.resetVerifyEmailState()
                 }
             )
 
-            if (showDialog) {
-                viewModel.sendEmailToChangePassword(emails)
-                CustomDialog(
-                    onDismissRequest = {  },
-                    onNextClick = {
-                        onNextButtonClicked()
-                    }
-                )
-            }
-
+//            CheckStatusLoading(
+//                isLoading = verifyEmail is VerifyEmail.Loading,
+//                backgroundAlpha = 0.5f,
+//                indicatorColor = MaterialTheme.colorScheme.primary,
+//            )
+//
+//            if (verifyEmail is VerifyEmail.Error) {
+//                val message = (verifyEmail as VerifyEmail.Error).message
+//                Text(text = message, color = Color.Red)
+//            }
+//
+//
+//            LaunchedEffect(verifyEmail) {
+//                if (verifyEmail is VerifyEmail.Verified) {
+//                    navController.navigate("${AppScreen.OTP.route}/$emails")
+//                    viewModel.resetVerifyEmailState()
+//                }
+//            }
         }
     }
 }

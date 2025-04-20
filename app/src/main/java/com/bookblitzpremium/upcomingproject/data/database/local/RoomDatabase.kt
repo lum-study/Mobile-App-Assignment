@@ -8,12 +8,14 @@ import com.bookblitzpremium.upcomingproject.data.database.local.dao.RatingDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.RecentSearchDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.ScheduleDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.TripPackageDao
+import com.bookblitzpremium.upcomingproject.data.database.local.dao.UserDao
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Flight
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Rating
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.RecentSearch
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Schedule
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.TripPackage
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 
 @Database(
     entities = [
@@ -23,6 +25,7 @@ import com.bookblitzpremium.upcomingproject.data.database.local.entity.TripPacka
         TripPackage::class,
         Schedule::class,
         RecentSearch::class,
+        User::class,
     ],
     version = 1
 )
@@ -33,4 +36,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun scheduleDao(): ScheduleDao
     abstract fun tripPackageDao(): TripPackageDao
     abstract fun recentSearchDao(): RecentSearchDao
+    abstract fun userDao(): UserDao
 }

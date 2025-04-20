@@ -3,14 +3,17 @@ package com.bookblitzpremium.upcomingproject.ui.navigation
 import android.annotation.SuppressLint
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import androidx.navigation.navArgument
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.ui.screen.auth.DynamicForgetPasswordPage
 import com.bookblitzpremium.upcomingproject.ui.screen.auth.DynamicOTPPage
 import com.bookblitzpremium.upcomingproject.ui.screen.auth.LoginPage
 import com.bookblitzpremium.upcomingproject.ui.screen.auth.RegristerPage
+
 
 
 @SuppressLint("UnrememberedGetBackStackEntry")
@@ -29,14 +32,25 @@ fun NavGraphBuilder.authNavGraph(navController: NavHostController, userModel: Au
             )
         }
 
+//        composable(AppScreen.VerifyEmailWaiting.route){
+//            VerifyEmailWaitingScreen(navController)
+//        }
+
         composable(AppScreen.Register.route) {
             RegristerPage( userModel,navController)
         }
 
-        composable(AppScreen.OTP.route) {
+        composable(
+            route = "${AppScreen.OTP.route}/{email}",
+            arguments = listOf(navArgument("email") {
+                type = NavType.StringType
+            })
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
             DynamicOTPPage(
                 navController = navController,
-                userModel = userModel
+                userModel = userModel,
+                email = email
             )
         }
 

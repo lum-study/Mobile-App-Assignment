@@ -157,7 +157,7 @@ fun LoginPage(
                     .align(Alignment.End)
                     .padding(start = valueHorizontal, top = 0.dp)
                     .clickable {
-                        navController.navigate(AppScreen.OTP.route) {
+                        navController.navigate(AppScreen.ForgotPassword.route) {
                             launchSingleTop = true
                         }
                     }

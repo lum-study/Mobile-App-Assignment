@@ -1,3 +1,17 @@
 package com.bookblitzpremium.upcomingproject.data.database.local.entity
 
-data class User()
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.google.firebase.firestore.IgnoreExtraProperties
+
+@IgnoreExtraProperties
+@Entity(
+    tableName = "user",
+)
+
+data class User(
+    @PrimaryKey val uid: String = "",
+    val email: String? = "",
+    val displayName: String? = "",
+    val photoUrl: String? = ""
+)
