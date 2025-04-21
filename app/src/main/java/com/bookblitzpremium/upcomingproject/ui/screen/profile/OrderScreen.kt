@@ -16,6 +16,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -50,20 +55,30 @@ fun OrderScreen(windowSizeClass: WindowSizeClass) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(R.drawable.beach),
-                contentDescription = "Left Image",
+            IconButton(
+                onClick = { /* Handle back navigation */ },
                 modifier = Modifier.size(24.dp)
-            )
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
             Text(
                 "My Order/Package",
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
             )
-            Image(
-                painter = painterResource(R.drawable.beach),
-                contentDescription = "Right Image",
+            IconButton(
+                onClick = { /* Handle back navigation */ },
                 modifier = Modifier.size(24.dp)
-            )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.QrCodeScanner,
+                    contentDescription = "Back",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         }
 
         if (isTabletPortrait) {
