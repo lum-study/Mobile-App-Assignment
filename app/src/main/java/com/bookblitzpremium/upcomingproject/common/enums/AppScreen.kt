@@ -31,6 +31,10 @@ enum class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomBar
     // Profile Screens
     ProfileGraph("ProfileGraph", hasTopBar = false, hasBottomBar = false),
     Profile("Profile", hasTopBar = true, hasBottomBar = true),
+    EditProfile("edit_profile", hasTopBar = true, hasBottomBar = false),
+    PaymentMethods("payment_methods", hasTopBar = true, hasBottomBar = false),
+    MyOrders("my_orders", hasTopBar = true, hasBottomBar = false),
+    Ratings("ratings", hasTopBar = true, hasBottomBar = false),
 
     //Booking Date and people
     BookingDate("BookingDate", hasTopBar = true, hasBottomBar = false),

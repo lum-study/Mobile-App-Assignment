@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.bookblitzpremium.upcomingproject.navigation.profileNavGraph
 import com.bookblitzpremium.upcomingproject.ui.screen.hotel.MobieLayout
 
 @Composable
