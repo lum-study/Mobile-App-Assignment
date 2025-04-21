@@ -3,6 +3,7 @@ package com.bookblitzpremium.upcomingproject.data.database.local
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.FlightDao
+import com.bookblitzpremium.upcomingproject.data.database.local.dao.HotelBookingDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.HotelDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.PaymentDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.RatingDao
@@ -13,6 +14,7 @@ import com.bookblitzpremium.upcomingproject.data.database.local.dao.TripPackageD
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.UserDao
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Flight
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Rating
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.RecentSearch
@@ -24,6 +26,7 @@ import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 @Database(
     entities = [
         Flight::class,
+        HotelBooking::class,
         Hotel::class,
         Payment::class,
         Rating::class,
@@ -37,6 +40,7 @@ import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun flightDao(): FlightDao
+    abstract fun hotelBookingDao(): HotelBookingDao
     abstract fun hotelDao(): HotelDao
     abstract fun paymentDao(): PaymentDao
     abstract fun ratingDao(): RatingDao
