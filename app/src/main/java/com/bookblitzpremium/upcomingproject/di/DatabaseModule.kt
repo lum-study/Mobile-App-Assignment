@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.bookblitzpremium.upcomingproject.data.database.local.AppDatabase
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.FlightDao
+import com.bookblitzpremium.upcomingproject.data.database.local.dao.HotelBookingDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.HotelDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.PaymentDao
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.RatingDao
@@ -37,6 +38,12 @@ object DatabaseModule {
     @Singleton
     fun provideFlightDao(appDatabase: AppDatabase): FlightDao {
         return appDatabase.flightDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideHotelBookingDao(appDatabase: AppDatabase): HotelBookingDao {
+        return appDatabase.hotelBookingDao()
     }
 
     @Provides
