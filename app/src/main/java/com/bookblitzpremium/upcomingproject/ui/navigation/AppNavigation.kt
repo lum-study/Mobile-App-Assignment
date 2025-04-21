@@ -9,7 +9,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
-import com.bookblitzpremium.upcomingproject.navigation.profileNavGraph
 
 @Composable
 fun AppNavigation(
