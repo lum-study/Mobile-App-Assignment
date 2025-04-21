@@ -6,11 +6,9 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object Login : AppScreen("Login", hasTopBar = false, hasBottomBar = false)
     data object Register : AppScreen("Register", hasTopBar = false, hasBottomBar = false)
     data object OTP : AppScreen("OTP", hasTopBar = false, hasBottomBar = false)
-    data object ForgotPassword :
-        AppScreen("ForgotPassword", hasTopBar = false, hasBottomBar = false)
+    data object ForgotPassword : AppScreen("ForgotPassword", hasTopBar = false, hasBottomBar = false)
 
-    data object ChangePassword :
-        AppScreen("ChangePassword", hasTopBar = false, hasBottomBar = false)
+    data object ChangePassword : AppScreen("ChangePassword", hasTopBar = false, hasBottomBar = false)
 
     // Home Screens
     data object HomeGraph : AppScreen("HomeGraph", hasTopBar = false, hasBottomBar = false)
@@ -31,7 +29,8 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object ProfileGraph : AppScreen("ProfileGraph", hasTopBar = false, hasBottomBar = false)
     data object Profile : AppScreen("Profile", hasTopBar = false, hasBottomBar = true)
     data object EditProfile : AppScreen("EditProfile", hasTopBar = true, hasBottomBar = false)
-    data object PaymentMethods: AppScreen("payment_methods", hasTopBar = true, hasBottomBar = false)
+    data object PaymentMethods : AppScreen("payment_methods", hasTopBar = true, hasBottomBar = false)
+
     data object MyOrders : AppScreen("my_orders", hasTopBar = true, hasBottomBar = false)
     data object Ratings : AppScreen("ratings", hasTopBar = true, hasBottomBar = false)
 
