@@ -80,7 +80,6 @@ fun HomeScreen(navController: NavHostController) {
     val tripPackageList = remember { localTripPackageViewModel.getAllTripPackagesPagingFlow() }.collectAsLazyPagingItems()
 
     val username = "Abu Bakar"
-
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
     AppTheme {
@@ -502,12 +501,7 @@ fun HotelSection(
                         hotel = hotel,
                         modifier = Modifier.width(200.dp),
                         onClick = {
-                            navController.navigate(
-                                AppScreen.Hotel.passData(
-                                    hotel!!.id,
-                                    ""
-                                )
-                            )
+                            navController.navigate("${AppScreen.Hotel.route}/${hotel?.id}")
                         })
                 }
             }

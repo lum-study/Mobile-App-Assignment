@@ -1,7 +1,7 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.booking
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -10,51 +10,51 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Traffic
+import androidx.compose.material.icons.filled.Hotel
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
-import com.bookblitzpremium.upcomingproject.ui.screen.hotel.SelectingFigure
+import com.bookblitzpremium.upcomingproject.ui.components.TeamMemberDropdown
+import java.net.URLEncoder
 
 @Composable
 fun SelectedGuestResult(
-    iconRes: Int,   // 🔥 Pass the image resource as an argument
+    iconRes: ImageVector ,   // 🔥 Pass the image resource as an argument
     label: String,
     number:Int
 ) {
@@ -67,10 +67,11 @@ fun SelectedGuestResult(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(iconRes),
+            Icon(
+                imageVector = iconRes,
                 contentDescription = label,
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(48.dp),
+                tint = Color.Unspecified // Or customize as needed
             )
 
             Text(
@@ -88,7 +89,6 @@ fun TravelInfoCard() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(Color(0xFFFF7043)) // Orange background
             .padding(16.dp)
@@ -97,7 +97,7 @@ fun TravelInfoCard() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                painter = painterResource(R.drawable.ic_launcher_foreground), // Change to your icon resource
+                painter = painterResource(R.drawable.icon_logo), // Change to your icon resource
                 contentDescription = "Travel Icon",
                 tint = Color.White,
                 modifier = Modifier
@@ -128,10 +128,18 @@ fun TravelInfoCard() {
 @Composable
 fun GuestSection(
     modifier: Modifier,
-    navController: NavController
+    navController: NavController,
+    selectedAdult: Int,
+    roomBooked: Int,
+    price: String,
+    hotelID: String,
+    startDate : String,
+    endDate: String,
 ){
     Column(
         modifier = Modifier
+            .fillMaxSize()
+            .padding( vertical = 16.dp)
     ) {
         Text(
             text = "Total Guest",
@@ -144,21 +152,28 @@ fun GuestSection(
         Row(
             modifier = Modifier
                 .fillMaxWidth()  // ✅ Takes up full width
-                .padding(top = 16.dp, start = 50.dp)
-                ,
-            horizontalArrangement = Arrangement.spacedBy(60.dp) // ✅ Ensures proper spacing
+                .padding(top = 16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            SelectedGuestResult(R.drawable.adults, "Adults", 5)
-            SelectedGuestResult(R.drawable.children,"Children", 5)
-            SelectedGuestResult(R.drawable.infant, "Infant", 5)
+            SelectedGuestResult(Icons.Filled.Person, "Adults", selectedAdult)
+            SelectedGuestResult(Icons.Filled.Hotel ,"Room", roomBooked)
         }
-
 
         Spacer(modifier = Modifier.weight(1f))
 
+        Log.e("Hello", hotelID)
+
         Button(
             onClick = {
-                navController.navigate(AppScreen.Home.route)
+                val totalPerson = selectedAdult
+                val totalPrice = (price.toDoubleOrNull() ?: 0.0) * roomBooked
+                val hotelID = URLEncoder.encode(hotelID, "UTF-8")
+                val startDate = URLEncoder.encode(startDate, "UTF-8")
+                val endDate = URLEncoder.encode(endDate, "UTF-8")
+
+                navController.navigate(
+                    "${AppScreen.BookingReview.route}/$hotelID/$startDate/$endDate/$totalPerson/$roomBooked/$totalPrice"
+                )
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Black, // Ensure the background is visible
@@ -170,8 +185,6 @@ fun GuestSection(
         ) {
             Text(text = "Next")
         }
-
-        Spacer(modifier = Modifier.height(20.dp))
     }
 }
 
@@ -180,27 +193,72 @@ fun GuestSection(
 @Composable
 fun BookingAmount(
     modifier: Modifier,
-    navController: NavController
+    navController: NavController,
+    hotelID :String,
+    hotelPrice :String,
+    startDate: String,
+    endDate: String
 ){
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .fillMaxHeight()
-            .padding(16.dp)
+            .padding(vertical = 16.dp, horizontal = 24.dp)
         , verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
 
         TravelInfoCard()
 
-        SelectPeopleLevel("Adult", "Ages 13 or above")
+        Spacer(modifier = Modifier.height(5.dp))
 
-        SelectPeopleLevel("Children", "Ages 2 - 12")
+        var selected by rememberSaveable { mutableStateOf<String?>(null) }
+        var selectedAdult by rememberSaveable { mutableStateOf(1) }
+        var selectedRoom by rememberSaveable { mutableStateOf(1) }
 
-        SelectPeopleLevel("Infant" , "Under ages 2")
+        val names = listOf(
+            "4 Person - 1 Room",
+            "8 Person - 2 Room",
+            "12 Person - 3 Room",
+            "16 Person - 4 Room",
+            "20 Person - 5 Room",
+            "24 Person - 6 Room",
+        )
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Image(
+            painter = painterResource(id = R.drawable.maps)
+            ,contentScale = ContentScale.Crop,
+            contentDescription = "Maps",
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.3f)
+                .clip(RoundedCornerShape(16.dp))
+        )
 
-        GuestSection(modifier = Modifier, navController = navController)
+        Spacer(modifier = Modifier.height(5.dp))
+
+        TeamMemberDropdown(
+            options = names,
+            selectedOption = selected,
+            onOptionSelected = {
+                selected = it
+
+                // 👇 Extract numbers from the string
+                val personRegex = Regex("(\\d+) Person")
+                val roomRegex = Regex("(\\d+) Room")
+
+                val personMatch = personRegex.find(it)?.groupValues?.getOrNull(1)?.toIntOrNull()
+                val roomMatch = roomRegex.find(it)?.groupValues?.getOrNull(1)?.toIntOrNull()
+
+                selectedAdult = personMatch ?: 1
+                selectedRoom = roomMatch ?: 1
+            },
+            modifier = Modifier
+        )
+
+        Spacer(modifier = Modifier.height(5.dp))
+
+        Log.e("Perosn and room", selectedAdult.toString() + selectedRoom.toString())
+
+        GuestSection(modifier = Modifier, navController = navController, selectedAdult, selectedRoom, hotelPrice, hotelID = hotelID,startDate = startDate, endDate = endDate)
     }
 }
 
@@ -208,10 +266,13 @@ fun BookingAmount(
 fun SelectPeopleLevel(
     label1: String,
     label2:String,
+    onCountChanged: (Int) -> Unit
 ){
-
-    var count by remember { mutableIntStateOf(1) }
-
+    var count by rememberSaveable { mutableStateOf(1) }
+    // Inform parent when count changes
+    LaunchedEffect(count) {
+        onCountChanged(count)
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -251,10 +312,10 @@ fun SelectPeopleLevel(
                 Icon(
                     imageVector = Icons.Filled.Remove,
                     contentDescription = "Remove",
-                    tint = Color.Black,
+                    tint = if (count > 1) Color.Black else Color.Gray, // Disable button color when count is 1
                     modifier = Modifier.size(24.dp)
-                        .clickable {
-                            count --
+                        .clickable(enabled = count > 1) { // Disable click when count is 1
+                            count--
                         }
                 )
             }

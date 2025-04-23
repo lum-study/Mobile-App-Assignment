@@ -1,6 +1,8 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.auth
 
 import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Lock
@@ -27,12 +30,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.util.Log
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
@@ -43,6 +49,7 @@ import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextFieldPassword
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+
 
 
 @Composable
@@ -99,83 +106,104 @@ fun LoginPage(
             Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
             return false
         }
-
         return true
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
     ) {
-        Column(
+
+        Box(
             modifier = Modifier
-                .fillMaxHeight()
-                .fillMaxWidth(maxSizeAvailable)
-                .padding(horizontal = 28.dp)
-                .offset(x = offsetValueX),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .fillMaxWidth()
+                .size(32.dp)
+                .background(Color.Transparent) // Match your app's theme
         ) {
-            Text(
-                text = "Welcome Back!",
-                style = AppTheme.typography.largeBold,
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = "Logo",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .padding(top = 0.dp, bottom = 30.dp)
-                    .align(Alignment.CenterHorizontally)
+//                    .size(60.dp)
+                    .align(Alignment.TopStart) // Center the logo in the top bar
             )
+        }
 
-            CustomTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = "Username",
-                placeholder = "Enter your username",
-                leadingIcon = Icons.Default.Person,
-                trailingIcon = Icons.Default.Clear,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = valueHorizontal, vertical = 12.dp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            CustomTextFieldPassword(
-                value = password,
-                onValueChange = { password = it },
-                label = "Password",
-                placeholder = "Enter your Password",
-                leadingIcon = Icons.Default.Lock,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = valueHorizontal, vertical = 16.dp)
-            )
-
-            Text(
-                text = "Forgot Password?",
-                style = AppTheme.typography.bodyLarge,
-                textDecoration = TextDecoration.Underline,
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .padding(start = valueHorizontal, top = 0.dp)
-                    .clickable {
-                        navController.navigate(AppScreen.OTP.route) {
-                            launchSingleTop = true
-                        }
-                    }
-            )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                modifier = Modifier.padding(top = 40.dp)
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(maxSizeAvailable)
+                    .padding(horizontal = 28.dp)
+                    .offset(x = offsetValueX),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                ButtonHeader(
-                    textResId = R.string.login,
-                    valueHorizontal = valueHorizontal,
-                    onClick = {
-                        if (isFormValid()) {
-                            viewModel.login(email, password)
-                        }
-                    }
+                Text(
+                    text = "Welcome Back!",
+                    style = AppTheme.typography.largeBold,
+                    modifier = Modifier
+                        .padding(top = 0.dp, bottom = 30.dp)
+                        .align(Alignment.CenterHorizontally)
                 )
+
+                CustomTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = "Username",
+                    placeholder = "Enter your username",
+                    leadingIcon = Icons.Default.Person,
+                    trailingIcon = Icons.Default.Clear,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = valueHorizontal, vertical = 12.dp)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                CustomTextFieldPassword(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = "Password",
+                    placeholder = "Enter your Password",
+                    leadingIcon = Icons.Default.Lock,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = valueHorizontal, vertical = 16.dp)
+                )
+
+                Text(
+                    text = "Forgot Password?",
+                    style = AppTheme.typography.bodyLarge,
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .padding(start = valueHorizontal, top = 0.dp)
+                        .clickable {
+                            navController.navigate(AppScreen.OTP.route) {
+                                launchSingleTop = true
+                            }
+                        }
+                )
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.padding(top = 40.dp)
+                ) {
+                    ButtonHeader(
+                        textResId = R.string.login,
+                        valueHorizontal = valueHorizontal,
+                        onClick = {
+                            if (isFormValid()) {
+                                viewModel.login(email, password)
+                            }
+                        }
+                    )
 
 //                if (authState !is AuthState.Authenticated) {
 //                    SignInWithGoogle(
@@ -186,25 +214,29 @@ fun LoginPage(
 //                    )
 //                }
 
-                Text(
-                    text = stringResource(R.string.register_account),
-                    style = AppTheme.typography.bodyLarge,
-                    textDecoration = TextDecoration.Underline,
-                    modifier = Modifier
-                        .align(Alignment.Start)
-                        .padding(start = valueHorizontal, top = 30.dp)
-                        .clickable {
-                            navController.navigate(AppScreen.Register.route)
-                        }
-                )
+                    Text(
+                        text = stringResource(R.string.register_account),
+                        style = AppTheme.typography.bodyLarge,
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier
+                            .align(Alignment.Start)
+                            .padding(start = valueHorizontal, top = 30.dp)
+                            .clickable {
+                                navController.navigate(AppScreen.Register.route)
+                            }
+                    )
+                }
             }
+
+            CheckStatusLoading(
+                isLoading = authState is AuthState.Loading,
+                backgroundAlpha = 0.5f,
+                indicatorColor = MaterialTheme.colorScheme.primary,
+            )
+
         }
 
-        CheckStatusLoading(
-            isLoading = authState is AuthState.Loading,
-            backgroundAlpha = 0.5f,
-            indicatorColor = MaterialTheme.colorScheme.primary,
-        )
+
 
     }
 }

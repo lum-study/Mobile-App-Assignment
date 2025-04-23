@@ -10,12 +10,16 @@ import androidx.navigation.navArgument
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.booking.BookingAmount
 import com.bookblitzpremium.upcomingproject.ui.screen.booking.BookingDatePage
+import com.bookblitzpremium.upcomingproject.ui.screen.booking.HotelBookingListScreen
+import com.bookblitzpremium.upcomingproject.ui.screen.booking.HotelDetailScreen
+import com.bookblitzpremium.upcomingproject.ui.screen.booking.ModifyHotelBooking
 import com.bookblitzpremium.upcomingproject.ui.screen.booking.ReviewFinalPackageSelected
 import com.bookblitzpremium.upcomingproject.ui.screen.home.HomeScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.hotel.OverlappingContentTest
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.FlightScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.ScheduleScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.TripPackageScreen
+import java.net.URLDecoder
 
 fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
     navigation(
@@ -52,24 +56,38 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
             val bookingID = backStackEntry.arguments?.getString("bookingID") ?: ""
             FlightScreen(flightID = flightID, bookingID = bookingID)
         }
+
+//        composable(
+//            route = "${AppScreen.Hotel.route}/{hotelID}/{tripPackageID}"
+//        ) { backStackEntry ->
+//            val tripPackageID = backStackEntry.arguments?.getString("tripPackageID") ?: ""
+//            val hotelID = backStackEntry.arguments?.getString("hotelID") ?: ""
+//            OverlappingContentTest(2, navController)
+//        }
+
         composable(
-            route = "${AppScreen.Hotel.route}/{hotelID}/{tripPackageID}"
+            AppScreen.EditScreen.route
+        ) {
+            HotelBookingListScreen(navController,userId = "")
+        }
+
+        composable(
+            "${AppScreen.BookingHistory.route}/{encodedBooking}",
         ) { backStackEntry ->
-            val tripPackageID = backStackEntry.arguments?.getString("tripPackageID") ?: ""
-            val hotelID = backStackEntry.arguments?.getString("hotelID") ?: ""
-            OverlappingContentTest(2, navController)
-        }
-        composable(AppScreen.BookingDate.route) {
-            BookingDatePage(modifier = Modifier, navController)
+            val encodedBooking = backStackEntry.arguments?.getString("encodedBooking") ?: ""
+            val booking = try {
+                URLDecoder.decode(encodedBooking, "UTF-8")
+            } catch (e: Exception) {
+                encodedBooking
+            }
+            ModifyHotelBooking(
+                navController = navController,
+                modifier = Modifier,
+                booking = booking
+            )
         }
 
-        composable(AppScreen.BookingPeople.route) {
-            BookingAmount(modifier = Modifier, navController)
-        }
 
-        composable(AppScreen.BookingReview.route) {
-            ReviewFinalPackageSelected(modifier = Modifier, navController = navController)
-        }
 
     }
 }

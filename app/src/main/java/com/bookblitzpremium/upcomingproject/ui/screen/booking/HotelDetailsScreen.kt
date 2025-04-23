@@ -1,0 +1,395 @@
+package com.bookblitzpremium.upcomingproject.ui.screen.booking
+
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.R
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
+import com.bookblitzpremium.upcomingproject.ui.components.Base64Image
+import com.bookblitzpremium.upcomingproject.ui.components.SkeletonLoader
+import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
+import kotlinx.coroutines.delay
+import java.net.URLEncoder
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewScreen(){
+    val navController = rememberNavController()
+    HotelDetailScreen(navController, hotelBookingId = "dgdf")
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HotelDetailScreen(
+    navController: NavController,
+    hotelBookingId: String,
+    viewModel: LocalHotelViewModel = hiltViewModel()
+) {
+    // 1) Kick off fetch once, keyed on the booking ID
+    LaunchedEffect(hotelBookingId) {
+        viewModel.getHotelByID(hotelBookingId)
+    }
+
+    // 2) Observe hotel data
+    val hotel by viewModel.selectedHotel.collectAsState()
+
+    // 3) Show loading or content
+    if (hotel == null) {
+        Box(
+            Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            SkeletonLoader()
+        }
+    } else {
+        HotelDetailContent(
+            hotel = hotel!!,
+            onBook = { price ->
+                val hotelID = URLEncoder.encode(hotel?.id, "UTF-8")
+                val hotelPrice = URLEncoder.encode(hotel?.price.toString(), "UTF-8")
+                navController.navigate(
+                    "${AppScreen.BookingDate.route}/$hotelID/$hotelPrice"
+                )
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HotelDetailContent(
+    hotel: Hotel,
+    onBook: (String) -> Unit
+) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .background(Color.White)
+    ) {
+        HotelImageSection(hotel.imageUrl)
+        Spacer(Modifier.height(16.dp))
+        HotelInfoSection(hotel.name, hotel.address, hotel.rating)
+        Spacer(Modifier.height(16.dp))
+        AboutSection(hotel.name, hotel.rating)
+        Spacer(Modifier.weight(1f))
+        BookNowButton(price = hotel.price.toString(), onBook = onBook)
+    }
+}
+
+@Composable
+private fun HotelImageSection(imageUrl: String) {
+    var showImage by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        delay(300) // Delay rendering this section
+        showImage = true
+    }
+
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .aspectRatio(3f / 4f)
+            .clip(RoundedCornerShape(16.dp))
+    ) {
+        if (showImage) {
+            UrlImage(
+                imageUrl = imageUrl,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+    }
+}
+
+
+@Composable
+private fun HotelInfoSection(name: String, address: String, rating: Double) {
+    Column(Modifier.padding(horizontal = 16.dp)) {
+        Text(name, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(8.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.LocationOn, null, tint = Color.Gray)
+            Spacer(Modifier.width(4.dp))
+            Text(address, color = Color.Gray, fontSize = 14.sp)
+        }
+        Spacer(Modifier.height(12.dp))
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(24.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            RatingItem(rating)
+            StatItem(Icons.Default.DirectionsCar, "3000 km")
+            StatItem(Icons.Default.Restaurant, "108 avail.")
+        }
+    }
+}
+
+@Composable
+private fun RatingItem(rating: Double) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(Icons.Default.Star, null, tint = Color(0xFFFFD700))
+        Spacer(Modifier.width(4.dp))
+        Text(rating.toString(), fontSize = 14.sp)
+    }
+}
+
+@Composable
+private fun StatItem(icon: ImageVector, text: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(icon, null, tint = Color.Gray)
+        Spacer(Modifier.width(4.dp))
+        Text(text, fontSize = 14.sp)
+    }
+}
+
+@Composable
+private fun AboutSection(name: String, rating: Double) {
+    Column(Modifier.padding(horizontal = 16.dp)) {
+        Text("About Destination", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(4.dp))
+        Text(generateHotelDescription(name, rating), fontSize = 14.sp, color = Color.Gray)
+    }
+}
+
+@Composable
+private fun BookNowButton(price: String, onBook: (String) -> Unit) {
+    Button(
+        onClick = { onBook(price) },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+    ) {
+        Text("Book Now", color = Color.White)
+    }
+}
+
+
+//@Composable
+//fun BookingHotelScreen(
+//    navController: NavController,
+//    viewModel : LocalHotelViewModel = hiltViewModel(),
+//    hotelBooking: String
+//) {
+//    Column(
+//        modifier = Modifier
+//            .fillMaxSize()
+//    ) {
+//        LaunchedEffect(Unit) {
+//            viewModel.getHotelByID(hotelBooking)
+//        }
+//        val hotel by viewModel.selectedHotel.collectAsState()
+//        if (hotel != null) {
+//            val hotelData = hotel!!
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .fillMaxHeight(0.64f)
+//                    .clip(RoundedCornerShape(bottomEnd = 16.dp, bottomStart = 16.dp))
+//            ) {
+//
+//                UrlImage(
+//                    imageUrl = hotelData.imageUrl,
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .padding(horizontal = 16.dp)
+//                        .clip(RoundedCornerShape(16.dp)),
+//                    contentScale = ContentScale.Crop,
+//                )
+//            }
+//
+//            // Main Content
+//            Column(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .background(Color.White)
+//                    .padding(16.dp)
+//            ) {
+//                // Title with Heart Icon
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxWidth(),
+//                    horizontalArrangement = Arrangement.SpaceBetween,
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    Text(
+//                        text = hotelData.name,
+//                        fontSize = 24.sp,
+//                        fontWeight = FontWeight.Bold,
+//                        color = Color.Black
+//                    )
+//                }
+//                // Location
+//                Row(verticalAlignment = Alignment.CenterVertically) {
+//                    Icon(
+//                        imageVector = Icons.Default.LocationOn,
+//                        contentDescription = "Location",
+//                        tint = Color.Gray
+//                    )
+//                    Text(
+//                        text = hotelData.address,
+//                        color = Color.Gray,
+//                        fontSize = 14.sp,
+//                        modifier = Modifier.padding(start = 4.dp)
+//                    )
+//                }
+//                Spacer(modifier = Modifier.height(8.dp))
+//                // Rating, Distance, Restaurants
+//                Row(
+//                    modifier = Modifier.fillMaxWidth()
+//                        .padding(8.dp),
+//                    horizontalArrangement = Arrangement.SpaceBetween
+//                ) {
+//                    Row(verticalAlignment = Alignment.CenterVertically) {
+//                        Icon(
+//                            imageVector = Icons.Default.Star,
+//                            contentDescription = "Rating",
+//                            tint = Color.Yellow
+//                        )
+//                        Text(
+//                            text = hotelData.rating.toString(),
+//                            fontSize = 14.sp,
+//                            modifier = Modifier.padding(start = 4.dp)
+//                        )
+//                    }
+//                    Row(verticalAlignment = Alignment.CenterVertically) {
+//                        Icon(
+//                            imageVector = Icons.Default.DirectionsCar,
+//                            contentDescription = "Distance",
+//                            tint = Color.Gray
+//                        )
+//                        Text(
+//                            text = "3000 km",
+//                            fontSize = 14.sp,
+//                            modifier = Modifier.padding(start = 4.dp)
+//                        )
+//                    }
+//                    Row(verticalAlignment = Alignment.CenterVertically) {
+//                        Icon(
+//                            imageVector = Icons.Default.Restaurant,
+//                            contentDescription = "Restaurants",
+//                            tint = Color.Gray
+//                        )
+//                        Text(
+//                            text = "108 avail.",
+//                            fontSize = 14.sp,
+//                            modifier = Modifier.padding(start = 4.dp)
+//                        )
+//                    }
+//                }
+//
+//                // About Destination
+//                Text(
+//                    text = "About Destination",
+//                    fontSize = 18.sp,
+//                    fontWeight = FontWeight.Bold,
+//                    color = Color.Black,
+//                    modifier = Modifier
+//                        .padding(bottom = 4.dp)
+//                )
+//
+//                val description = generateHotelDescription(hotelData.name, hotelData.rating)
+//
+//                Text(
+//                    text = description,
+//                    color = Color.Gray,
+//                    fontSize = 14.sp
+//                )
+//                Spacer(modifier = Modifier.height(16.dp))
+//                // Book Now Button
+//
+//                Spacer(modifier = Modifier.weight(1f))
+//
+//                Button(
+//                    onClick = {
+//                        Log.e("gfgfhfg","Got value")
+//                        val hotelID = URLEncoder.encode(hotelData.id, "UTF-8")
+//                        val hotelPrice = URLEncoder.encode(hotelData.price.toString(), "UTF-8")
+//                        navController.navigate(
+//                            "${AppScreen.BookingDate.route}/$hotelID/$hotelPrice"
+//                        )
+//                    },
+//                    modifier = Modifier.fillMaxWidth(),
+//                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+//                ) {
+//                    Text(text = "Book Now", color = Color.White)
+//                }
+//            }
+//        } else {
+//            CircularProgressIndicator()
+//        }
+//    }
+//}
+
+fun generateHotelDescription(hotelName: String, rating: Double): String {
+    val templates = listOf(
+        "$hotelName offers a luxurious stay with a remarkable $rating★ rating, perfect for travelers seeking comfort and convenience.",
+        "Experience premium hospitality at $hotelName, rated $rating★ for its top-notch service and serene atmosphere.",
+        "With a $rating★ rating, $hotelName stands out as one of the most sought-after stays, blending elegance and value.",
+        "Enjoy breathtaking views and world-class service at $hotelName — proudly rated $rating★ by guests.",
+        "$hotelName delivers exceptional comfort and amenities, earning a solid $rating★ from satisfied visitors.",
+        "Guests love $hotelName for its peaceful vibes and excellent service, reflected in its $rating★ rating.",
+        "Stay at $hotelName and enjoy the perfect balance of luxury and affordability, with a guest rating of $rating★."
+    )
+
+    return templates.random()
+}
