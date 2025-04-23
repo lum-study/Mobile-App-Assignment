@@ -69,7 +69,7 @@ class MainActivity : ComponentActivity() {
         FirebaseApp.initializeApp(this)
         setContent {
             AppTheme {
-                InitializeDatabase()
+//                InitializeDatabase()
                 App()
             }
         }
