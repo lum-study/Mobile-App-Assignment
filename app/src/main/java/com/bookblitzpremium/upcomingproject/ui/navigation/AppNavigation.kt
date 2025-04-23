@@ -38,7 +38,7 @@ fun AppNavigation(
         authNavGraph(navController, userModel)
         homeNavGraph(navController)
         searchNavGraph(navController)
-        scheduleNavGraph(navController)
+        orderNavGraph(navController)
         profileNavGraph(navController)
     }
 }

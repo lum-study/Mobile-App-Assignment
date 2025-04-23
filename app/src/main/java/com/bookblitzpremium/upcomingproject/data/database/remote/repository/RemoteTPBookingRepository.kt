@@ -30,5 +30,4 @@ class RemoteTPBookingRepository @Inject constructor(private val firestore: Fireb
         require(tpBooking.id.isNotEmpty()) { "Trip Package Booking ID cannot be empty" }
         tpBookingRef.document(tpBooking.id).set(tpBooking).await()
     }
-
 }
