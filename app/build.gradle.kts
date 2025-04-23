@@ -118,10 +118,4 @@ dependencies {
 
     //datastore
     implementation(libs.androidx.datastore.preferences)
-
-    //process image
-    implementation("io.coil-kt:coil-compose:2.4.0") // use latest version
-
-
-
 }
