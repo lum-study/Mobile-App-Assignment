@@ -58,12 +58,25 @@ fun FlightScreen(flightID: String = "", bookingID: String = "") {
         flight = localFlightViewModel.getFlightInformationByID(flightID)
     }
 
+    val dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
     val barcodeBitmap = remember { generateBarcodeBase64(bookingID) }
+    var startDate = ""
+    var startTime = ""
 
+    if (flight != null) {
+        val dateTime = LocalDateTime.of(
+            LocalDate.parse(flight!!.endDate),
+            LocalTime.parse(flight!!.endTime, DateTimeFormatter.ofPattern("H:mm"))
+        )
+        val startDateTime = dateTime.minusMinutes(flight!!.travelTime.toLong())
+        startTime = startDateTime.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"))
+        startDate =
+            startDateTime.toLocalDate().format(dateFormatter)
+    }
     AppTheme {
         Column(
             modifier = Modifier
-                .padding(bottom = 8.dp)
+                .padding(vertical = 8.dp)
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -93,9 +106,11 @@ fun FlightScreen(flightID: String = "", bookingID: String = "") {
                                 .height(70.dp),
                         )
                     } else {
-                        SkeletonLoader(modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight(.85f))
+                        SkeletonLoader(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight(.85f)
+                        )
                         SkeletonLoader(
                             modifier = Modifier
                                 .align(Alignment.BottomCenter)
@@ -121,17 +136,11 @@ fun FlightScreen(flightID: String = "", bookingID: String = "") {
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    val dateTime = LocalDateTime.of(
-                        LocalDate.parse(flight!!.endDate),
-                        LocalTime.parse(flight!!.endTime, DateTimeFormatter.ofPattern("H:mm"))
-                    )
-                    val startDateTime = dateTime.minusMinutes(flight!!.travelTime.toLong())
-
                     SmallTab("Flight", flight!!.id.substring(0, 5))
                     SmallTab("Gate", flight!!.gate)
                     SmallTab(
                         "Departure",
-                        startDateTime.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"))
+                        startTime
                     )
                     SmallTab(
                         "Travel Time",
@@ -149,8 +158,8 @@ fun FlightScreen(flightID: String = "", bookingID: String = "") {
                             flight!!.departState,
                             flight!!.departCode
                         ),
-                        time = flight!!.endTime,
-                        date = flight!!.endDate,
+                        time = startTime,
+                        date = startDate,
                     )
                     VerticalDivider(
                         modifier = Modifier
@@ -192,7 +201,7 @@ fun FlightScreen(flightID: String = "", bookingID: String = "") {
                             flight!!.arrivalCode
                         ),
                         time = flight!!.endTime,
-                        date = flight!!.endDate,
+                        date = LocalDate.parse(flight!!.endDate).format(dateFormatter),
                     )
                 }
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
@@ -303,15 +312,15 @@ fun checkImage(flightName: String): List<Int> {
         }
 
         "Firefly" -> {
-            listOf(R.drawable.airasia_bg, R.drawable.airasia_icon)
+            listOf(R.drawable.firefly_bg, R.drawable.firefly_icon)
         }
 
         "Batik Air" -> {
-            listOf(R.drawable.airasia_bg, R.drawable.airasia_icon)
+            listOf(R.drawable.batik_air_bg, R.drawable.batik_air_icon)
         }
 
         else -> {
-            listOf(R.drawable.airasia_bg, R.drawable.airasia_icon)
+            listOf(R.drawable.malaysia_airlines_bg, R.drawable.malaysia_airlines_icon)
         }
     }
 }

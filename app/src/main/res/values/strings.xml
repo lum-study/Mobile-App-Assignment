@@ -56,6 +56,8 @@
     <string name="filter_rating">Rating %f</string>
     <string name="filter_rating_title">Rating</string>
     <string name="filter_feature">Feature (Choose 2)</string>
+    <string name="filter_start_date">Start Date</string>
+    <string name="filter_end_date">End Date</string>
     <string name="schedule">Schedule</string>
     <string name="flight">Flight</string>
     <string name="hotel">Hotels</string>
@@ -97,6 +99,7 @@
     <string name="discount">Discount</string>
     <!-- Action Button Description -->
     <string name="add_button">Add</string>
+    <string name="booking_button">Booking</string>
     <string name="apply_button">Apply</string>
     <string name="back_button">Back</string>
     <string name="cancel_button">Cancel</string>
