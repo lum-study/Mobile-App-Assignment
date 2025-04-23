@@ -1,6 +1,8 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.search
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -22,19 +24,21 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.window.core.layout.WindowHeightSizeClass
@@ -60,30 +64,65 @@ fun SearchScreen(navController: NavHostController) {
                     .padding(end = 16.dp, bottom = 8.dp, start = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                var showEmptyListToast by remember { mutableStateOf(false) }
                 var keyword by remember { mutableStateOf("") }
                 val hotelViewModel: LocalHotelViewModel = hiltViewModel()
                 val hotelList =
                     remember(keyword) { hotelViewModel.getByKeyword(keyword) }.collectAsLazyPagingItems()
-
+                val maxPrice = hotelList.itemSnapshotList.items.maxOfOrNull { it.price }
+                val minPrice = hotelList.itemSnapshotList.items.minOfOrNull { it.price }
                 SearchBar(
                     searchText = keyword,
                     onInputChange = {
                         keyword = it
                     },
                     onFilterButtonClick = {
-                        navController.navigate(AppScreen.Filter.passData(keyword))
+                        if (hotelList.itemCount != 0) {
+                            navController.navigate(
+                                AppScreen.Filter.passData(
+                                    keyword,
+                                    minPrice?.toString() ?: "0",
+                                    maxPrice?.toString() ?: "0"
+                                )
+                            )
+                        } else
+                            showEmptyListToast = !showEmptyListToast
                     }
                 )
+                if (showEmptyListToast) {
+                    val context = LocalContext.current
+                    LaunchedEffect(Unit) {
+                        Toast.makeText(
+                            context,
+                            "No record found",
+                            Toast.LENGTH_LONG
+                        )
+                            .show()
+                        showEmptyListToast = !showEmptyListToast
+                    }
+                }
 
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(1),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(hotelList.itemCount) { index ->
-                        val hotel = hotelList[index]
-                        HotelCard(hotel, modifier = Modifier.height(250.dp))
+                if (hotelList.itemCount > 0) {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(1),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(hotelList.itemCount) { index ->
+                            val hotel = hotelList[index]
+                            HotelCard(hotel, modifier = Modifier.height(250.dp))
+                        }
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        Text(
+                            text = "No record found",
+                            style = AppTheme.typography.largeBold,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
                     }
                 }
             }
@@ -245,14 +284,16 @@ fun SearchBar(
 @Composable
 fun FilteredResultScreen(
     modifier: Modifier = Modifier,
-    navController: NavController? = null,
     isMobile: Boolean = true,
 ) {
     val recentSearchViewModel: LocalRecentSearchViewModel = hiltViewModel()
     val recentSearch by recentSearchViewModel.recentSearch.collectAsState()
 
+    val features = recentSearch?.feature?.split(",") ?: emptyList()
+
     val tripPackageViewModel: LocalTripPackageViewModel = hiltViewModel()
     val hotelViewModel: LocalHotelViewModel = hiltViewModel()
+
 
     val tripPackageList = remember(recentSearch) {
         tripPackageViewModel.filterTripPackage(
@@ -272,8 +313,8 @@ fun FilteredResultScreen(
             rating = recentSearch?.rating ?: 0.0,
             startPrice = recentSearch?.startPrice ?: 0.0,
             endPrice = recentSearch?.endPrice ?: 0.0,
-            feature1 = recentSearch?.feature ?: "",
-            feature2 = recentSearch?.feature ?: ""
+            feature1 = features.getOrNull(0) ?: "",
+            feature2 = features.getOrNull(1) ?: ""
         )
     }.collectAsLazyPagingItems()
 
@@ -283,7 +324,7 @@ fun FilteredResultScreen(
         horizontalArrangement = Arrangement.spacedBy(if (isMobile) 16.dp else 32.dp),
         modifier = modifier
             .fillMaxSize()
-            .padding(end = 16.dp, bottom = 8.dp, start = 16.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         if (recentSearch?.option == BookingType.TripPackage.title) {
             items(tripPackageList.itemCount) { index ->

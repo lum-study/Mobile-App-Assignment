@@ -2,8 +2,14 @@ package com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.TPBooking
+import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalPaymentRepository
+import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalTPBookingRepository
+import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalTripPackageRepository
+import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemotePaymentRepository
 import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteTPBookingRepository
+import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteTripPackageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,7 +18,14 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class RemoteTPBookingViewModel @Inject constructor(private val remoteTPBookingRepository: RemoteTPBookingRepository) :
+class RemoteTPBookingViewModel @Inject constructor(
+    private val remoteTPBookingRepository: RemoteTPBookingRepository,
+    private val remotePaymentRepository: RemotePaymentRepository,
+    private val remoteTripPackageRepository: RemoteTripPackageRepository,
+    private val localTPBookingRepository: LocalTPBookingRepository,
+    private val localPaymentRepository: LocalPaymentRepository,
+    private val localTripPackageRepository: LocalTripPackageRepository,
+) :
     ViewModel() {
     private val _tpBookings = MutableStateFlow<List<TPBooking>>(emptyList())
     val tpBookings: StateFlow<List<TPBooking>> = _tpBookings.asStateFlow()
@@ -99,6 +112,35 @@ class RemoteTPBookingViewModel @Inject constructor(private val remoteTPBookingRe
                 _tpBookings.value = _tpBookings.value.filter { it.id != id }
             } catch (e: Exception) {
                 _error.value = "Failed to delete tpBooking: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun addPaymentAndBooking(payment: Payment, tpBooking: TPBooking) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+
+            try {
+                val paymentID = remotePaymentRepository.addPayment(payment)
+                if (paymentID.isNotEmpty()) {
+                    val newTPBooking = tpBooking.copy(paymentID = paymentID)
+                    val bookingID = remoteTPBookingRepository.addTripPackageBooking(newTPBooking)
+                    if (bookingID.isNotEmpty()) {
+                        localPaymentRepository.addOrUpdatePayment(payment.copy(id = paymentID))
+                        localTPBookingRepository.addOrUpdateTPBooking(newTPBooking.copy(id = bookingID))
+                        val tripPackage =
+                            remoteTripPackageRepository.getTripPackageByID(tpBooking.tripPackageID)
+                        if (tripPackage != null) {
+                            remoteTripPackageRepository.updateTripPackage(tripPackage.copy(slots = tripPackage.slots - tpBooking.purchaseCount))
+                            localTripPackageRepository.addOrUpdateTripPackage(tripPackage.copy(slots = tripPackage.slots - tpBooking.purchaseCount))
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                _error.value = "Failed to insert tpBooking: ${e.localizedMessage}"
             } finally {
                 _loading.value = false
             }

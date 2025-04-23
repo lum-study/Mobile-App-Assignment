@@ -39,7 +39,7 @@ fun AppNavigation(
         homeNavGraph(navController)
         hotelNavGraph(navController)
         searchNavGraph(navController)
-        scheduleNavGraph(navController)
+        orderNavGraph(navController)
         profileNavGraph(navController)
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,9 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
@@ -25,6 +24,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.SliderColors
@@ -53,16 +53,23 @@ import com.bookblitzpremium.upcomingproject.common.enums.FlightStation
 import com.bookblitzpremium.upcomingproject.common.enums.Rating
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.RecentSearch
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalRecentSearchViewModel
-import com.bookblitzpremium.upcomingproject.ui.screen.booking.ShowDate
+import com.bookblitzpremium.upcomingproject.ui.components.CustomDatePickerDialog
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 
 @Composable
-fun FilterScreen(navController: NavController, keyword: String) {
+fun FilterScreen(
+    navController: NavController,
+    keyword: String,
+    minPrice: String,
+    maxPrice: String
+) {
     val localRecentSearchViewModel: LocalRecentSearchViewModel = hiltViewModel()
 
     var selectedOption by remember { mutableStateOf(BookingType.Hotel) }
-    var selectedPriceRange by remember { mutableStateOf(0f..1500f) }
+    var selectedPriceRange by remember { mutableStateOf(minPrice.toFloat() + 300..maxPrice.toFloat() - 300) }
 
     //hotel
     var selectedRating by remember { mutableStateOf(Rating.Rate1) }
@@ -72,25 +79,38 @@ fun FilterScreen(navController: NavController, keyword: String) {
     var selectedDeparture by remember { mutableStateOf(FlightStation.KualaLumpur) }
     var selectedArrival by remember { mutableStateOf(FlightStation.Sabah) }
 
+    val dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+    var startDate by remember { mutableStateOf(LocalDate.now()) }
+    var endDate by remember { mutableStateOf(LocalDate.now().plusMonths(1)) }
+    var showStartDatePicker by remember { mutableStateOf(false) }
+    var showEndDatePicker by remember { mutableStateOf(false) }
+
     AppTheme {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(end = 16.dp, bottom = 8.dp, start = 16.dp)
-                .verticalScroll(rememberScrollState()),
+                .padding(vertical = 8.dp, horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             //Trip Package Or Hotel
             FilterType(
                 selectedOption = selectedOption,
-                onOptionChange = { selectedOption = it }
+                onOptionChange = {
+                    selectedOption = it
+                    selectedPriceRange =
+                        if (it == BookingType.Hotel) minPrice.toFloat() + 300..maxPrice.toFloat() - 300 else 600f..2500f
+                }
             )
             HorizontalDivider()
             //Price Range
-            PriceRangeSlider(selectedPriceRange = selectedPriceRange, onValueChange = {
-                selectedPriceRange =
-                    it.start.roundToInt().toFloat()..it.endInclusive.roundToInt().toFloat()
-            })
+            PriceRangeSlider(
+                selectedPriceRange = selectedPriceRange,
+                onValueChange = {
+                    selectedPriceRange =
+                        it.start.roundToInt().toFloat()..it.endInclusive.roundToInt().toFloat()
+                },
+                valueRange = if (selectedOption == BookingType.Hotel) minPrice.toFloat()..maxPrice.toFloat() else 300f..2800f
+            )
             HorizontalDivider()
 
             if (selectedOption == BookingType.Hotel) {
@@ -119,8 +139,64 @@ fun FilterScreen(navController: NavController, keyword: String) {
                     )
                 }
                 HorizontalDivider()
-                ShowDate(date = "2022-01-02", date2 = "2022-01-05")
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(32.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.filter_start_date),
+                            style = AppTheme.typography.mediumSemiBold
+                        )
+                        OutlinedButton(
+                            onClick = { showStartDatePicker = !showStartDatePicker },
+                        ) {
+                            Text(
+                                text = startDate.format(dateFormatter),
+                                style = AppTheme.typography.mediumNormal
+                            )
+                        }
+                    }
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.filter_end_date),
+                            style = AppTheme.typography.mediumSemiBold
+                        )
+                        OutlinedButton(
+                            onClick = { showEndDatePicker = !showEndDatePicker }
+                        ) {
+                            Text(
+                                text = endDate.format(dateFormatter),
+                                style = AppTheme.typography.mediumNormal
+                            )
+                        }
+                    }
+                }
+
+                if (showStartDatePicker) {
+                    CustomDatePickerDialog(
+                        onDateChange = {
+                            startDate = it
+                            showStartDatePicker = !showStartDatePicker
+                        },
+                    )
+                }
+                if (showEndDatePicker) {
+                    CustomDatePickerDialog(
+                        onDateChange = {
+                            endDate = it
+                            showEndDatePicker = !showEndDatePicker
+                        },
+                    )
+                }
             }
+            HorizontalDivider()
+            Spacer(modifier = Modifier.weight(1f))
             Button(
                 onClick = {
                     if (selectedOption == BookingType.Hotel) {
@@ -139,7 +215,9 @@ fun FilterScreen(navController: NavController, keyword: String) {
                             startPrice = selectedPriceRange.start.toDouble(),
                             endPrice = selectedPriceRange.endInclusive.toDouble(),
                             departureStation = selectedDeparture.title,
-                            arrivalStation = selectedArrival.title
+                            arrivalStation = selectedArrival.title,
+                            startDate = startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+                            endDate = endDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
                         )
                         localRecentSearchViewModel.addOrUpdateRecentSearch(recentSearch)
                     }
@@ -169,7 +247,7 @@ fun FilterScreen(navController: NavController, keyword: String) {
 fun PriceRangeSlider(
     selectedPriceRange: ClosedFloatingPointRange<Float>,
     onValueChange: (ClosedFloatingPointRange<Float>) -> Unit,
-    valueRange: ClosedFloatingPointRange<Float> = 0f..3000f
+    valueRange: ClosedFloatingPointRange<Float>
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -181,7 +259,7 @@ fun PriceRangeSlider(
         )
         RangeSlider(
             value = selectedPriceRange,
-            steps = 30,
+            steps = (valueRange.endInclusive - valueRange.start).toInt(),
             onValueChange = { range ->
                 onValueChange(range)
             },
@@ -209,11 +287,11 @@ fun PriceRangeSlider(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "$ ${selectedPriceRange.start.toInt()}",
+                text = stringResource(R.string.price, selectedPriceRange.start),
                 style = AppTheme.typography.smallRegular,
             )
             Text(
-                text = "$ ${selectedPriceRange.endInclusive.toInt()}",
+                text = stringResource(R.string.price, selectedPriceRange.endInclusive),
                 style = AppTheme.typography.smallRegular,
             )
         }
@@ -238,7 +316,7 @@ fun FilterDropDownMenu(
             style = AppTheme.typography.mediumSemiBold
         )
         Box(modifier = Modifier.fillMaxWidth()) {
-            Button(
+            OutlinedButton(
                 onClick = { expanded = true },
                 modifier = Modifier.fillMaxWidth()
             ) {

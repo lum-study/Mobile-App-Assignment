@@ -73,7 +73,8 @@ fun TripPackageScreen(navController: NavController, tripPackageID: String) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberScrollState())
+                    .padding(vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Column(
@@ -178,7 +179,14 @@ fun TripPackageScreen(navController: NavController, tripPackageID: String) {
                                 selectedTripPackage!!.flightArrival
                             ),
                             rotateDeg = 45f,
-                            onRowClick = { navController.navigate(AppScreen.Flight.passData(selectedTripPackage!!.flightID, "")) }
+                            onRowClick = {
+                                navController.navigate(
+                                    AppScreen.Flight.passData(
+                                        selectedTripPackage!!.flightID,
+                                        ""
+                                    )
+                                )
+                            }
                         )
                         Divider(
                             color = Color.Gray,
@@ -188,22 +196,43 @@ fun TripPackageScreen(navController: NavController, tripPackageID: String) {
                             imageVector = Icons.Outlined.HomeWork,
                             title = stringResource(R.string.hotel),
                             description = selectedTripPackage!!.hotelName,
-                            onRowClick = { navController.navigate(AppScreen.Hotel.passData(selectedTripPackage!!.hotelID, selectedTripPackage!!.id)) }
+                            onRowClick = {
+                                navController.navigate(
+                                    AppScreen.Hotel.passData(
+                                        selectedTripPackage!!.hotelID,
+                                        selectedTripPackage!!.id
+                                    )
+                                )
+                            }
                         )
 
                         Button(
-                            onClick = {},
+                            onClick = {
+                                navController.navigate(
+                                    AppScreen.TripPackageBooking.passData(
+                                        selectedTripPackage!!.id,
+                                        selectedTripPackage!!.name,
+                                        selectedTripPackage!!.price.toString(),
+                                        selectedTripPackage!!.slots.toString(),
+                                    )
+                                )
+                            },
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = stringResource(R.string.apply_button)
+                                text = stringResource(R.string.booking_button)
                             )
                         }
-                    }
-                    else{
-                        SkeletonLoader(modifier = Modifier.height(400.dp).fillMaxWidth().padding(horizontal = 8.dp).clip(
-                            RoundedCornerShape(24.dp)
-                        ))
+                    } else {
+                        SkeletonLoader(
+                            modifier = Modifier
+                                .height(400.dp)
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp)
+                                .clip(
+                                    RoundedCornerShape(24.dp)
+                                )
+                        )
                     }
                 }
             }

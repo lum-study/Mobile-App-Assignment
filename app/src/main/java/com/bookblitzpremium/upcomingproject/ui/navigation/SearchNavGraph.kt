@@ -22,11 +22,22 @@ fun NavGraphBuilder.searchNavGraph(navController: NavHostController) {
         }
 
         composable(
-            route = "${AppScreen.Filter.route}/{keyword}",
-            arguments = listOf(navArgument("keyword") { type = NavType.StringType })
+            route = "${AppScreen.Filter.route}/{keyword}/{minPrice}/{maxPrice}",
+            arguments = listOf(
+                navArgument("keyword") { type = NavType.StringType },
+                navArgument("minPrice") { type = NavType.StringType },
+                navArgument("maxPrice") { type = NavType.StringType },
+            )
         ) { backStackEntry ->
             val keyword = backStackEntry.arguments?.getString("keyword") ?: ""
-            FilterScreen(navController = navController, keyword = keyword)
+            val minPrice = backStackEntry.arguments?.getString("minPrice") ?: ""
+            val maxPrice = backStackEntry.arguments?.getString("maxPrice") ?: ""
+            FilterScreen(
+                navController = navController,
+                keyword = keyword,
+                minPrice = minPrice,
+                maxPrice = maxPrice
+            )
         }
     }
 }

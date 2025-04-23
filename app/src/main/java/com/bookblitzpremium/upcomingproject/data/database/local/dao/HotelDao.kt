@@ -44,10 +44,11 @@ interface HotelDao {
         feature2: String = ""
     ): PagingSource<Int, Hotel>
 
-    @Query("""
+    @Query(
+        """
         SELECT * FROM hotel 
         WHERE (name LIKE '%' || :input || '%' OR address LIKE '%' || :input || '%')
-    """)
-
+    """
+    )
     fun filterByKeyword(input: String): PagingSource<Int, Hotel>
 }

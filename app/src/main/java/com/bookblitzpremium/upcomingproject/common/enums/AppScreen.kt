@@ -1,6 +1,8 @@
 package com.bookblitzpremium.upcomingproject.common.enums
 
 sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomBar: Boolean) {
+    data object Default : AppScreen("", hasTopBar = false, hasBottomBar = false)
+
     // Auth Screens
     data object AuthGraph : AppScreen("AuthGraph", hasTopBar = false, hasBottomBar = true)
     data object Login : AppScreen("Login", hasTopBar = false, hasBottomBar = false)
@@ -18,6 +20,7 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object Schedule : AppScreen("Schedule", hasTopBar = true, hasBottomBar = false)
     data object Flight : AppScreen("Flight", hasTopBar = true, hasBottomBar = false)
     data object Hotel : AppScreen("Hotel", hasTopBar = false, hasBottomBar = false)
+    data object TripPackageBooking : AppScreen("TripPackageBooking", hasTopBar = true, hasBottomBar = false)
 
     // Search Screens
     data object SearchGraph : AppScreen("SearchGraph", hasTopBar = false, hasBottomBar = false)
@@ -46,8 +49,7 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object EntryPage2 : AppScreen("EntryPage2", hasTopBar = false, hasBottomBar = false)
 
     //schedule
-    data object ScheduleGraph : AppScreen("ScheduleGraph", hasTopBar = false, hasBottomBar = true)
-    data object TestRoute : AppScreen("TestRoute", hasTopBar = false, hasBottomBar = true)
+    data object OrderGraph : AppScreen("OrderGraph", hasTopBar = false, hasBottomBar = true)
 
     fun passData(vararg args: String): String {
         return buildString {
@@ -75,6 +77,7 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
                 Schedule.route -> Schedule
                 Flight.route -> Flight
                 Hotel.route -> Hotel
+                TripPackageBooking.route -> TripPackageBooking
                 SearchGraph.route -> SearchGraph
                 Search.route -> Search
                 Result.route -> Result
@@ -82,12 +85,16 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
                 ProfileGraph.route -> ProfileGraph
                 Profile.route -> Profile
                 EditProfile.route -> EditProfile
+                PaymentMethods.route -> PaymentMethods
+                MyOrders.route -> MyOrders
+                Ratings.route -> Ratings
                 BookingDate.route -> BookingDate
                 BookingPeople.route -> BookingPeople
                 BookingReview.route -> BookingReview
                 EntryPage.route -> EntryPage
                 EntryPage2.route -> EntryPage2
-                else -> AuthGraph
+                OrderGraph.route -> OrderGraph
+                else -> Default
             }
         }
     }
