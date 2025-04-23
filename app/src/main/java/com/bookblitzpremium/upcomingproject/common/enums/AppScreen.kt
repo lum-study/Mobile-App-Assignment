@@ -34,11 +34,12 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object MyOrders : AppScreen("my_orders", hasTopBar = true, hasBottomBar = false)
     data object Ratings : AppScreen("ratings", hasTopBar = true, hasBottomBar = false)
 
-
     //Booking Date and people
     data object BookingDate : AppScreen("BookingDate", hasTopBar = true, hasBottomBar = false)
     data object BookingPeople : AppScreen("BookingPeople", hasTopBar = true, hasBottomBar = false)
     data object BookingReview : AppScreen("BookingReview", hasTopBar = true, hasBottomBar = false)
+    data object BookingHistory : AppScreen("BookingHistory", hasTopBar = true, hasBottomBar = false)
+    data object EditScreen : AppScreen("EditScreen", hasTopBar = true, hasBottomBar = false)
 
     //Entry Page
     data object EntryPage : AppScreen("EntryPage", hasTopBar = false, hasBottomBar = false)

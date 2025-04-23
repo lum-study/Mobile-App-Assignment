@@ -1,5 +1,6 @@
 package com.bookblitzpremium.upcomingproject.data.database.local.viewmodel
 
+import android.database.sqlite.SQLiteException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
@@ -25,8 +26,8 @@ class LocalHotelBookingViewModel @Inject constructor(
     private val _hotelBookings = MutableStateFlow<List<HotelBooking>>(emptyList())
     val hotelBookings: StateFlow<List<HotelBooking>> = _hotelBookings.asStateFlow()
 
-    private val _hotelBooking = MutableStateFlow<HotelBooking?>(null)
-    val hotelBooking: StateFlow<HotelBooking?> = _hotelBooking.asStateFlow()
+    private val _hotelBookingHistory =  MutableStateFlow<List<HotelBooking>>(emptyList())
+    val hotelBookingHistory:  StateFlow<List<HotelBooking>> = _hotelBookingHistory.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -36,17 +37,73 @@ class LocalHotelBookingViewModel @Inject constructor(
         }
     }
 
-    fun fetchHotelBookingById(bookingId: Long) {
+    fun fetchHotelBookingsByUserId(userId: String) {
         viewModelScope.launch {
-            val booking = repo.getHotelBookingById(bookingId)
-            _hotelBooking.value = booking
+            _loading.value = true
+            _error.value = null
+            try {
+                val bookings = repo.getHotelBookingsByBookingUserId(userId)
+                _hotelBookings.value = bookings // Make sure _hotelBookings is a StateFlow<List<HotelBooking>>
+            } catch (e: SQLiteException) {
+                _error.value = "Database error: ${e.localizedMessage}"
+            } catch (e: Exception) {
+                _error.value = "Error fetching hotel: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 
     fun insertHotelBooking(hotelBooking: HotelBooking) {
         viewModelScope.launch {
-            repo.insertHotelBooking(hotelBooking)
+            _loading.value = true
+            _error.value = null
+
+            try {
+                repo.insertHotelBooking(hotelBooking)
+            } catch (e: SQLiteException) {
+                _error.value = "Database error: ${e.localizedMessage}"
+            } catch (e: Exception) {
+                _error.value = "Error fetching hotel: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
+            }
         }
     }
+
+
+    fun updateHotelBooking(hotelBooking: HotelBooking) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+            try {
+                repo.updateHotelBooking(hotelBooking) // Use update instead of insert
+            } catch (e: SQLiteException) {
+                _error.value = "Database error: ${e.localizedMessage}"
+            } catch (e: Exception) {
+                _error.value = "Error updating hotel booking: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun fetchHotelBookingsById(hotelId: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+            try {
+                val bookings = repo.getHotelBookingsByHotelId(hotelId)
+                _hotelBookingHistory.value = bookings // Make sure _hotelBookings is a StateFlow<List<HotelBooking>>
+            } catch (e: SQLiteException) {
+                _error.value = "Database error: ${e.localizedMessage}"
+            } catch (e: Exception) {
+                _error.value = "Error fetching hotel: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
     
 }

@@ -63,7 +63,7 @@ fun EntryPage(
         ) {
             // Logo
             Image(
-                painter = painterResource(id = R.drawable.logo2), // Replace with your logo
+                painter = painterResource(id = R.drawable.logo), // Replace with your logo
                 contentDescription = "Holibob Logo",
                 contentScale = ContentScale.Crop ,
                 modifier = Modifier

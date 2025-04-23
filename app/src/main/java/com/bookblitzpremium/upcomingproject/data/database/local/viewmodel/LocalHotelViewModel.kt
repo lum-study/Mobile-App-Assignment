@@ -85,4 +85,45 @@ class LocalHotelViewModel @Inject constructor(private val hotelRepository: Local
         return hotelRepository.getByKeyword(keyword)
             .cachedIn(viewModelScope)
     }
+
+    private val _selectedHotel = MutableStateFlow<Hotel?>(null)
+    val selectedHotel: StateFlow<Hotel?> = _selectedHotel.asStateFlow()
+
+    fun getHotelByID(id: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+            try {
+                val hotel = hotelRepository.getHotelByID(id)
+                _selectedHotel.value = hotel
+            } catch (e: SQLiteException) {
+                _error.value = "Database error: ${e.localizedMessage}"
+            } catch (e: Exception) {
+                _error.value = "Error fetching hotel: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+//    private val _hotels = MutableStateFlow<Map<String, Hotel>>(emptyMap())
+//    val hotels: StateFlow<Map<String, Hotel>> = _hotels.asStateFlow()
+//
+//    fun getHotelByID2(id: String) {
+//        if (_hotels.value.containsKey(id)) return // Avoid redundant fetches
+//        viewModelScope.launch {
+//            _loading.value = true
+//            _error.value = null
+//            try {
+//                val hotel = hotelRepository.getHotelByID(id)
+//                _hotels.value = _hotels.value.toMutableMap().apply { put(id, hotel) }
+//            } catch (e: Exception) {
+//                _error.value = "Error fetching hotel: ${e.localizedMessage}"
+//            } finally {
+//                _loading.value = false
+//            }
+//        }
+//    }
+
+
 }

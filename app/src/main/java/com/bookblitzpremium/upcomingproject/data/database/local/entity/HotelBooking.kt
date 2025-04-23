@@ -7,7 +7,7 @@ import com.google.firebase.firestore.IgnoreExtraProperties
 @IgnoreExtraProperties
 @Entity(tableName = "hotel_booking")
 data class HotelBooking(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey val id: String = "",
     val startDate: String = "",
     val endDate: String = "",
     val numberOFClient: Int = 0,

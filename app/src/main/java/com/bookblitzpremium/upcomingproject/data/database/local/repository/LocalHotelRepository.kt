@@ -58,4 +58,6 @@ class LocalHotelRepository @Inject constructor(private val hotelDao: HotelDao) {
     suspend fun addOrUpdateHotel(hotel: Hotel) = hotelDao.upsertHotel(hotel)
     suspend fun deleteHotel(hotel: Hotel) = hotelDao.deleteHotel(hotel)
     suspend fun getHotelByID(id: String) = hotelDao.getHotelByID(id)
+
+
 }

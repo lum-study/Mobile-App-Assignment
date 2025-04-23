@@ -1,5 +1,6 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.booking
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,9 +30,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +52,7 @@ import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.ui.components.TextHeader
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import java.net.URLEncoder
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.TextStyle
@@ -63,13 +67,15 @@ import java.util.Locale
 @Composable
 fun BookingDatePage(
     modifier: Modifier,
-    navController: NavController
+    navController: NavController,
+    hotelID : String,
+    hotelPrice : String,
 ) {
 
     var selectedStartDate by remember { mutableStateOf<LocalDate?>(null) }
     var selectedEndDate by remember { mutableStateOf<LocalDate?>(null) }
     val isValidResult = false
-        // ✅ Pass `currentMonth` so the calendar updates correctly
+
     CalendarView(
         navController = navController,
         startDate = selectedStartDate,
@@ -78,21 +84,9 @@ fun BookingDatePage(
             selectedStartDate = start
             selectedEndDate = end
         },
+        hotelID = hotelID,
+        hotelPrice = hotelPrice
     )
-
-    Column{
-
-        if(isValidResult){
-            Text(
-                text = selectedStartDate.toString()
-            )
-
-            Text(
-                text = selectedEndDate.toString()
-            )
-        }
-    }
-
 }
 
 
@@ -234,11 +228,13 @@ fun CalendarView(
     startDate: LocalDate?,
     endDate: LocalDate?,
     onDateRangeSelected: (LocalDate?, LocalDate?) -> Unit,
+    hotelID: String,
+    hotelPrice: String
 ) {
 
-    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
-    var tempStartDate by remember { mutableStateOf<LocalDate?>(startDate) }
-    var tempEndDate by remember { mutableStateOf<LocalDate?>(endDate) }
+    var currentMonth by rememberSaveable { mutableStateOf(YearMonth.now()) }
+    var tempStartDate by rememberSaveable { mutableStateOf<LocalDate?>(startDate) }
+    var tempEndDate by rememberSaveable { mutableStateOf<LocalDate?>(endDate) }
 
     val daysOfWeek = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
     val daysInMonth = currentMonth.lengthOfMonth()
@@ -247,12 +243,7 @@ fun CalendarView(
 
     // Define availability map
     val availability = (1..daysInMonth).associateWith { day ->
-        val date = LocalDate.of(currentMonth.year, currentMonth.month, day)
-        when {
-            date.isBefore(LocalDate.now()) -> "NotAvailable"
-            day % 3 == 0 -> "NotAvailable"
-            else -> "Available"
-        }
+        "Available" // Every day is now available
     }
 
     Column(
@@ -302,23 +293,6 @@ fun CalendarView(
                 val isInRange = tempStartDate != null && tempEndDate != null &&
                         date in (tempStartDate!!..tempEndDate!!) &&
                         availability[day] == "Available" // ❌ Prevent "Not Available" in range
-
-
-//                val isValidRange = isInRange &&
-//                        (tempStartDate!!..tempEndDate!!).all { dateInRange ->
-//                            val dayInRange = dateInRange.dayOfMonth
-//                            availability[dayInRange] == "Available"
-//                        }
-//
-//
-//                isValid = isValidRange
-//
-//                if (isValidRange) {
-//                    Text(text = "Valid", color = Color.Green)
-//                } else {
-//                    Text(text = "Invalid", color = Color.Red)
-//                }
-
 
                 Box(
                     modifier = Modifier
@@ -392,7 +366,7 @@ fun CalendarView(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             LegendItem(color = Color.Black, label = "Available")
-            LegendItem(color = Color.Gray, label = "Not Available")
+//            LegendItem(color = Color.Gray, label = "Not Available")
             LegendItem(color = Color(0xFFFF5733), label = "Start/End Date")
         }
 
@@ -415,7 +389,16 @@ fun CalendarView(
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
-            onClick = { navController.navigate(AppScreen.BookingPeople.route) },
+            onClick = {
+
+                val hotelID = URLEncoder.encode(hotelID, "UTF-8")
+                val hotelPrice = URLEncoder.encode(hotelPrice, "UTF-8")
+                val startDate = URLEncoder.encode(tempStartDate.toString(), "UTF-8")
+                val endDate = URLEncoder.encode(tempEndDate.toString(), "UTF-8")
+                navController.navigate(
+                    "${AppScreen.BookingPeople.route}/$hotelID/$hotelPrice/$startDate/$endDate"
+                )
+            },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Black,
                 contentColor = Color.White
@@ -424,6 +407,12 @@ fun CalendarView(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = "Next")
+        }
+
+        LaunchedEffect(key1 = tempStartDate ==null && tempEndDate == null) {
+            if (tempStartDate ==null && tempEndDate ==null) {
+                Log.d("HotelBookingForm", "Both start and end dates are empty")
+            }
         }
     }
 }

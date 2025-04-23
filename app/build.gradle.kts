@@ -53,7 +53,7 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.zxing.android.embedded)
 
-    implementation("androidx.compose.material3:material3:1.3.0")
+    implementation("androidx.compose.material3:material3:1.1.2")
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.compose.material:material-icons-extended:1.6.0")
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
@@ -118,4 +118,10 @@ dependencies {
 
     //datastore
     implementation(libs.androidx.datastore.preferences)
+
+    //process image
+    implementation("io.coil-kt:coil-compose:2.4.0") // use latest version
+
+
+
 }
