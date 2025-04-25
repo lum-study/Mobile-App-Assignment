@@ -18,7 +18,7 @@ interface TPBookingDao {
 
     @Query(
         """
-        SELECT b.*, tp.name as tripPackageName, p.totalAmount as paymentAmount, p.createDate as purchaseDate
+        SELECT b.*, tp.name as tripPackageName, tp.startDate as tripPackageStartDate,tp.imageUrl as tripPackageImageUrl, p.totalAmount as paymentAmount, p.createDate as purchaseDate
         FROM tp_booking b
         INNER JOIN trip_package tp ON tp.id = b.tripPackageID
         INNER JOIN payment p ON p.id = b.paymentID

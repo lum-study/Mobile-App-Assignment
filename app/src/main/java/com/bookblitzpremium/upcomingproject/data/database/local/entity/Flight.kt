@@ -17,4 +17,5 @@ data class Flight(
     val departCode: String = "",
     val arrivalCode: String = "",
     val name: String = "",
+    val referenceID: String = "",
 )

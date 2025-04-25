@@ -18,7 +18,7 @@ fun NavGraphBuilder.searchNavGraph(navController: NavHostController) {
         }
 
         composable(AppScreen.Result.route) {
-            FilteredResultScreen()
+            FilteredResultScreen(navController = navController)
         }
 
         composable(

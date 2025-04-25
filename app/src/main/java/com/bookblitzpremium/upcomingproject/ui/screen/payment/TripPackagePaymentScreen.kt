@@ -33,8 +33,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.R
@@ -82,15 +84,20 @@ fun PriceDetailsSection(totalAmount: Double, tripPackageName: String, totalQuant
             Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = tripPackageName,
-                    style = AppTheme.typography.mediumBold,
+                    style = AppTheme.typography.mediumBold.copy(lineHeight = 20.sp),
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Start
                 )
                 Text(
                     text = "x $totalQuantity",
                     style = AppTheme.typography.mediumBold,
+                    modifier = Modifier.weight(.5f),
+                    textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(

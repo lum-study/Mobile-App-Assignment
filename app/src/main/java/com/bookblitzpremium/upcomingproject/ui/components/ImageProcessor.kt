@@ -3,7 +3,6 @@ package com.bookblitzpremium.upcomingproject.ui.components
 import android.graphics.BitmapFactory
 import android.util.Base64
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,6 +35,8 @@ fun Base64Image(
             modifier = modifier,
             contentScale = contentScale,
         )
+    } ?: run {
+        SkeletonLoader(modifier = modifier)
     }
 }
 

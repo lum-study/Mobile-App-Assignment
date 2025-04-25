@@ -9,7 +9,6 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object Register : AppScreen("Register", hasTopBar = false, hasBottomBar = false)
     data object OTP : AppScreen("OTP", hasTopBar = false, hasBottomBar = false)
     data object ForgotPassword : AppScreen("ForgotPassword", hasTopBar = false, hasBottomBar = false)
-
     data object ChangePassword : AppScreen("ChangePassword", hasTopBar = false, hasBottomBar = false)
 
     // Home Screens
@@ -19,7 +18,7 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object TripPackage : AppScreen("TripPackage", hasTopBar = true, hasBottomBar = false)
     data object Schedule : AppScreen("Schedule", hasTopBar = true, hasBottomBar = false)
     data object Flight : AppScreen("Flight", hasTopBar = true, hasBottomBar = false)
-    data object Hotel : AppScreen("Hotel", hasTopBar = false, hasBottomBar = false)
+    data object Hotel : AppScreen("Hotel", hasTopBar = true, hasBottomBar = false)
     data object TripPackageBooking : AppScreen("TripPackageBooking", hasTopBar = true, hasBottomBar = false)
 
     // Search Screens
@@ -28,14 +27,16 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object Result : AppScreen("Result", hasTopBar = true, hasBottomBar = true)
     data object Filter : AppScreen("Filter", hasTopBar = true, hasBottomBar = false)
 
+    //Order
+    data object OrderGraph : AppScreen("OrderGraph", hasTopBar = false, hasBottomBar = true)
+    data object MyOrders : AppScreen("MyOrders", hasTopBar = false, hasBottomBar = true)
+    data object Ratings : AppScreen("Ratings", hasTopBar = true, hasBottomBar = false)
+
     // Profile Screens
     data object ProfileGraph : AppScreen("ProfileGraph", hasTopBar = false, hasBottomBar = false)
     data object Profile : AppScreen("Profile", hasTopBar = false, hasBottomBar = true)
     data object EditProfile : AppScreen("EditProfile", hasTopBar = true, hasBottomBar = false)
-    data object PaymentMethods : AppScreen("payment_methods", hasTopBar = true, hasBottomBar = false)
-
-    data object MyOrders : AppScreen("my_orders", hasTopBar = true, hasBottomBar = false)
-    data object Ratings : AppScreen("ratings", hasTopBar = true, hasBottomBar = false)
+    data object PaymentMethods : AppScreen("PaymentMethod", hasTopBar = true, hasBottomBar = false)
 
     //Booking Date and people
     data object BookingDate : AppScreen("BookingDate", hasTopBar = true, hasBottomBar = false)
@@ -47,9 +48,6 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     //Entry Page
     data object EntryPage : AppScreen("EntryPage", hasTopBar = false, hasBottomBar = false)
     data object EntryPage2 : AppScreen("EntryPage2", hasTopBar = false, hasBottomBar = false)
-
-    //schedule
-    data object OrderGraph : AppScreen("OrderGraph", hasTopBar = false, hasBottomBar = true)
 
     fun passData(vararg args: String): String {
         return buildString {
@@ -82,18 +80,20 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
                 Search.route -> Search
                 Result.route -> Result
                 Filter.route -> Filter
+                OrderGraph.route -> OrderGraph
+                MyOrders.route -> MyOrders
+                Ratings.route -> Ratings
                 ProfileGraph.route -> ProfileGraph
                 Profile.route -> Profile
                 EditProfile.route -> EditProfile
                 PaymentMethods.route -> PaymentMethods
-                MyOrders.route -> MyOrders
-                Ratings.route -> Ratings
                 BookingDate.route -> BookingDate
                 BookingPeople.route -> BookingPeople
                 BookingReview.route -> BookingReview
+                BookingHistory.route -> BookingHistory
+                EditScreen.route -> EditScreen
                 EntryPage.route -> EntryPage
                 EntryPage2.route -> EntryPage2
-                OrderGraph.route -> OrderGraph
                 else -> Default
             }
         }

@@ -27,12 +27,15 @@ fun NavGraphBuilder.hotelNavGraph(navController: NavController) {
     }
 
     composable(
-        "${AppScreen.Hotel.route}/{hotelID}",
+        "${AppScreen.Hotel.route}/{hotelID}/{tripPackageID}",
     ){ backStackEntry ->
         val hotelID = backStackEntry.arguments?.getString("hotelID") ?: ""
+        val tripPackageID = backStackEntry.arguments?.getString("tripPackageID") ?: ""
+
         HotelDetailScreen(
             navController = navController,
-            hotelBookingId = hotelID
+            hotelBookingId = hotelID,
+            tripPackageID = tripPackageID
         )
     }
 
