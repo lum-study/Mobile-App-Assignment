@@ -77,7 +77,7 @@ fun SearchScreen(navController: NavHostController) {
                         keyword = it
                     },
                     onFilterButtonClick = {
-                        if (hotelList.itemCount != 0) {
+                        if (hotelList.itemCount > 1) {
                             navController.navigate(
                                 AppScreen.Filter.passData(
                                     keyword,
@@ -85,7 +85,7 @@ fun SearchScreen(navController: NavHostController) {
                                     maxPrice?.toString() ?: "0"
                                 )
                             )
-                        } else
+                        } else if (hotelList.itemCount == 0)
                             showEmptyListToast = !showEmptyListToast
                     }
                 )
@@ -111,7 +111,17 @@ fun SearchScreen(navController: NavHostController) {
                     ) {
                         items(hotelList.itemCount) { index ->
                             val hotel = hotelList[index]
-                            HotelCard(hotel, modifier = Modifier.height(250.dp))
+                            HotelCard(
+                                hotel,
+                                modifier = Modifier.height(250.dp),
+                                onClick = {
+                                    navController.navigate(
+                                        AppScreen.Hotel.passData(
+                                            hotel!!.id,
+                                            ""
+                                        )
+                                    )
+                                })
                         }
                     }
                 } else {
@@ -144,7 +154,11 @@ fun SearchScreen(navController: NavHostController) {
 //                        FilterScreen(navController = rememberNavController())
                     }
                 }
-                FilteredResultScreen(isMobile = false, modifier = Modifier.padding(24.dp))
+                FilteredResultScreen(
+                    isMobile = false,
+                    modifier = Modifier.padding(24.dp),
+                    navController = navController
+                )
             }
         }
     }
@@ -285,6 +299,7 @@ fun SearchBar(
 fun FilteredResultScreen(
     modifier: Modifier = Modifier,
     isMobile: Boolean = true,
+    navController: NavHostController,
 ) {
     val recentSearchViewModel: LocalRecentSearchViewModel = hiltViewModel()
     val recentSearch by recentSearchViewModel.recentSearch.collectAsState()
@@ -329,12 +344,16 @@ fun FilteredResultScreen(
         if (recentSearch?.option == BookingType.TripPackage.title) {
             items(tripPackageList.itemCount) { index ->
                 val tripPackage = tripPackageList[index]
-                TripPackageCard(tripPackage, modifier = Modifier.height(250.dp))
+                TripPackageCard(tripPackage, modifier = Modifier.height(250.dp), onClick = {
+                    navController.navigate(AppScreen.TripPackage.passData(tripPackage!!.id, ""))
+                })
             }
         } else {
             items(hotelList.itemCount) { index ->
                 val hotel = hotelList[index]
-                HotelCard(hotel, modifier = Modifier.height(250.dp))
+                HotelCard(hotel, modifier = Modifier.height(250.dp), onClick = {
+                    navController.navigate(AppScreen.Hotel.passData(hotel!!.id, ""))
+                })
             }
         }
     }

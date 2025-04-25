@@ -26,11 +26,15 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
             HomeScreen(navController)
         }
         composable(
-            route = "${AppScreen.TripPackage.route}/{tripPackageID}",
-            arguments = listOf(navArgument("tripPackageID") { type = NavType.StringType })
+            route = "${AppScreen.TripPackage.route}/{tripPackageID}/{bookingID}",
+            arguments = listOf(
+                navArgument("tripPackageID") { type = NavType.StringType },
+                navArgument("bookingID") { type = NavType.StringType }
+            )
         ) { backStackEntry ->
             val tripPackageID = backStackEntry.arguments?.getString("tripPackageID") ?: ""
-            TripPackageScreen(navController = navController, tripPackageID = tripPackageID)
+            val bookingID = backStackEntry.arguments?.getString("bookingID") ?: ""
+            TripPackageScreen(navController = navController, tripPackageID = tripPackageID, bookingID = bookingID)
         }
         composable(
             route = "${AppScreen.Schedule.route}/{tripPackageID}/{startDate}",
@@ -74,14 +78,6 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
                 availableSlots = availableSlots.toInt()
             )
         }
-
-//        composable(
-//            route = "${AppScreen.Hotel.route}/{hotelID}/{tripPackageID}"
-//        ) { backStackEntry ->
-//            val tripPackageID = backStackEntry.arguments?.getString("tripPackageID") ?: ""
-//            val hotelID = backStackEntry.arguments?.getString("hotelID") ?: ""
-//            OverlappingContentTest(2, navController)
-//        }
 
         composable(
             AppScreen.EditScreen.route

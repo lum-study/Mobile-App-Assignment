@@ -69,7 +69,7 @@ fun FilterScreen(
     val localRecentSearchViewModel: LocalRecentSearchViewModel = hiltViewModel()
 
     var selectedOption by remember { mutableStateOf(BookingType.Hotel) }
-    var selectedPriceRange by remember { mutableStateOf(minPrice.toFloat() + 300..maxPrice.toFloat() - 300) }
+    var selectedPriceRange by remember { mutableStateOf(minPrice.toFloat()..maxPrice.toFloat()) }
 
     //hotel
     var selectedRating by remember { mutableStateOf(Rating.Rate1) }
@@ -98,7 +98,7 @@ fun FilterScreen(
                 onOptionChange = {
                     selectedOption = it
                     selectedPriceRange =
-                        if (it == BookingType.Hotel) minPrice.toFloat() + 300..maxPrice.toFloat() - 300 else 600f..2500f
+                        if (it == BookingType.Hotel) minPrice.toFloat()..maxPrice.toFloat() else 600f..2500f
                 }
             )
             HorizontalDivider()

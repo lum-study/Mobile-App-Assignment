@@ -186,11 +186,9 @@ fun BottomNavigationBar(navController: NavHostController) {
                             ) {
                                 selectedIndex = index
                                 navController.navigate(item.navigation.route) {
-                                    popUpTo(AppScreen.Home.route) {
-                                        saveState = true
+                                    popUpTo(AppScreen.Home.route){
+                                        inclusive = item.navigation.route == AppScreen.HomeGraph.route
                                     }
-                                    launchSingleTop = true
-                                    restoreState = true
                                 }
                             }
                             .size(64.dp)

@@ -9,6 +9,7 @@ data class FlightInformation(
     val departCode: String,
     val arrivalCode: String,
     val name: String,
+    val referenceID: String,
     val endDate: String,
     val endTime: String,
 )

@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.ui.screen.profile.OrderScreen
 
 fun NavGraphBuilder.orderNavGraph(navController: NavHostController) {
     navigation(
@@ -12,7 +13,7 @@ fun NavGraphBuilder.orderNavGraph(navController: NavHostController) {
         route = AppScreen.OrderGraph.route
     ) {
         composable(AppScreen.MyOrders.route) {
-
+            OrderScreen(navController)
         }
     }
 }

@@ -136,7 +136,7 @@ fun FlightScreen(flightID: String = "", bookingID: String = "") {
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    SmallTab("Flight", flight!!.id.substring(0, 5))
+                    SmallTab("Flight", flight!!.referenceID)
                     SmallTab("Gate", flight!!.gate)
                     SmallTab(
                         "Departure",
@@ -179,7 +179,7 @@ fun FlightScreen(flightID: String = "", bookingID: String = "") {
                             text = stringResource(
                                 R.string.airport_name,
                                 flight!!.name,
-                                flight!!.id.substring(0, 5)
+                                flight!!.referenceID
                             ),
                             style = AppTheme.typography.mediumSemiBold,
                             color = Color.Black,

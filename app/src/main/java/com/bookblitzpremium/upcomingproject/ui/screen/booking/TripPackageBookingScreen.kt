@@ -143,7 +143,7 @@ fun TripPackageBookingScreen(
                                 paymentID = "",
                                 tripPackageID = tripPackageID,
                                 userID = userID,
-                                status = BookingStatus.Completed.title
+                                status = BookingStatus.Confirmed.title
                             )
                             remoteTPBookingViewModel.addPaymentAndBooking(
                                 payment = payment,

@@ -126,6 +126,10 @@
     <string name="pick_date">Pick Date</string>
     <string name="register_account">Register Account</string>
 
+    <!-- My Booking -->
+    <string name="booking_date">Booking Date: %s</string>
+    <string name="booking_quantity">Quantity: %s</string>
+
     <!-- Formatter -->
     <string name="price">RM %.2f</string>
     <string name="from_to">%s to %s</string>

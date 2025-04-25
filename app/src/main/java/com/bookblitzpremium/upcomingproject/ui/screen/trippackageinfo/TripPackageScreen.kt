@@ -59,7 +59,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
-fun TripPackageScreen(navController: NavController, tripPackageID: String) {
+fun TripPackageScreen(navController: NavController, tripPackageID: String, bookingID: String) {
     val localTripPackageViewModel: LocalTripPackageViewModel = hiltViewModel()
     var selectedTripPackage: TripPackageInformation? by remember { mutableStateOf(null) }
 
@@ -183,7 +183,7 @@ fun TripPackageScreen(navController: NavController, tripPackageID: String) {
                                 navController.navigate(
                                     AppScreen.Flight.passData(
                                         selectedTripPackage!!.flightID,
-                                        ""
+                                        bookingID,
                                     )
                                 )
                             }
@@ -206,22 +206,24 @@ fun TripPackageScreen(navController: NavController, tripPackageID: String) {
                             }
                         )
 
-                        Button(
-                            onClick = {
-                                navController.navigate(
-                                    AppScreen.TripPackageBooking.passData(
-                                        selectedTripPackage!!.id,
-                                        selectedTripPackage!!.name,
-                                        selectedTripPackage!!.price.toString(),
-                                        selectedTripPackage!!.slots.toString(),
+                        if (bookingID == "") {
+                            Button(
+                                onClick = {
+                                    navController.navigate(
+                                        AppScreen.TripPackageBooking.passData(
+                                            selectedTripPackage!!.id,
+                                            selectedTripPackage!!.name,
+                                            selectedTripPackage!!.price.toString(),
+                                            selectedTripPackage!!.slots.toString(),
+                                        )
                                     )
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.booking_button)
                                 )
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = stringResource(R.string.booking_button)
-                            )
+                            }
                         }
                     } else {
                         SkeletonLoader(

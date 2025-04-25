@@ -328,7 +328,7 @@ fun TripPackageSection(
                             tripPackage = tripPackage,
                             modifier = Modifier.width(250.dp),
                             onClick = {
-                                navController.navigate(AppScreen.TripPackage.passData(tripPackage.id))
+                                navController.navigate(AppScreen.TripPackage.passData(tripPackage.id, ""))
                             })
                     }
                 }
@@ -501,7 +501,7 @@ fun HotelSection(
                         hotel = hotel,
                         modifier = Modifier.width(200.dp),
                         onClick = {
-                            navController.navigate("${AppScreen.Hotel.route}/${hotel?.id}")
+                            navController.navigate(AppScreen.Hotel.passData(hotel!!.id, ""))
                         })
                 }
             }
