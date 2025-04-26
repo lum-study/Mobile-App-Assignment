@@ -44,11 +44,11 @@ class AuthViewModel @Inject constructor(
     private val _newNavigationCommand = MutableStateFlow<Boolean>(false)
     val newNavigationCommand: StateFlow<Boolean> = _newNavigationCommand.asStateFlow()
 
-    fun getUserId() : String{
+    fun getUserId(): String {
         return auth.currentUser?.uid ?: ""
     }
 
-    init{
+    init {
         auth.signOut()
         checkAuthStatus()
     }
@@ -86,7 +86,8 @@ class AuthViewModel @Inject constructor(
                         _authState.value = AuthState.Authenticated
                         _newNavigationCommand.value = true
                     } else {
-                        _authState.value = AuthState.Error(task.exception?.message ?: "Something went wrong")
+                        _authState.value =
+                            AuthState.Error(task.exception?.message ?: "Something went wrong")
                     }
                 }
         }
@@ -135,13 +136,17 @@ class AuthViewModel @Inject constructor(
             } catch (e: FirebaseAuthException) {
                 when (e.errorCode) {
                     "ERROR_USER_NOT_FOUND" -> {
-                        _passwordResetState.value = PasswordResetState.Error("No account found with this email")
+                        _passwordResetState.value =
+                            PasswordResetState.Error("No account found with this email")
                     }
+
                     "ERROR_INVALID_EMAIL" -> {
                         _passwordResetState.value = PasswordResetState.Error("Invalid email format")
                     }
+
                     else -> {
-                        _passwordResetState.value = PasswordResetState.Error("Unknown error: ${e.message}")
+                        _passwordResetState.value =
+                            PasswordResetState.Error("Unknown error: ${e.message}")
                     }
                 }
                 Log.e("PasswordResetViewModel", "Error: ${e.message}")
@@ -194,19 +199,23 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
+
     fun sendOTP(context: Context) {
         val noticationService = NotificationService(context)
         val otp = sendOTP()
         noticationService.showNotification("OTP services", otp)
     }
+
     fun onAction(action: OtpAction) {
         when (action) {
             is OtpAction.OnChangeFieldFocused -> {
                 _state.update { it.copy(focusedIndex = action.index) }
             }
+
             is OtpAction.OnEnterNumber -> {
                 enterNumber(action.number, action.index)
             }
+
             OtpAction.OnKeyboardBack -> {
                 val previousIndex = getPreviousFocusedIndex(state.value.focusedIndex)
                 _state.update {
@@ -220,11 +229,13 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
-    fun updateStateOfOTP(){
+
+    fun updateStateOfOTP() {
         _state.update {
             OtpState() // Reset everything to default values
         }
     }
+
     private fun enterNumber(number: Int?, index: Int) {
         val otp = _state.value.generatedOtp
         val newCode = state.value.code.mapIndexed { currentIndex, currentNumber ->
@@ -245,17 +256,19 @@ class AuthViewModel @Inject constructor(
             )
         }
     }
+
     private fun getPreviousFocusedIndex(currentIndex: Int?): Int? {
         return (currentIndex?.minus(1))?.takeIf { it >= 0 }
     }
+
     private fun getNextFocusedTextFieldIndex(
         currentCode: List<Int?>,
         currentFocusedIndex: Int?
     ): Int? {
-        if(currentFocusedIndex == null) {
+        if (currentFocusedIndex == null) {
             return null
         }
-        if(currentFocusedIndex == 3) {
+        if (currentFocusedIndex == 3) {
             return currentFocusedIndex
         }
         return getFirstEmptyFieldIndexAfterFocusedIndex(
@@ -263,15 +276,16 @@ class AuthViewModel @Inject constructor(
             currentFocusedIndex = currentFocusedIndex
         )
     }
+
     private fun getFirstEmptyFieldIndexAfterFocusedIndex(
         code: List<Int?>,
         currentFocusedIndex: Int
     ): Int {
         code.forEachIndexed { index, number ->
-            if(index <= currentFocusedIndex) {
+            if (index <= currentFocusedIndex) {
                 return@forEachIndexed
             }
-            if(number == null) {
+            if (number == null) {
                 return index
             }
         }
@@ -283,7 +297,7 @@ class AuthViewModel @Inject constructor(
         _newNavigationCommand.value = false
     }
 
-    fun clearAuthenticatedState(){
+    fun clearAuthenticatedState() {
         _authState.value = AuthState.Unauthenticated
     }
 

@@ -99,6 +99,7 @@ fun CustomTextField(
     placeholder: String = "Type here...",
     leadingIcon: ImageVector? = null,
     trailingIcon: ImageVector? = null,
+    shape: RoundedCornerShape = RoundedCornerShape(0.dp),
     keyBoardType: KeyboardType = KeyboardType.Text,  // Use `KeyboardType`
     inputType: VisualTransformation = VisualTransformation.None,  // Use `VisualTransformation`
     modifier: Modifier = Modifier
@@ -118,13 +119,7 @@ fun CustomTextField(
                 Icon(imageVector = it, contentDescription = null, tint = Color.Gray)
             } }
         },
-//        colors = TextFieldDefaults.outlinedTextFieldColors(
-//            focusedBorderColor = Color(0xFF6200EA),
-//            unfocusedBorderColor = Color.Gray,
-//            cursorColor = Color.Black
-//        ),
         textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
-        shape = RoundedCornerShape(12.dp),
         keyboardOptions = KeyboardOptions(  // ✅ Fixed: Merged both options
             keyboardType = keyBoardType,
             imeAction = ImeAction.Done
@@ -143,6 +138,7 @@ fun CustomTextFieldPassword(
     label: String = "Enter text",
     placeholder: String = "Type here...",
     leadingIcon: ImageVector? = null,
+    shape: RoundedCornerShape = RoundedCornerShape(0.dp),
     keyBoardType: KeyboardType = KeyboardType.Text,
     modifier: Modifier = Modifier
 ) {
@@ -184,7 +180,7 @@ fun CustomTextFieldPassword(
             }
         },
         textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
-        shape = RoundedCornerShape(12.dp),
+
         keyboardOptions = KeyboardOptions(
             keyboardType = keyBoardType,
             imeAction = ImeAction.Done

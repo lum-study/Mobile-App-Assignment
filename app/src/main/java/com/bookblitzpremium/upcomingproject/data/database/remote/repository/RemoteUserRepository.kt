@@ -14,9 +14,8 @@ class RemoteUserRepository @Inject constructor(private val firestore: FirebaseFi
     }
 
     suspend fun addUser(user: User): String {
-        val docRef = userRef.document()
-        val newUser = user.copy(id = docRef.id)
-        docRef.set(newUser).await()
+        val docRef = userRef.document(user.id)
+        docRef.set(user).await()
         return docRef.id
     }
 

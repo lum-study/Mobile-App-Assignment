@@ -1,5 +1,6 @@
 package com.bookblitzpremium.upcomingproject.ui.navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -19,6 +20,7 @@ fun AppNavigation(
         modifier = modifier,
     ) {
         authNavGraph(navController, viewModel)
+        Log.e("MyTag", "This is an error log message")
         homeNavGraph(navController)
         hotelNavGraph(navController)
         searchNavGraph(navController)

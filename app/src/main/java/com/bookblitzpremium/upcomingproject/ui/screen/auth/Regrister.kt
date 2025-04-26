@@ -1,108 +1,110 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.auth
 
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.media3.common.util.Log
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
+import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
 import com.bookblitzpremium.upcomingproject.data.model.SignupState
 import com.bookblitzpremium.upcomingproject.ui.components.ButtonHeader
 import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextFieldPassword
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
 
 @Composable
 fun RegristerPage(
-    viewModel: AuthViewModel,
     navController: NavController,
+    viewModel: AuthViewModel,
+    localViewModel: LocalUserViewModel = hiltViewModel(),
+    remoteUserViewModel : RemoteUserViewModel = hiltViewModel()
 ){
-    val localViewModel: LocalUserViewModel = hiltViewModel()
-    val userError = localViewModel.loading.collectAsState()
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var confirmPassword by rememberSaveable { mutableStateOf("") }
     val context = LocalContext.current
+    var toastMessage by remember { mutableStateOf<String?>(null) } // State for Toast message
+    var toastTrigger by remember { mutableStateOf(0) } // Unique trigger for Toast
     val signupState by viewModel.signupState.collectAsState()
-    var hello by rememberSaveable { mutableStateOf(false) }
+    var triggerSignup by rememberSaveable { mutableStateOf(false) }
 
-//    LaunchedEffect(verifyEmailState, navigationCommand) {
-//        when (verifyEmailState) {
-//            is VerifyEmail.WaitingForVerification -> {
-//                navController.navigate(AppScreen.VerifyEmailWaiting.route) {
-//                    popUpTo(navController.graph.startDestinationId) {
-//                        inclusive = true
-//                    }
-//                    launchSingleTop = true
-//                }
-//            }
-//            is VerifyEmail.Success -> {
-//                if (navigationCommand) {
-//                    navController.navigate(AppScreen.Home.route) {
-//                        popUpTo(navController.graph.startDestinationId) {
-//                            inclusive = true
-//                        }
-//                        launchSingleTop = true
-//                    }
-//                    viewModel.clearNavigationCommand()
-//                }
-//            }
-//            is VerifyEmail.Error -> {
-//                if ((verifyEmailState as VerifyEmail.Error).message == "User not signed in. Please sign in again.") {
-//                    navController.navigate(AppScreen.Register.route) {
-//                        popUpTo(navController.graph.startDestinationId) {
-//                            inclusive = true
-//                        }
-//                    }
-//                }
-//            }
-//            else -> { /* Idle or Loading state, do nothing */ }
-//        }
-//    }
+    LaunchedEffect(signupState) {
+        if (signupState is SignupState.Error) {
+            toastMessage = (signupState as SignupState.Error).message
+            toastTrigger++
+            viewModel.clearSignUpState()
+            triggerSignup = false
+        }
+    }
+
+    LaunchedEffect(toastMessage, toastTrigger) {
+        toastMessage?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            toastMessage = null
+        }
+    }
 
     //validation
     fun getPasswordErrorMessage(password: String): String? {
         if (password.length < 8) {
             return "Password must be at least 8 characters long"
         }
-        if (!password.contains(Regex(".*[A-Z].*[A-Z].*"))) {
-            return "Password must contain at least 2 uppercase letters"
-        }
-        if (!password.contains(Regex(".*[!@#$&*].*"))) {
-            return "Password must contain at least 1 special character (!@#$&*)"
-        }
-        if (!password.contains(Regex(".*[0-9].*[0-9].*"))) {
-            return "Password must contain at least 2 digits"
-        }
-        if (!password.contains(Regex(".*[a-z].*[a-z].*[a-z].*"))) {
-            return "Password must contain at least 3 lowercase letters"
-        }
+//        if (!password.contains(Regex(".*[A-Z].*[A-Z].*"))) {
+//            return "Password must contain at least 2 uppercase letters"
+//        }
+//        if (!password.contains(Regex(".*[!@#$&*].*"))) {
+//            return "Password must contain at least 1 special character (!@#$&*)"
+//        }
+//        if (!password.contains(Regex(".*[0-9].*[0-9].*"))) {
+//            return "Password must contain at least 2 digits"
+//        }
+//        if (!password.contains(Regex(".*[a-z].*[a-z].*[a-z].*"))) {
+//            return "Password must contain at least 3 lowercase letters"
+//        }
         return null
     }
 
@@ -127,14 +129,49 @@ fun RegristerPage(
             Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
             return false
         }
-
         return true
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Tesla logo (replace R.drawable.logo with your actual logo resource)
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(64.dp)
+            )
+
+            // Language selector
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow, // Use a globe icon
+                    contentDescription = "Language",
+                    tint = Color.Black,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "en-MY",
+                    fontSize = 16.sp,
+                    color = Color.Black
+                )
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxHeight()
@@ -157,6 +194,7 @@ fun RegristerPage(
                 onValueChange = { email = it },
                 label = "Username",
                 placeholder = "Enter your username",
+                shape = RoundedCornerShape(12.dp),
                 leadingIcon = Icons.Default.Person,
                 trailingIcon = Icons.Default.Clear,
                 modifier = Modifier
@@ -170,6 +208,7 @@ fun RegristerPage(
                 label = "Password",
                 placeholder = "Enter your Password",
                 leadingIcon = Icons.Default.Lock,
+                shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 16.dp)
@@ -191,80 +230,37 @@ fun RegristerPage(
                 valueHorizontal = 16.dp,
                 onClick = {
                     if(isFormValid()){
-                        viewModel.signup(email, password)
-                        hello = true
+                        triggerSignup = true
                     }
                 }
             )
 
-            if(hello) {
+
+            if(triggerSignup) {
                 CheckStatusLoading(
                     isLoading = signupState is SignupState.Loading,
                     backgroundAlpha = 0.5f,
                     indicatorColor = MaterialTheme.colorScheme.primary,
                 )
 
-                CheckStatusLoading(
-                    isLoading = signupState is SignupState.Loading,
-                    backgroundAlpha = 0.5f,
-                    indicatorColor = MaterialTheme.colorScheme.primary,
-                )
-
-                when (signupState) {
-                    is SignupState.Error -> {
-                        Text(
-                            text = (signupState as SignupState.Error).message,
-                            color = Color.Red,
-                            modifier = Modifier.padding(16.dp)
-                        )
+                LaunchedEffect(Unit) {
+                    val exists = localViewModel.checkUserEmail(email)
+                    if (!exists) {
+                        val uid = viewModel.signup(email, password)
+                        if (uid.isNotEmpty()) {
+                            val username = email.substringBefore("@")
+                            val user = User(uid = uid, username = username, email = email, password = password)
+                            remoteUserViewModel.addUser(user)
+                            localViewModel.insertNewUser(user)
+                            viewModel.clearSignUpState()
+                            triggerSignup = false
+                        }
+                    } else {
+                        viewModel.setSignupError("Email is already registered")
+                        triggerSignup = false
                     }
-                    else -> { /* Idle or Success state, do nothing */ }
                 }
-
-//                // Handle email verification state
-//                when (verifyEmailState) {
-//                    is VerifyEmail.Success -> {
-//                        Text(
-//                            text = "Verification email sent! Please check your inbox.",
-//                            color = Color.Green,
-//                            modifier = Modifier.padding(16.dp)
-//                        )
-//                    }
-//                    is VerifyEmail.Error -> {
-//                        Text(
-//                            text = (verifyEmailState as VerifyEmail.Error).message,
-//                            color = Color.Red,
-//                            modifier = Modifier.padding(16.dp)
-//                        )
-//                    }
-//                    else -> { /* Idle or Loading state, do nothing */ }
-//                }
-
-//                when (signupState) {
-//                    is SignupState.Success -> {
-//                        // Navigate to the next screen on success
-////                        LaunchedEffect(Unit) {
-////                            navController.navigate(AppScreen.HomeGraph.route) {
-////                                popUpTo(navController.graph.startDestinationId) {
-////                                    inclusive = true
-////                                }
-////                                launchSingleTop = true
-////                            }
-////                        }
-//
-//                        viewModel.NavigationCommandToHome()
-//                    }
-//                    is SignupState.Error -> {
-//                        Text(
-//                            text = (signupState as SignupState.Error).message,
-//                            color = Color.Red,
-//                            modifier = Modifier.padding(16.dp)
-//                        )
-//                    }
-//                    else -> { /* Idle state, do nothing */ }
-//                }
             }
         }
     }
 }
-

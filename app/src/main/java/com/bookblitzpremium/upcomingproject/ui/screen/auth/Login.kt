@@ -1,12 +1,12 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.auth
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,10 +15,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,84 +31,90 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
 import com.bookblitzpremium.upcomingproject.data.model.AuthState
+import com.bookblitzpremium.upcomingproject.data.model.PasswordVerificationState
+import com.bookblitzpremium.upcomingproject.isValidEmail
 import com.bookblitzpremium.upcomingproject.ui.components.ButtonHeader
 import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextFieldPassword
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
-
+import kotlinx.coroutines.delay
 
 
 @Composable
 fun LoginPage(
     showToggleToTablet: Boolean,
     navController: NavController,
-    viewModel: AuthViewModel
+    viewModel: AuthViewModel,
+    email: String = ""
 ) {
     val valueHorizontal: Dp = if (showToggleToTablet) 46.dp else 16.dp
     val offsetValueX: Dp = if (showToggleToTablet) 620.dp else 0.dp
     val maxSizeAvailable: Float = if (showToggleToTablet) 0.4f else 1f
 
-    var email by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf( if (email.isEmpty()) "" else email) }
     var password by rememberSaveable { mutableStateOf("") }
     val authState by viewModel.authState.collectAsState()
     val context = LocalContext.current
 
-    // Show error message if authState is Error
+    var localViewModel : LocalUserViewModel = hiltViewModel()
+    var checkTrigger by remember { mutableStateOf(0) }
+
+    var toastMessage by remember { mutableStateOf<String?>(null) }
+    var toastTrigger by remember { mutableStateOf(0) }
+
     LaunchedEffect(authState) {
-        if (authState is AuthState.Error) {
-            val errorMessage = (authState as AuthState.Error).message
-            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+        when (authState) {
+            is AuthState.Error -> {
+                val message = (authState as AuthState.Error).message
+                toastMessage= message
+                toastTrigger++
+            }
+            is AuthState.Authenticated -> {
+                toastMessage = "Login succesful"
+
+            }
+            else -> {}
         }
     }
 
-    //validation
-    fun getPasswordErrorMessage(password: String): String? {
-        if (password.length < 8) {
-            return "Password must be at least 8 characters long"
+    // Show Toast for validation errors or password verification
+    LaunchedEffect(toastMessage, toastTrigger) {
+        toastMessage?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            toastMessage = null
         }
-        if (!password.contains(Regex(".*[A-Z].*[A-Z].*"))) {
-            return "Password must contain at least 2 uppercase letters"
-        }
-        if (!password.contains(Regex(".*[!@#$&*].*"))) {
-            return "Password must contain at least 1 special character (!@#$&*)"
-        }
-        if (!password.contains(Regex(".*[0-9].*[0-9].*"))) {
-            return "Password must contain at least 2 digits"
-        }
-        if (!password.contains(Regex(".*[a-z].*[a-z].*[a-z].*"))) {
-            return "Password must contain at least 3 lowercase letters"
-        }
-        return null
     }
-
 
     fun isFormValid(): Boolean {
         if (email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(context, "Please enter a valid email address", Toast.LENGTH_SHORT).show()
+            toastMessage = "Please enter a valid email address"
             return false
         }
 
-        getPasswordErrorMessage(password)?.let { errorMessage ->
-            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+        if (password.isBlank()) {
+            toastMessage = "Please enter a valid password"
             return false
         }
         return true
@@ -114,69 +125,81 @@ fun LoginPage(
             .fillMaxSize()
     ) {
 
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .size(32.dp)
-                .background(Color.Transparent) // Match your app's theme
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            // Tesla logo (replace R.drawable.logo with your actual logo resource)
             Image(
                 painter = painterResource(id = R.drawable.logo),
-                contentDescription = "Logo",
-                contentScale = ContentScale.Crop,
+                contentDescription = null,
+//                contentScale = ContentScale.Crop,
                 modifier = Modifier
-//                    .size(60.dp)
-                    .align(Alignment.TopStart) // Center the logo in the top bar
+                    .size(64.dp)
             )
+
+            // Language selector
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow, // Use a globe icon
+                    contentDescription = "Language",
+                    tint = Color.Black,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "en-MY",
+                    fontSize = 16.sp,
+                    color = Color.Black
+                )
+            }
         }
 
-        Box(
+        Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxHeight()
+                .fillMaxWidth(maxSizeAvailable)
+                .padding(horizontal = 28.dp)
+                .offset(x = offsetValueX),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-
-            Column(
+            Text(
+                text = "Welcome Back!",
+                style = AppTheme.typography.largeBold,
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth(maxSizeAvailable)
-                    .padding(horizontal = 28.dp)
-                    .offset(x = offsetValueX),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Welcome Back!",
-                    style = AppTheme.typography.largeBold,
-                    modifier = Modifier
-                        .padding(top = 0.dp, bottom = 30.dp)
-                        .align(Alignment.CenterHorizontally)
-                )
-
-                CustomTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = "Username",
-                    placeholder = "Enter your username",
-                    leadingIcon = Icons.Default.Person,
-                    trailingIcon = Icons.Default.Clear,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = valueHorizontal, vertical = 12.dp)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                CustomTextFieldPassword(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = "Password",
-                    placeholder = "Enter your Password",
-                    leadingIcon = Icons.Default.Lock,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = valueHorizontal, vertical = 16.dp)
-                )
-
+                    .padding(top = 0.dp, bottom = 30.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+            CustomTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = "Username",
+                placeholder = "Enter your username",
+                trailingIcon = Icons.Default.Clear,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = valueHorizontal, vertical = 12.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            CustomTextFieldPassword(
+                value = password,
+                onValueChange = { password = it },
+                label = "Password",
+                placeholder = "Enter your Password",
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = valueHorizontal, vertical = 16.dp)
+            )
             Text(
                 text = "Forgot Password?",
                 style = AppTheme.typography.bodyLarge,
@@ -190,55 +213,54 @@ fun LoginPage(
                         }
                     }
             )
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier.padding(top = 40.dp)
-                ) {
-                    ButtonHeader(
-                        textResId = R.string.login,
-                        valueHorizontal = valueHorizontal,
-                        onClick = {
-                            if (isFormValid()) {
-                                viewModel.login(email, password)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.padding(top = 40.dp)
+            ) {
+                ButtonHeader(
+                    textResId = R.string.login,
+                    valueHorizontal = valueHorizontal,
+                    onClick ={
+                        if(isFormValid()){
+                            localViewModel.loginLocalUser(email, password) { uid, error ->
+                                Log.e("User", uid.toString())
+                                if (error != null) {
+                                    Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                                    toastTrigger++
+                                } else if (uid != null) {
+                                    val username = email.substringBefore("@")
+                                    val user = User(
+                                        uid = uid,
+                                        username = username,
+                                        email = email,
+                                        password = password
+                                    )
+                                    localViewModel.insertNewUser(user)
+                                    viewModel.login(email,password)
+                                }
                             }
                         }
-                    )
+                    }
+                )
 
-//                if (authState !is AuthState.Authenticated) {
-//                    SignInWithGoogle(
-//                        valueHorizontal = valueHorizontal,
-//                        viewModel = viewModel,
-//                        email = email,
-//                        password = password
-//                    )
-//                }
+                Text(
+                    text = stringResource(R.string.register_account),
+                    style = AppTheme.typography.bodyLarge,
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier
+                        .align(Alignment.Start)
+                        .padding(start = valueHorizontal, top = 30.dp)
+                        .clickable {
+                            navController.navigate(AppScreen.Register.route)
+                        }
+                )
 
-                    Text(
-                        text = stringResource(R.string.register_account),
-                        style = AppTheme.typography.bodyLarge,
-                        textDecoration = TextDecoration.Underline,
-                        modifier = Modifier
-                            .align(Alignment.Start)
-                            .padding(start = valueHorizontal, top = 30.dp)
-                            .clickable {
-                                navController.navigate(AppScreen.Register.route)
-                            }
-                    )
-                }
+                CheckStatusLoading(
+                    isLoading = authState is AuthState.Loading,
+                    backgroundAlpha = 0.5f,
+                    indicatorColor = MaterialTheme.colorScheme.primary,
+                )
             }
-
-            CheckStatusLoading(
-                isLoading = authState is AuthState.Loading,
-                backgroundAlpha = 0.5f,
-                indicatorColor = MaterialTheme.colorScheme.primary,
-            )
-
         }
-
-
-
     }
 }
-
-//if enter more than three times assume forget passwrod pop up forget passwrpd
