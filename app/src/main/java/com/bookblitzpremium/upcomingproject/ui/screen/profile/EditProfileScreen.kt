@@ -57,7 +57,7 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.bookblitzpremium.upcomingproject.R
 
 @Composable
-fun EditProfileScreen() {
+fun EditProfileScreen(onBackClick: () -> Unit = {}) {
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val isTablet = windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.COMPACT
 

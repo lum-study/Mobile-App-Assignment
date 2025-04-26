@@ -2,18 +2,9 @@ package com.bookblitzpremium.upcomingproject.ui.screen.profile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -27,6 +18,8 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.R
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 
 @Composable
 fun ProfileScreen(
@@ -49,13 +43,16 @@ fun ProfileScreen(
     onBackClick: () -> Unit = {},
     onMenuItemClick: (String) -> Unit = {}
 ) {
+    val hotelId = "hotel123" // Define your hotelId here (static or dynamic)
+
     val windowSizeClass = LocalConfiguration.current.screenWidthDp
     val isTablet = windowSizeClass > 600
 
+    // Pass hotelId to Tablet and Phone Profile screens
     if (isTablet) {
-        TabletProfileScreen(navController, userName, onBackClick, onMenuItemClick)
+        TabletProfileScreen(navController, userName, onBackClick, onMenuItemClick, hotelId)
     } else {
-        PhoneProfileScreen(navController, userName, onBackClick, onMenuItemClick)
+        PhoneProfileScreen(navController, userName, onBackClick, onMenuItemClick, hotelId)
     }
 }
 
@@ -64,7 +61,8 @@ fun TabletProfileScreen(
     navController: NavHostController,
     userName: String,
     onBackClick: () -> Unit,
-    onMenuItemClick: (String) -> Unit
+    onMenuItemClick: (String) -> Unit,
+    hotelId: String // Accept hotelId as parameter
 ) {
     Row(
         modifier = Modifier
@@ -89,7 +87,8 @@ fun TabletProfileScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                ProfileMenuItems(onMenuItemClick)
+                // Pass navController to ProfileMenuItems
+                ProfileMenuItems(onMenuItemClick, hotelId, navController)
             }
         }
 
@@ -120,7 +119,8 @@ fun PhoneProfileScreen(
     navController: NavHostController,
     userName: String,
     onBackClick: () -> Unit,
-    onMenuItemClick: (String) -> Unit
+    onMenuItemClick: (String) -> Unit,
+    hotelId: String // Accept hotelId as parameter
 ) {
     Column(
         modifier = Modifier
@@ -129,7 +129,8 @@ fun PhoneProfileScreen(
             .verticalScroll(rememberScrollState())
     ) {
         ProfileHeader(userName = userName, onBackClick = onBackClick)
-        ProfileMenuItems(onMenuItemClick)
+        // Pass navController to ProfileMenuItems
+        ProfileMenuItems(onMenuItemClick, hotelId, navController)
     }
 }
 
@@ -138,7 +139,7 @@ fun ProfileHeader(tabletMode: Boolean = false, userName: String, onBackClick: ()
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 16.dp, start = 16.dp, end = 16.dp),
+            .padding(start = 16.dp, end = 16.dp),
         contentAlignment = Alignment.Center
     ) {
         // Centered Profile Text
@@ -164,7 +165,7 @@ fun ProfileHeader(tabletMode: Boolean = false, userName: String, onBackClick: ()
         }
     }
 
-    Spacer(modifier = Modifier.height(32.dp))
+    Spacer(modifier = Modifier.height(24.dp))
 
     Column(
         modifier = Modifier
@@ -191,7 +192,7 @@ fun ProfileHeader(tabletMode: Boolean = false, userName: String, onBackClick: ()
 }
 
 @Composable
-fun ProfileMenuItems(onMenuItemClick: (String) -> Unit) {
+fun ProfileMenuItems(onMenuItemClick: (String) -> Unit, hotelId: String, navController: NavHostController) {
     val menuItems = listOf(
         "Edit Profile" to Icons.Outlined.Person,
         "Payment Methods" to Icons.Outlined.AddCard,
@@ -205,7 +206,13 @@ fun ProfileMenuItems(onMenuItemClick: (String) -> Unit) {
             ProfileMenuItem(
                 text = item,
                 iconRes = iconRes,
-                onClick = { onMenuItemClick(item) }
+                onClick = {
+                    onMenuItemClick(item)
+                    if (item == "Ratings") {
+                        // Navigate to Ratings with hotelId
+                        navController.navigate("${AppScreen.Ratings.route}/$hotelId")
+                    }
+                }
             )
             Divider(
                 modifier = Modifier.padding(horizontal = 16.dp),

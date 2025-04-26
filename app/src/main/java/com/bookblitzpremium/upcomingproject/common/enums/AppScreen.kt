@@ -30,9 +30,10 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object Profile : AppScreen("Profile", hasTopBar = false, hasBottomBar = true)
     data object EditProfile : AppScreen("EditProfile", hasTopBar = true, hasBottomBar = false)
     data object PaymentMethods : AppScreen("payment_methods", hasTopBar = true, hasBottomBar = false)
+    data object RatingRecords : AppScreen("RatingRecords/{hotelId}", hasTopBar = false, hasBottomBar = true)
 
     data object MyOrders : AppScreen("my_orders", hasTopBar = true, hasBottomBar = false)
-    data object Ratings : AppScreen("ratings", hasTopBar = true, hasBottomBar = false)
+    data object Ratings : AppScreen("ratings/{hotelId}", hasTopBar = true, hasBottomBar = false)
 
 
     //Booking Date and people
