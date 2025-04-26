@@ -2,29 +2,25 @@ package com.bookblitzpremium.upcomingproject.data.database.local.viewmodel
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.NavigationCommand
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.model.AuthState
 import com.bookblitzpremium.upcomingproject.data.model.OtpAction
 import com.bookblitzpremium.upcomingproject.data.model.OtpState
-import com.bookblitzpremium.upcomingproject.data.model.PasswordChangeState
 import com.bookblitzpremium.upcomingproject.data.model.PasswordResetState
 import com.bookblitzpremium.upcomingproject.data.model.SignupState
-import com.bookblitzpremium.upcomingproject.data.model.User
 import com.bookblitzpremium.upcomingproject.data.model.VerifyEmail
 import com.bookblitzpremium.upcomingproject.ui.components.NotificationService
-import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.actionCodeSettings
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,13 +28,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
 ) : ViewModel() {
 
     // Authentication state
@@ -50,23 +45,35 @@ class AuthViewModel @Inject constructor(
     val userDetails: StateFlow<User?> = _user.asStateFlow()
 
     // Navigation command
-    private val _navigationCommand = MutableStateFlow(false) // Set to false initially
-    val navigationCommand: StateFlow<Boolean> = _navigationCommand.asStateFlow()
+    private val _newNavigationCommand = MutableStateFlow<Boolean>(false)
+    val newNavigationCommand: StateFlow<Boolean> = _newNavigationCommand.asStateFlow()
 
-    init {
-        signOut()
-        Log.e("Login", "Start user: ${_authState.value}")
-        checkAuthStatus()
-        Log.e("Login", "End user: ${_authState.value}")
+    fun getUserId() : String{
+        return auth.currentUser?.uid ?: ""
     }
+
+    init{
+        auth.signOut()
+        checkAuthStatus()
+    }
+
+    fun signOut() {
+        clearAuthenticatedState()
+        auth.signOut()
+        clearSignUpState()
+        clearNavigationCommand()
+        resetPasswordState()
+    }
+
+    val uid = getUserId()
 
     fun checkAuthStatus() {
         if (auth.currentUser == null) {
             _authState.value = AuthState.Unauthenticated
-            _navigationCommand.value = false // Fixed: Assignment instead of comparison
+            _newNavigationCommand.value = false
         } else {
             _authState.value = AuthState.Authenticated
-            _navigationCommand.value = true // Fixed: Assignment instead of comparison
+            _newNavigationCommand.value = true
         }
     }
 
@@ -77,112 +84,44 @@ class AuthViewModel @Inject constructor(
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
-            try {
-                val result = auth.signInWithEmailAndPassword(email, password).await()
-                if (result.user != null) {
-                    updateAuthState(result.user)
-                    _authState.value = AuthState.Authenticated
-                } else {
-                    _authState.value = AuthState.Error("Login failed: No user returned")
+            auth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        _authState.value = AuthState.Authenticated
+                        _newNavigationCommand.value = true
+                    } else {
+                        _authState.value = AuthState.Error(task.exception?.message ?: "Something went wrong")
+                    }
                 }
-            } catch (e: Exception) {
-                val errorMessage = when {
-                    e.message?.contains("INVALID_EMAIL") == true -> "Invalid email format"
-                    e.message?.contains("WRONG_PASSWORD") == true -> "Incorrect password"
-                    e.message?.contains("NETWORK") == true -> "Network error, please try again"
-                    else -> e.message ?: "Something went wrong"
-                }
-                _authState.value = AuthState.Error(errorMessage)
-            } finally {
-                _authState.value = AuthState.Unauthenticated // Reset to Idle
-            }
         }
-    }
-
-    private fun updateAuthState(firebaseUser: FirebaseUser?) {
-        if (firebaseUser != null) {
-            _authState.value = AuthState.Authenticated
-            _user.value = User(
-                uid = firebaseUser.uid,
-                email = firebaseUser.email,
-                displayName = firebaseUser.displayName,
-                photoUrl = firebaseUser.photoUrl?.toString(),
-            )
-            _navigationCommand.value = true
-        } else {
-            _authState.value = AuthState.Unauthenticated
-            _user.value = null
-            _navigationCommand.value = false
-        }
-    }
-
-    fun NavigationCommandToHome() {
-        _navigationCommand.value = true // Fixed: Set to true to trigger navigation
-    }
-
-    fun clearNavigationCommand() {
-        _navigationCommand.value = false // Fixed: Set to false to reset
-    }
-
-    fun signOut() {
-        auth.signOut()
-        _authState.value = AuthState.Unauthenticated
-        _navigationCommand.value = false
     }
 
     // Sign up
     private val _signupState = MutableStateFlow<SignupState>(SignupState.Idle)
     val signupState: StateFlow<SignupState> = _signupState.asStateFlow()
 
-    fun signup(email: String, password: String) {
-        viewModelScope.launch {
-            _signupState.value = SignupState.Loading
-            try {
-                auth.createUserWithEmailAndPassword(email, password).await()
-                _signupState.value = SignupState.Success
-                _navigationCommand.value = true
-
-            } catch (e: FirebaseAuthUserCollisionException) {
-                _signupState.value = SignupState.Error("Email is already registered")
-            } catch (e: FirebaseAuthWeakPasswordException) {
-                _signupState.value = SignupState.Error("Password is too weak")
-            } catch (e: FirebaseAuthInvalidCredentialsException) {
-                _signupState.value = SignupState.Error("Invalid email format")
-            } catch (e: Exception) {
-                _signupState.value = SignupState.Error("Signup failed: ${e.message}")
-            } finally {
-                delay(2000)
-                _signupState.value = SignupState.Idle
-            }
+    suspend fun signup(email: String, password: String): String {
+        _signupState.value = SignupState.Loading
+        return try {
+            auth.createUserWithEmailAndPassword(email, password).await()
+            val uid = getUserId()
+            _signupState.value = SignupState.Success
+            _newNavigationCommand.value = true
+            uid
+        } catch (e: FirebaseAuthUserCollisionException) {
+            _signupState.value = SignupState.Error("Email is already registered")
+            ""
+        } catch (e: FirebaseAuthInvalidCredentialsException) {
+            _signupState.value = SignupState.Error("Invalid email format")
+            ""
+        } catch (e: Exception) {
+            _signupState.value = SignupState.Error("Signup failed: ${e.message}")
+            ""
         }
     }
 
-    private val _verifyEmail = MutableStateFlow<VerifyEmail>(VerifyEmail.Idle)
-    val verifyEmail: StateFlow<VerifyEmail> = _verifyEmail.asStateFlow()
-
-    fun existsEmail(email: String) {
-        viewModelScope.launch {
-            _verifyEmail.value = VerifyEmail.Loading
-            try {
-                val result = auth.fetchSignInMethodsForEmail(email).await()
-                val methods = result.signInMethods ?: emptyList()
-
-                if (methods.isEmpty()) {
-
-                    _verifyEmail.value = VerifyEmail.Error("No account found with this email")
-                    Log.d("AuthDebug", "Empty")
-                } else {
-                    _verifyEmail.value = VerifyEmail.Verified
-                    Log.d("AuthDebug", "Email exists with methods: $methods")
-                }
-            } catch (e: Exception) {
-                _verifyEmail.value = VerifyEmail.Error(e.localizedMessage ?: "Unknown error occurred")
-            }
-        }
-    }
-
-    fun resetVerifyEmailState(){
-        _verifyEmail.value = VerifyEmail.Idle
+    fun setSignupError(message: String) {
+        _signupState.value = SignupState.Error(message)
     }
 
     // Password reset state
@@ -196,25 +135,28 @@ class AuthViewModel @Inject constructor(
                 // Send the password reset email
                 auth.sendPasswordResetEmail(email).await()
                 _passwordResetState.value = PasswordResetState.Success
-                _navigationCommand.value = true
                 Log.d("PasswordResetViewModel", "Password reset email sent to $email")
-            } catch (e: FirebaseAuthInvalidUserException) {
-                _passwordResetState.value = PasswordResetState.Error("No account found with this email")
-                Log.e("PasswordResetViewModel", "Error: No account found with this email")
-            } catch (e: FirebaseAuthInvalidCredentialsException) {
-                _passwordResetState.value = PasswordResetState.Error("Invalid email format")
-                Log.e("PasswordResetViewModel", "Error: Invalid email format")
-            } catch (e: Exception) {
-                _passwordResetState.value = PasswordResetState.Error("Failed to send password reset email: ${e.message}")
-                Log.e("PasswordResetViewModel", "Error sending password reset email: ${e.message}")
+            } catch (e: FirebaseAuthException) {
+                when (e.errorCode) {
+                    "ERROR_USER_NOT_FOUND" -> {
+                        _passwordResetState.value = PasswordResetState.Error("No account found with this email")
+                    }
+                    "ERROR_INVALID_EMAIL" -> {
+                        _passwordResetState.value = PasswordResetState.Error("Invalid email format")
+                    }
+                    else -> {
+                        _passwordResetState.value = PasswordResetState.Error("Unknown error: ${e.message}")
+                    }
+                }
+                Log.e("PasswordResetViewModel", "Error: ${e.message}")
             }
+
         }
     }
 
-    fun resetState() {
+    fun resetPasswordState() {
         _passwordResetState.value = PasswordResetState.Idle
     }
-
 
     //OTP
     private val _state = MutableStateFlow(OtpState())
@@ -360,155 +302,17 @@ class AuthViewModel @Inject constructor(
     }
 
 
+    fun clearNavigationCommand() {
+        _newNavigationCommand.value = false
+    }
+
+    fun clearAuthenticatedState(){
+        _authState.value = AuthState.Unauthenticated
+    }
+
+    fun clearSignUpState() {
+        _signupState.value = SignupState.Idle
+    }
+
 }
 
-
-
-//
-//    // Authentication state
-//    private val _authState = MutableStateFlow<AuthState>(AuthState.Unauthenticated)
-//    val authState: StateFlow<AuthState> = _authState.asStateFlow()
-//
-//    //see the user details
-//    private val _user = MutableStateFlow<User?>(null)
-//    val userDetails: StateFlow<User?> = _user.asStateFlow()
-//
-//    // Navigation command
-//    private val _navigationCommand = MutableStateFlow<Boolean>(true) // Simplified to non-nullable
-//    val navigationCommand: StateFlow<Boolean> = _navigationCommand.asStateFlow()
-//
-//        fun checkAuthStatus() {
-//            if (auth.currentUser == null) {
-//                _authState.value = AuthState.Unauthenticated
-//                _navigationCommand.value == true
-//            } else {
-//                _authState.value = AuthState.Authenticated
-//                _navigationCommand.value == false
-//            }
-//        }
-//
-//    init {
-//        signOut()
-//        Log.e("Login","Start user:" + _authState.value.toString())
-//        checkAuthStatus()
-//        Log.e("Login","End user:" +_authState.value.toString())
-//    }
-//
-//
-//    fun login(email: String, password: String) {
-//        viewModelScope.launch {
-//            _authState.value = AuthState.Loading
-//            try {
-//                val result = auth.signInWithEmailAndPassword(email, password).await()
-//                if (result.user != null) {
-//                    _authState.value = AuthState.Authenticated
-//                    _navigationCommand.value = false
-//                } else {
-//                    _authState.value = AuthState.Error("Login failed: No user returned")
-//                }
-//            } catch (e: Exception) {
-//                val errorMessage = when {
-//                    e.message?.contains("INVALID_EMAIL") == true -> "Invalid email format"
-//                    e.message?.contains("WRONG_PASSWORD") == true -> "Incorrect password"
-//                    e.message?.contains("NETWORK") == true -> "Network error, please try again"
-//                    else -> e.message ?: "Something went wrong"
-//                }
-//                _authState.value = AuthState.Error(errorMessage)
-//            }
-//        }
-//    }
-//
-//    private fun updateAuthState(firebaseUser: FirebaseUser?) {
-//        if (firebaseUser != null) {
-//            _authState.value = AuthState.Authenticated
-//            _user.value = User(
-//                uid = firebaseUser.uid,
-//                email = firebaseUser.email,
-//                displayName = firebaseUser.displayName,
-//                photoUrl = firebaseUser.photoUrl?.toString(),
-//                isEmailVerified = firebaseUser.isEmailVerified
-//            )
-//            _navigationCommand.value = false
-//        } else {
-//            _authState.value = AuthState.Unauthenticated
-//            _user.value = null
-//            _navigationCommand.value = true
-//        }
-//    }
-//
-//    fun NavigationCommandToHome() {
-//        _navigationCommand.value = false
-//    }
-//
-//    fun clearNavigationCommand() {
-//        _navigationCommand.value = true
-//    }
-//
-//    fun signOut() {
-//        auth.signOut()
-//        _authState.value = AuthState.Unauthenticated
-//        _navigationCommand.value = true
-//    }
-//
-//    // Password reset state
-//    private val _passwordResetState = MutableStateFlow<PasswordResetState>(PasswordResetState.Idle)
-//    val passwordResetState: StateFlow<PasswordResetState> = _passwordResetState.asStateFlow()
-//
-//    // Password change state
-//    private val _passwordChangeState = MutableStateFlow<PasswordChangeState>(PasswordChangeState.Idle)
-//    val passwordChangeState: StateFlow<PasswordChangeState> = _passwordChangeState.asStateFlow()
-//
-//    //update password
-//    fun sendEmailToChangePassword(email: String){
-//        auth.sendPasswordResetEmail(email)
-//            .addOnCompleteListener { task ->
-//                _passwordChangeState.value = PasswordChangeState.Loading
-//                try {
-//                    auth.sendPasswordResetEmail(email)
-//                    _passwordResetState.value = PasswordResetState.Success
-//                } catch (e: Exception) {
-//                    _signupState.value = SignupState.Error("Signup failed: ${e.message}")
-//                }
-//            }
-//    }
-//
-//    // Email verification state
-//    private val _verifyEmail = MutableStateFlow<VerifyEmail>(VerifyEmail.Idle)
-//    val verifyEmail: StateFlow<VerifyEmail> = _verifyEmail.asStateFlow()
-//
-//    fun verifyEmailAddress(user: FirebaseUser) {
-//        viewModelScope.launch {
-//            _verifyEmail.value = VerifyEmail.Loading
-//            try {
-//                user.sendEmailVerification().await()
-//                _verifyEmail.value = VerifyEmail.Success
-//                _navigationCommand.value = false // Trigger navigation
-//            } catch (e: Exception) {
-//                _verifyEmail.value = VerifyEmail.Error("Email verification failed: ${e.message}")
-//            }
-//        }
-//    }
-//
-//
-//    //Sign up
-//    private val _signupState = MutableStateFlow<SignupState>(SignupState.Idle)
-//    val signupState: StateFlow<SignupState> = _signupState.asStateFlow()
-//
-//    fun signup(email: String, password: String) {
-//        viewModelScope.launch {
-//            _signupState.value = SignupState.Loading
-//            try {
-//                val signInMethods = auth.fetchSignInMethodsForEmail(email).await()
-//                if (signInMethods.signInMethods?.isNotEmpty() == true) {
-//                    _signupState.value = SignupState.Error("Email is already registered")
-//                    return@launch
-//                }
-//
-//                auth.createUserWithEmailAndPassword(email, password)
-//                _signupState.value = SignupState.Success
-//                verifyEmailAddress(auth.currentUser)
-//            } catch (e: Exception) {
-//                _signupState.value = SignupState.Error("Signup failed: ${e.message}")
-//            }
-//        }
-//    }

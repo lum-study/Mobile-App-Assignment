@@ -115,4 +115,7 @@ dependencies {
     kaptAndroidTest(libs.hilt.compiler)
     testImplementation(libs.hilt.android.testing)
     kaptTest(libs.hilt.compiler)
+
+    //compare password
+    implementation("org.mindrot:jbcrypt:0.4")
 }

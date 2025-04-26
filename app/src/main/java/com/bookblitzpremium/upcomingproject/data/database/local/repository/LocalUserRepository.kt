@@ -13,7 +13,20 @@ class LocalUserRepository @Inject constructor(
 ) {
     suspend fun insertUsers(user: User) = userDao.insertUsers(user)
 
-    suspend fun findUserEmail(emails: String): String? = userDao.findUserEmail(emails)
+    suspend fun findUserEmail(emails: String): Boolean? = userDao.findUserEmail(emails)
 
     fun selectAllUser(): Flow<List<User>> = userDao.selectAllUser()
+
+    fun retrivePassword(password: String) = userDao.retievePassword(password)
+
+    suspend fun validateUser(email: String, password: String): Result<String> {
+        val user = userDao.getUserByEmail(email)
+
+        return when {
+            user == null -> Result.failure(Exception("Email is not registered"))
+            user.password != password -> Result.failure(Exception("Incorrect password"))
+            else -> Result.success(user.uid)
+        }
+    }
+
 }

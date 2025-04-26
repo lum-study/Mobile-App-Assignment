@@ -11,7 +11,8 @@ import com.google.firebase.firestore.IgnoreExtraProperties
 
 data class User(
     @PrimaryKey val uid: String = "",
+    val username: String? = "",
     val email: String? = "",
-    val displayName: String? = "",
-    val photoUrl: String? = ""
+    val password:String? = "",
+//    val photoUrl: String? = ""
 )

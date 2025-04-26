@@ -1,5 +1,6 @@
 package com.bookblitzpremium.upcomingproject.ui.navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -37,6 +38,7 @@ fun AppNavigation(
         modifier = modifier,
     ) {
         authNavGraph(navController, viewModel)
+        Log.e("MyTag", "This is an error log message")
         homeNavGraph(navController)
         searchNavGraph(navController)
         scheduleNavGraph(navController)
