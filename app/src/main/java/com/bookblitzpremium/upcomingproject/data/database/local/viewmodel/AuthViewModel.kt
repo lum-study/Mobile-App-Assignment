@@ -63,7 +63,7 @@ class AuthViewModel @Inject constructor(
     init {
         // Check initial auth state
 
-        signOut()
+//        signOut()
         updateAuthState(auth.currentUser)
 
         // Listen to Firebase Auth state changes
