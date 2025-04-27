@@ -33,14 +33,3 @@ fun isMediumHeight(windowSizeClass: WindowSizeClass): Boolean =
  */
 fun isPhone(windowSizeClass: WindowSizeClass): Boolean =
     windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
-
-fun getDeviceType(windowSizeClass: WindowSizeClass, configuration: Configuration): DeviceType {
-    return if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact && configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
-        DeviceType.MobilePortrait
-    else if( windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact && configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
-        DeviceType.MobileLandscape
-    else if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact && configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
-        DeviceType.TabletPortrait
-    else
-        DeviceType.TabletLandscape
-}
