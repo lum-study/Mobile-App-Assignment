@@ -29,7 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.R
-import com.bookblitzpremium.upcomingproject.TravelScreen
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.model.SignupState
 import com.bookblitzpremium.upcomingproject.ui.components.ButtonHeader
@@ -179,7 +179,7 @@ fun RegristerPage(
                     is SignupState.Success -> {
                         // Navigate to the next screen on success
                         LaunchedEffect(Unit) {
-                            navController.navigate(TravelScreen.LOGIN.name) {
+                            navController.navigate(AppScreen.Login.route) {
                                 popUpTo(navController.graph.startDestinationId) {
                                     inclusive = true
                                 }

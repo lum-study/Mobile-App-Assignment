@@ -176,7 +176,7 @@ fun ReviewFinalPackageSelected(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight()
+                    .height(70.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(AppTheme.colorScheme.surface) // Use surface for background
                     .border(1.dp, AppTheme.colorScheme.primary, RoundedCornerShape(12.dp)),

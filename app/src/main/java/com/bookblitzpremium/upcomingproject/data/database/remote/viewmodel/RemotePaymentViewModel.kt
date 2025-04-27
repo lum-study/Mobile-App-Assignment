@@ -38,24 +38,6 @@ class RemotePaymentViewModel @Inject constructor(private val remotePaymentReposi
         }
     }
 
-    private val _payment = MutableStateFlow<List<Payment>>(emptyList())
-    val payment: StateFlow<List<Payment>> = _payment
-
-    fun getAllPayment() {
-        viewModelScope.launch {
-            _loading.value = true
-            _error.value = null
-            try {
-                val paymentRecord = remotePaymentRepository.getAllPayment()
-                _payment.value = paymentRecord // Update your state here
-            } catch (e: Exception) {
-                _error.value = "Failed to get hotel bookings: ${e.localizedMessage}"
-            } finally {
-                _loading.value = false
-            }
-        }
-    }
-
     fun getPaymentsByUserID(userID: String) {
         viewModelScope.launch {
             _loading.value = true
@@ -70,24 +52,6 @@ class RemotePaymentViewModel @Inject constructor(private val remotePaymentReposi
             }
         }
     }
-
-//    fun addNewPayment(payment: Payment): String {
-//        var id: String = ""
-//        viewModelScope.launch {
-//            _loading.value = true
-//            _error.value = null
-//
-//            try {
-//                id = remotePaymentRepository.addPayment(payment)
-//                _payments.value += payment
-//            } catch (e: Exception) {
-//                _error.value = "Failed to add payment: ${e.localizedMessage}"
-//            } finally {
-//                _loading.value = false
-//            }
-//        }
-//        return id
-//    }
 
     suspend fun addPayment(payment: Payment): String {
         _loading.value = true
@@ -104,7 +68,6 @@ class RemotePaymentViewModel @Inject constructor(private val remotePaymentReposi
             _loading.value = false
         }
     }
-
 
     fun updatePayment(payment: Payment) {
         viewModelScope.launch {
