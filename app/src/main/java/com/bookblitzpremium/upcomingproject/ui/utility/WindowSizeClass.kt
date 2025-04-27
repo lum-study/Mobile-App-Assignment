@@ -2,12 +2,14 @@ package com.bookblitzpremium.upcomingproject.ui.utility
 
 
 import android.app.Activity
+import android.content.res.Configuration
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import com.bookblitzpremium.upcomingproject.common.enums.DeviceType
 
 @Composable
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -31,3 +33,14 @@ fun isMediumHeight(windowSizeClass: WindowSizeClass): Boolean =
  */
 fun isPhone(windowSizeClass: WindowSizeClass): Boolean =
     windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
+
+fun getDeviceType(windowSizeClass: WindowSizeClass, configuration: Configuration): DeviceType {
+    return if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact && configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
+        DeviceType.MobilePortrait
+    else if( windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact && configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
+        DeviceType.MobileLandscape
+    else if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact && configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
+        DeviceType.TabletPortrait
+    else
+        DeviceType.TabletLandscape
+}
