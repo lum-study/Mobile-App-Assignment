@@ -5,39 +5,41 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import androidx.navigation.navArgument
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.ui.screen.profile.EditProfileScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.profile.ProfileScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.profile.RatingRecord
 import com.bookblitzpremium.upcomingproject.ui.screen.profile.RatingRecordsScreen
+import com.bookblitzpremium.upcomingproject.ui.screen.rating.RatingScreen
 
 fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
     navigation(startDestination = AppScreen.Profile.route, route = AppScreen.ProfileGraph.route) {
         composable(route = AppScreen.EditProfile.route) {
-            EditProfileScreen(
-                onBackClick = { navController.popBackStack() }
-            )
+            EditProfileScreen()
         }
 
-//        composable(
-//            route = "${AppScreen.Ratings.route}/{hotelId}", // dynamic route for Ratings
-//            arguments = listOf(navArgument("hotelId") { type = NavType.StringType })
-//        ) { backStackEntry ->
-//            val hotelId = backStackEntry.arguments?.getString("hotelId") ?: "dummyHotelId"
-//            RatingScreen(
-//                hotelId = hotelId,
-//                onBackPressed = { navController.popBackStack() },
-//                onRatingSubmitted = { ratingRecord: RatingRecord ->
-//                    // Test navigation directly without `passData`
-//                    navController.navigate(AppScreen.RatingRecords.route) {
-//                        launchSingleTop = true // Prevent multiple instances of RatingRecordsScreen
-//                    }
-//                }
-//            )
-//    }
+        composable(
+            route = "${AppScreen.Ratings.route}/{hotelId}", // dynamic route for Ratings
+            arguments = listOf(navArgument("hotelId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val hotelId = backStackEntry.arguments?.getString("hotelId") ?: "dummyHotelId"
+            RatingScreen(
+                navController = navController,
+                hotelId = hotelId,
+                onBackPressed = { navController.popBackStack() },
+                onRatingSubmitted = { ratingRecord: RatingRecord ->
+                    // Test navigation directly without `passData`
+                    navController.navigate(AppScreen.RatingRecords.route) {
+                        launchSingleTop = true // Prevent multiple instances of RatingRecordsScreen
+                    }
+                }
+            )
+        }
 
         composable(route = AppScreen.RatingRecords.route) {
             // Sample records for RatingRecordsScreen with dummy data

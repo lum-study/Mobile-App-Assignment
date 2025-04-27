@@ -36,8 +36,8 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object ProfileGraph : AppScreen("ProfileGraph", hasTopBar = false, hasBottomBar = false)
     data object Profile : AppScreen("Profile", hasTopBar = false, hasBottomBar = true)
     data object EditProfile : AppScreen("EditProfile", hasTopBar = true, hasBottomBar = false)
-    data object PaymentMethods : AppScreen("payment_methods", hasTopBar = true, hasBottomBar = false)
-    data object RatingRecords : AppScreen("RatingRecords/{hotelId}", hasTopBar = false, hasBottomBar = true)
+    data object PaymentMethods : AppScreen("PaymentMethods", hasTopBar = true, hasBottomBar = false)
+    data object RatingRecords : AppScreen("RatingRecords", hasTopBar = true, hasBottomBar = false)
 
     //Booking Date and people
     data object BookingDate : AppScreen("BookingDate", hasTopBar = true, hasBottomBar = false)
@@ -88,6 +88,7 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
                 Profile.route -> Profile
                 EditProfile.route -> EditProfile
                 PaymentMethods.route -> PaymentMethods
+                RatingRecords.route -> RatingRecords
                 BookingDate.route -> BookingDate
                 BookingPeople.route -> BookingPeople
                 BookingReview.route -> BookingReview
