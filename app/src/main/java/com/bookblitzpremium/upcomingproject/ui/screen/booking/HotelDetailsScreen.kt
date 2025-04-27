@@ -50,6 +50,7 @@ import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.SkeletonLoader
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
+import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import kotlinx.coroutines.delay
 import java.net.URLEncoder
 
@@ -68,15 +69,12 @@ fun HotelDetailScreen(
     tripPackageID: String = "",
     viewModel: LocalHotelViewModel = hiltViewModel()
 ) {
-    // 1) Kick off fetch once, keyed on the booking ID
     LaunchedEffect(hotelBookingId) {
         viewModel.getHotelByID(hotelBookingId)
     }
 
-    // 2) Observe hotel data
     val hotel by viewModel.selectedHotel.collectAsState()
 
-    // 3) Show loading or content
     if (hotel == null) {
         Box(
             Modifier.fillMaxSize(),
@@ -110,7 +108,7 @@ private fun HotelDetailContent(
         Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .background(Color.White)
+            .background(AppTheme.colorScheme.background)
     ) {
         HotelImageSection(hotel.imageUrl)
         Spacer(Modifier.height(16.dp))
@@ -129,7 +127,7 @@ private fun HotelImageSection(imageUrl: String) {
     var showImage by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        delay(300) // Delay rendering this section
+        delay(300)
         showImage = true
     }
 
@@ -139,6 +137,7 @@ private fun HotelImageSection(imageUrl: String) {
             .padding(16.dp)
             .aspectRatio(3f / 4f)
             .clip(RoundedCornerShape(16.dp))
+            .background(AppTheme.colorScheme.surfaceVariant)
     ) {
         if (showImage) {
             UrlImage(
@@ -150,16 +149,15 @@ private fun HotelImageSection(imageUrl: String) {
     }
 }
 
-
 @Composable
 private fun HotelInfoSection(name: String, address: String, rating: Double) {
     Column(Modifier.padding(horizontal = 16.dp)) {
-        Text(name, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Text(name, style = AppTheme.typography.largeBold, color = AppTheme.colorScheme.onBackground)
         Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Default.LocationOn, null, tint = Color.Gray)
+            Icon(Icons.Default.LocationOn, contentDescription = null, tint = AppTheme.colorScheme.secondary)
             Spacer(Modifier.width(4.dp))
-            Text(address, color = Color.Gray, fontSize = 14.sp)
+            Text(address, color = AppTheme.colorScheme.secondary, style = AppTheme.typography.labelMedium)
         }
         Spacer(Modifier.height(12.dp))
         Row(
@@ -176,27 +174,36 @@ private fun HotelInfoSection(name: String, address: String, rating: Double) {
 @Composable
 private fun RatingItem(rating: Double) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Default.Star, null, tint = Color(0xFFFFD700))
+        Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFD700)) // Gold color for stars
         Spacer(Modifier.width(4.dp))
-        Text(rating.toString(), fontSize = 14.sp)
+        Text(rating.toString(), fontSize = 14.sp, color = AppTheme.colorScheme.onBackground)
     }
 }
 
 @Composable
 private fun StatItem(icon: ImageVector, text: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(icon, null, tint = Color.Gray)
+        Icon(icon, contentDescription = null, tint = AppTheme.colorScheme.secondary)
         Spacer(Modifier.width(4.dp))
-        Text(text, fontSize = 14.sp)
+        Text(text, fontSize = 14.sp, color = AppTheme.colorScheme.onBackground)
     }
 }
 
 @Composable
 private fun AboutSection(name: String, rating: Double) {
     Column(Modifier.padding(horizontal = 16.dp)) {
-        Text("About Destination", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(
+            "About Destination",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = AppTheme.colorScheme.onBackground
+        )
         Spacer(Modifier.height(4.dp))
-        Text(generateHotelDescription(name, rating), fontSize = 14.sp, color = Color.Gray)
+        Text(
+            generateHotelDescription(name, rating),
+            fontSize = 14.sp,
+            color = AppTheme.colorScheme.secondary
+        )
     }
 }
 
@@ -207,11 +214,15 @@ private fun BookNowButton(price: String, onBook: (String) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+        colors = ButtonDefaults.buttonColors(
+            containerColor = AppTheme.colorScheme.primary,
+            contentColor = AppTheme.colorScheme.onPrimary
+        )
     ) {
-        Text("Book Now", color = Color.White)
+        Text("Book Now")
     }
 }
+
 
 
 //@Composable
@@ -251,7 +262,7 @@ private fun BookNowButton(price: String, onBook: (String) -> Unit) {
 //            Column(
 //                modifier = Modifier
 //                    .fillMaxWidth()
-//                    .background(Color.White)
+//                    .background(AppTheme.colorScheme.onBackground)
 //                    .padding(16.dp)
 //            ) {
 //                // Title with Heart Icon
@@ -273,11 +284,11 @@ private fun BookNowButton(price: String, onBook: (String) -> Unit) {
 //                    Icon(
 //                        imageVector = Icons.Default.LocationOn,
 //                        contentDescription = "Location",
-//                        tint = Color.Gray
+//                        tint = AppTheme.colorScheme.secondary
 //                    )
 //                    Text(
 //                        text = hotelData.address,
-//                        color = Color.Gray,
+//                        color = AppTheme.colorScheme.secondary,
 //                        fontSize = 14.sp,
 //                        modifier = Modifier.padding(start = 4.dp)
 //                    )
@@ -305,7 +316,7 @@ private fun BookNowButton(price: String, onBook: (String) -> Unit) {
 //                        Icon(
 //                            imageVector = Icons.Default.DirectionsCar,
 //                            contentDescription = "Distance",
-//                            tint = Color.Gray
+//                            tint = AppTheme.colorScheme.secondary
 //                        )
 //                        Text(
 //                            text = "3000 km",
@@ -317,7 +328,7 @@ private fun BookNowButton(price: String, onBook: (String) -> Unit) {
 //                        Icon(
 //                            imageVector = Icons.Default.Restaurant,
 //                            contentDescription = "Restaurants",
-//                            tint = Color.Gray
+//                            tint = AppTheme.colorScheme.secondary
 //                        )
 //                        Text(
 //                            text = "108 avail.",
@@ -341,7 +352,7 @@ private fun BookNowButton(price: String, onBook: (String) -> Unit) {
 //
 //                Text(
 //                    text = description,
-//                    color = Color.Gray,
+//                    color = AppTheme.colorScheme.secondary,
 //                    fontSize = 14.sp
 //                )
 //                Spacer(modifier = Modifier.height(16.dp))
@@ -361,7 +372,7 @@ private fun BookNowButton(price: String, onBook: (String) -> Unit) {
 //                    modifier = Modifier.fillMaxWidth(),
 //                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
 //                ) {
-//                    Text(text = "Book Now", color = Color.White)
+//                    Text(text = "Book Now", color = AppTheme.colorScheme.onBackground)
 //                }
 //            }
 //        } else {

@@ -1,5 +1,6 @@
 package com.bookblitzpremium.upcomingproject.ui.theme
 
+import androidx.compose.material3.Text
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -18,7 +19,8 @@ data class MainDesign(
     val surface: Color = Color.White, // Added defaults
     val onSurface: Color = Color.Black,
     val surfaceVariant: Color = Color(0xFFEEEEEE),
-    val error: Color = Color(0xFFB00020)
+    val error: Color = Color(0xFFB00020),
+    val onText: Color
 )
 
 data class AppTypography(
@@ -36,7 +38,9 @@ data class AppTypography(
     val bodyLarge: TextStyle,
     val labelMedium: TextStyle,
     val labelSmall: TextStyle,
-    val smallSemiBold: TextStyle
+    val smallSemiBold: TextStyle,
+    val smallBold: TextStyle,
+    val dateBold : TextStyle
 )
 
 data class AppShape(
@@ -65,7 +69,8 @@ val LocalAppColorSchema = staticCompositionLocalOf {
         primary = Color.Unspecified,
         onPrimary = Color.Unspecified,
         secondary = Color.Unspecified,
-        onSecondary = Color.Unspecified
+        onSecondary = Color.Unspecified,
+        onText = Color.Unspecified
     )
 }
 
@@ -85,7 +90,9 @@ val LocalAppTypography = staticCompositionLocalOf {
         bodyLarge = TextStyle.Default,
         labelMedium = TextStyle.Default,
         labelSmall = TextStyle.Default,
-        smallSemiBold = TextStyle.Default
+        smallSemiBold = TextStyle.Default,
+        smallBold = TextStyle.Default,
+        dateBold = TextStyle.Default,
     )
 }
 

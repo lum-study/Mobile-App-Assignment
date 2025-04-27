@@ -43,6 +43,35 @@ class RemoteHotelBookingViewModel @Inject constructor(
         }
     }
 
+    private val _hotelBookings = MutableStateFlow<List<HotelBooking>>(emptyList())
+    val hotelBookings: StateFlow<List<HotelBooking>> = _hotelBookings
+
+    fun getAllHotelBooking() {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+            try {
+                val hotelBookings = remoteHotelBookingRepository.getAllHotelBooking()
+                _hotelBookings.value = hotelBookings // Update your state here
+            } catch (e: Exception) {
+                _error.value = "Failed to get hotel bookings: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun updatePayment(hotelBooking: HotelBooking) {
+        viewModelScope.launch {
+            try {
+                remoteHotelBookingRepository.updatePayment(hotelBooking)
+            } catch (e: Exception) {
+                _error.value = "Failed to get hotel bookings: ${e.localizedMessage}"
+            }
+        }
+    }
+
+
 //    fun fetchHotelBookingsByUserId(userId: String) {
 //        viewModelScope.launch {
 //            _loading.value = true

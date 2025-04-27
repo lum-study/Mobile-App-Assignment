@@ -33,6 +33,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -46,21 +48,37 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.common.enums.BookingStatus
+import com.bookblitzpremium.upcomingproject.common.enums.PaymentMethod
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.TPBooking
+import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemotePaymentViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.TeamMemberDropdown
+import com.bookblitzpremium.upcomingproject.ui.screen.payment.PaymentButton
+import com.bookblitzpremium.upcomingproject.ui.screen.payment.PaymentOptionScreen
+import com.bookblitzpremium.upcomingproject.ui.screen.payment.PriceDetailsSection
+import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import java.net.URLEncoder
+import java.time.LocalDate
+import kotlin.text.toDoubleOrNull
+import kotlin.toString
 
 @Composable
 fun SelectedGuestResult(
-    iconRes: ImageVector ,   // 🔥 Pass the image resource as an argument
+    iconRes: ImageVector,
     label: String,
-    number:Int
+    number: Int
 ) {
     Box(
         modifier = Modifier
-            .width(IntrinsicSize.Min),  // ✅ Ensures only necessary width
+            .width(IntrinsicSize.Min), // Ensures only necessary width
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -71,13 +89,14 @@ fun SelectedGuestResult(
                 imageVector = iconRes,
                 contentDescription = label,
                 modifier = Modifier.size(48.dp),
-                tint = Color.Unspecified // Or customize as needed
+                tint = AppTheme.colorScheme.primary // Use primary for icons
             )
 
             Text(
                 text = number.toString(),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
+                color = AppTheme.colorScheme.onSurface, // Text on surface
                 modifier = Modifier.padding(top = 8.dp)
             )
         }
@@ -90,16 +109,16 @@ fun TravelInfoCard() {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFFFF7043)) // Orange background
+            .background(AppTheme.colorScheme.primary) // Use primary instead of hardcoded orange
             .padding(16.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                painter = painterResource(R.drawable.icon_logo), // Change to your icon resource
+                painter = painterResource(R.drawable.icon_logo), // Assumes valid resource
                 contentDescription = "Travel Icon",
-                tint = Color.White,
+                tint = AppTheme.colorScheme.onPrimary, // Text/icon on primary
                 modifier = Modifier
                     .size(40.dp)
                     .padding(end = 16.dp)
@@ -107,23 +126,21 @@ fun TravelInfoCard() {
 
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
-            ){
+            ) {
                 Text(
                     text = "Enjoy your trip!",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = Color.White
+                    style = AppTheme.typography.mediumBold,
+                    color = AppTheme.colorScheme.onPrimary // Text on primary
                 )
                 Text(
                     text = "Have a safe and pleasant journey.",
-                    fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.8f)
+                    style = AppTheme.typography.labelMedium,
+                    color = AppTheme.colorScheme.onPrimary.copy(alpha = 0.8f) // Slightly transparent
                 )
             }
         }
     }
 }
-
 
 @Composable
 fun GuestSection(
@@ -133,35 +150,42 @@ fun GuestSection(
     roomBooked: Int,
     price: String,
     hotelID: String,
-    startDate : String,
+    startDate: String,
     endDate: String,
-){
+    paymentMethod: PaymentMethod,
+    cardNumber: String
+) {
+    val paymentViewModel: RemotePaymentViewModel = hiltViewModel()
+
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .padding( vertical = 16.dp)
+            .padding(vertical = 16.dp)
+            .background(AppTheme.colorScheme.background) // Use background for column
     ) {
         Text(
             text = "Total Guest",
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
+            color = AppTheme.colorScheme.onSurface, // Text on surface
             modifier = Modifier
                 .padding(start = 12.dp)
         )
 
         Row(
             modifier = Modifier
-                .fillMaxWidth()  // ✅ Takes up full width
+                .fillMaxWidth()
                 .padding(top = 16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             SelectedGuestResult(Icons.Filled.Person, "Adults", selectedAdult)
-            SelectedGuestResult(Icons.Filled.Hotel ,"Room", roomBooked)
+            SelectedGuestResult(Icons.Filled.Hotel, "Room", roomBooked)
         }
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Log.e("Hello", hotelID)
+        val coroutineScope = rememberCoroutineScope()
+        val paymentmethodToString = paymentMethod.title.toString()
 
         Button(
             onClick = {
@@ -170,49 +194,73 @@ fun GuestSection(
                 val hotelID = URLEncoder.encode(hotelID, "UTF-8")
                 val startDate = URLEncoder.encode(startDate, "UTF-8")
                 val endDate = URLEncoder.encode(endDate, "UTF-8")
+                val paymentMethod = URLEncoder.encode(paymentmethodToString, "UTF-8")
+                val cardNumber = URLEncoder.encode(cardNumber, "UTF-8")
 
-                navController.navigate(
-                    "${AppScreen.BookingReview.route}/$hotelID/$startDate/$endDate/$totalPerson/$roomBooked/$totalPrice"
+                val payment = Payment(
+                    createDate = LocalDate.now().toString(),
+                    totalAmount = totalPrice,
+                    paymentMethod = paymentMethod,
+                    cardNumber = cardNumber,
+                    currency = "Ringgit Malaysia",
+                    userID = "userID"
                 )
+
+                coroutineScope.launch {
+                    try {
+                        val paymentID = paymentViewModel.addPayment(payment)
+                        if (paymentID.isNotEmpty()) {
+                            val encodedPaymentID = URLEncoder.encode(paymentID, "UTF-8")
+                            navController.navigate(
+                                "${AppScreen.BookingReview.route}/$hotelID/$startDate/$endDate/$totalPerson/$roomBooked/$totalPrice/$paymentMethod/$cardNumber/$encodedPaymentID"
+                            )
+                        } else {
+                            // Handle empty paymentID
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Black, // Ensure the background is visible
-                contentColor = Color.White
+                containerColor = AppTheme.colorScheme.primary, // Use primary for button
+                contentColor = AppTheme.colorScheme.onPrimary // Text/icon on primary
             ),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
         ) {
-            Text(text = "Next")
+            Text(
+                text = "Next",
+                color = AppTheme.colorScheme.onPrimary // Text on primary
+            )
         }
     }
 }
 
-
-// add the number of people which is going to the trips
 @Composable
 fun BookingAmount(
     modifier: Modifier,
     navController: NavController,
-    hotelID :String,
-    hotelPrice :String,
+    hotelID: String,
+    hotelPrice: String,
     startDate: String,
     endDate: String
-){
+) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(vertical = 16.dp, horizontal = 24.dp)
-        , verticalArrangement = Arrangement.spacedBy(12.dp)
+            .background(AppTheme.colorScheme.background), // Use background for column
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-
         TravelInfoCard()
-
-        Spacer(modifier = Modifier.height(5.dp))
 
         var selected by rememberSaveable { mutableStateOf<String?>(null) }
         var selectedAdult by rememberSaveable { mutableStateOf(1) }
         var selectedRoom by rememberSaveable { mutableStateOf(1) }
+        var paymentMethod by remember { mutableStateOf(PaymentMethod.DebitCard) }
+        var cardNumber by remember { mutableStateOf("") }
 
         val names = listOf(
             "4 Person - 1 Room",
@@ -223,25 +271,33 @@ fun BookingAmount(
             "24 Person - 6 Room",
         )
 
-        Image(
-            painter = painterResource(id = R.drawable.maps)
-            ,contentScale = ContentScale.Crop,
-            contentDescription = "Maps",
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.3f)
-                .clip(RoundedCornerShape(16.dp))
-        )
-
         Spacer(modifier = Modifier.height(5.dp))
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = "Payment method",
+                style = AppTheme.typography.mediumBold,
+                color = AppTheme.colorScheme.onSurface // Text on surface
+            )
+            PaymentOptionScreen(
+                selectedPaymentMethod = paymentMethod,
+                onPaymentMethodChange = {
+                    paymentMethod = it
+                },
+                cardNumber = cardNumber,
+                onCardNumberChange = {
+                    cardNumber = it.filter { it.isDigit() }
+                },
+            )
+        }
 
         TeamMemberDropdown(
             options = names,
             selectedOption = selected,
             onOptionSelected = {
                 selected = it
-
-                // 👇 Extract numbers from the string
                 val personRegex = Regex("(\\d+) Person")
                 val roomRegex = Regex("(\\d+) Room")
 
@@ -254,96 +310,105 @@ fun BookingAmount(
             modifier = Modifier
         )
 
-        Spacer(modifier = Modifier.height(5.dp))
-
-        Log.e("Perosn and room", selectedAdult.toString() + selectedRoom.toString())
-
-        GuestSection(modifier = Modifier, navController = navController, selectedAdult, selectedRoom, hotelPrice, hotelID = hotelID,startDate = startDate, endDate = endDate)
+        GuestSection(
+            modifier = Modifier,
+            navController = navController,
+            selectedAdult = selectedAdult,
+            roomBooked = selectedRoom,
+            price = hotelPrice,
+            hotelID = hotelID,
+            startDate = startDate,
+            endDate = endDate,
+            paymentMethod = paymentMethod,
+            cardNumber = cardNumber
+        )
     }
 }
 
-@Composable
-fun SelectPeopleLevel(
-    label1: String,
-    label2:String,
-    onCountChanged: (Int) -> Unit
-){
-    var count by rememberSaveable { mutableStateOf(1) }
-    // Inform parent when count changes
-    LaunchedEffect(count) {
-        onCountChanged(count)
-    }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp)
-    ){
-        Column(
-            modifier = Modifier
-                .fillMaxWidth(0.5f)
-        ){
-            Text(
-                text = label1,
-                fontStyle = FontStyle.Normal,
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp,
-                modifier = Modifier.padding(top = 16.dp)
-            )
 
-            Text(
-                text = label2,
-                fontStyle = FontStyle.Normal,
-                fontWeight = FontWeight.Bold,
-                fontSize = 12.sp,
-                modifier = Modifier
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .padding(top = 16.dp, end= 16.dp),
-        ){
-            Box(
-                modifier = Modifier
-                    .border(BorderStroke(2.dp, Color.Black), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
-                    .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
-                    .padding(8.dp) // Optional padding
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Remove,
-                    contentDescription = "Remove",
-                    tint = if (count > 1) Color.Black else Color.Gray, // Disable button color when count is 1
-                    modifier = Modifier.size(24.dp)
-                        .clickable(enabled = count > 1) { // Disable click when count is 1
-                            count--
-                        }
-                )
-            }
-
-            Text(
-                text =  count.toString(),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .padding(horizontal = 24.dp , vertical = 12.dp)
-            )
-
-            Box(
-                modifier = Modifier
-                    .border(BorderStroke(2.dp, Color.Black), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
-                    .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
-                    .padding(8.dp) // Optional padding
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "Add",
-                    tint = Color.Black,
-                    modifier = Modifier.size(24.dp)
-                        .clickable {
-                            count ++
-                        }
-                )
-            }
-        }
-    }
-}
+//
+//@Composable
+//fun SelectPeopleLevel(
+//    label1: String,
+//    label2:String,
+//    onCountChanged: (Int) -> Unit
+//){
+//    var count by rememberSaveable { mutableStateOf(1) }
+//    // Inform parent when count changes
+//    LaunchedEffect(count) {
+//        onCountChanged(count)
+//    }
+//    Row(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(start = 16.dp)
+//    ){
+//        Column(
+//            modifier = Modifier
+//                .fillMaxWidth(0.5f)
+//        ){
+//            Text(
+//                text = label1,
+//                fontStyle = FontStyle.Normal,
+//                fontWeight = FontWeight.Bold,
+//                fontSize = 20.sp,
+//                modifier = Modifier.padding(top = 16.dp)
+//            )
+//
+//            Text(
+//                text = label2,
+//                fontStyle = FontStyle.Normal,
+//                fontWeight = FontWeight.Bold,
+//                fontSize = 12.sp,
+//                modifier = Modifier
+//            )
+//        }
+//
+//        Row(
+//            modifier = Modifier
+//                .padding(top = 16.dp, end= 16.dp),
+//        ){
+//            Box(
+//                modifier = Modifier
+//                    .border(BorderStroke(2.dp, AppTheme.colorScheme.onPrimary), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
+//                    .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
+//                    .padding(8.dp) // Optional padding
+//            ) {
+//                Icon(
+//                    imageVector = Icons.Filled.Remove,
+//                    contentDescription = "Remove",
+//                    tint = if (count > 1) AppTheme.colorScheme.onPrimary else Color.Gray, // Disable button color when count is 1
+//                    modifier = Modifier.size(24.dp)
+//                        .clickable(enabled = count > 1) { // Disable click when count is 1
+//                            count--
+//                        }
+//                )
+//            }
+//
+//            Text(
+//                text =  count.toString(),
+//                fontSize = 16.sp,
+//                fontWeight = FontWeight.Bold,
+//                modifier = Modifier
+//                    .padding(horizontal = 24.dp , vertical = 12.dp)
+//            )
+//
+//            Box(
+//                modifier = Modifier
+//                    .border(BorderStroke(2.dp, AppTheme.colorScheme.onPrimary), shape = RoundedCornerShape(8.dp)) // ✅ Border with rounded corners
+//                    .clip(RoundedCornerShape(8.dp)) // ✅ Clip to make sure content follows the rounded shape
+//                    .padding(8.dp) // Optional padding
+//            ) {
+//                Icon(
+//                    imageVector = Icons.Filled.Add,
+//                    contentDescription = "Add",
+//                    tint = AppTheme.colorScheme.onPrimary,
+//                    modifier = Modifier.size(24.dp)
+//                        .clickable {
+//                            count ++
+//                        }
+//                )
+//            }
+//        }
+//    }
+//}

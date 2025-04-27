@@ -40,17 +40,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
-import com.bookblitzpremium.upcomingproject.ui.components.TextHeader
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import java.net.URLEncoder
 import java.time.LocalDate
@@ -90,48 +84,43 @@ fun BookingDatePage(
 }
 
 
-@Preview(showBackground = true , widthDp = 500 , heightDp = 1000)
-@Composable
-fun PreviewShowDate(){
-    ShowDate(date = "27-03-2025", date2 = "29-6-2025", modifier = Modifier.padding(vertical = 16.dp,))
-}
-
 @Composable
 fun ShowDate(
     date: String,
     date2: String,
     modifier: Modifier = Modifier,
-//    navController: NavController
 ) {
-
     Column(
-        modifier = Modifier
+        modifier = modifier
             .padding(bottom = 16.dp, top = 0.dp)
-            .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(16.dp))
+            .border(
+                width = 2.dp,
+                color = AppTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .background(AppTheme.colorScheme.surface) // Use surface for background
             .padding(16.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween // ✅ Ensures equal spacing
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(
-                modifier = Modifier.weight(1f), // ✅ Equal width
+                modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(
                     imageVector = Icons.Filled.CalendarToday,
                     contentDescription = "Calendar",
-                    tint = Color.Black,
+                    tint = AppTheme.colorScheme.primary, // Use primary for icons
                     modifier = Modifier.size(28.dp)
                 )
 
                 Text(
-                    text = if (date.isNotEmpty()) date else "Not Selected", // ✅ Dynamic text
-                    fontStyle = FontStyle.Normal,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
+                    text = if (date.isNotEmpty()) date else "Not Selected",
+                    style = AppTheme.typography.mediumBold,
+                    color = AppTheme.colorScheme.onSurface, // Text on surface
                     modifier = Modifier.padding(top = 16.dp)
                 )
             }
@@ -139,37 +128,31 @@ fun ShowDate(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = "Arrow Forward",
+                tint = AppTheme.colorScheme.secondary, // Use secondary for arrow
                 modifier = Modifier.size(42.dp)
             )
 
             Column(
-                modifier = Modifier.weight(1f), // ✅ Equal width
+                modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(
                     imageVector = Icons.Filled.CalendarToday,
                     contentDescription = "Calendar",
-                    tint = Color.Black,
+                    tint = AppTheme.colorScheme.primary, // Use primary for icons
                     modifier = Modifier.size(28.dp)
                 )
 
                 Text(
-                    text = if (date2.isNotEmpty()) date2 else "Not Selected", // ✅ Dynamic text
-                    fontStyle = FontStyle.Normal,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
+                    text = if (date2.isNotEmpty()) date2 else "Not Selected",
+                    style = AppTheme.typography.mediumBold,
+                    color = AppTheme.colorScheme.onSurface, // Text on surface
                     modifier = Modifier.padding(top = 16.dp)
                 )
             }
         }
-
-
     }
 }
-
-//Spacer(modifier = Modifier.weight(1f))
-//
-
 
 @Composable
 fun RangeBetweenDate(
@@ -180,14 +163,14 @@ fun RangeBetweenDate(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp), // ✅ Add spacing
+            .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = Icons.Filled.ArrowCircleLeft,
             contentDescription = "ArrowCircleLeft",
-            tint = Color.Black,
+            tint = AppTheme.colorScheme.primary, // Use primary for navigation icons
             modifier = Modifier
                 .size(32.dp)
                 .clickable {
@@ -200,7 +183,7 @@ fun RangeBetweenDate(
         Icon(
             imageVector = Icons.Filled.ArrowCircleRight,
             contentDescription = "ArrowCircleRight",
-            tint = Color.Black,
+            tint = AppTheme.colorScheme.primary, // Use primary for navigation icons
             modifier = Modifier
                 .size(32.dp)
                 .clickable {
@@ -210,14 +193,12 @@ fun RangeBetweenDate(
     }
 }
 
-
 @Composable
 fun DateFormat(currentMonth: YearMonth) {
     Text(
         text = "${currentMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${currentMonth.year}",
-        fontSize = 20.sp,
-        fontWeight = FontWeight.Bold,
-        textAlign = TextAlign.Center,
+        style = AppTheme.typography.dateBold,
+        color = AppTheme.colorScheme.onSurface, // Text on surface
         modifier = Modifier.padding(start = 16.dp, end = 16.dp)
     )
 }
@@ -231,7 +212,6 @@ fun CalendarView(
     hotelID: String,
     hotelPrice: String
 ) {
-
     var currentMonth by rememberSaveable { mutableStateOf(YearMonth.now()) }
     var tempStartDate by rememberSaveable { mutableStateOf<LocalDate?>(startDate) }
     var tempEndDate by rememberSaveable { mutableStateOf<LocalDate?>(endDate) }
@@ -242,16 +222,14 @@ fun CalendarView(
     val firstDayOfWeek = firstDayOfMonth.dayOfWeek.value % 7
 
     // Define availability map
-    val availability = (1..daysInMonth).associateWith { day ->
-        "Available" // Every day is now available
-    }
+    val availability = (1..daysInMonth).associateWith { "Available" }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .background(AppTheme.colorScheme.background) // Use background for entire view
     ) {
-
         RangeBetweenDate(currentMonth, onMonthChange = { newMonth ->
             currentMonth = newMonth
         }) {
@@ -267,9 +245,8 @@ fun CalendarView(
             daysOfWeek.forEach { day ->
                 Text(
                     text = day,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
+                    style = AppTheme.typography.labelMedium,
+                    color = AppTheme.colorScheme.onSurface, // Text on surface
                     modifier = Modifier
                         .weight(1f)
                         .padding(8.dp)
@@ -292,7 +269,7 @@ fun CalendarView(
                 val isEndDate = tempEndDate == date
                 val isInRange = tempStartDate != null && tempEndDate != null &&
                         date in (tempStartDate!!..tempEndDate!!) &&
-                        availability[day] == "Available" // ❌ Prevent "Not Available" in range
+                        availability[day] == "Available"
 
                 Box(
                     modifier = Modifier
@@ -300,8 +277,8 @@ fun CalendarView(
                         .clip(CircleShape)
                         .background(
                             when {
-                                isStartDate || isEndDate -> Color(0xFFFF5733) // Start & end
-                                isInRange -> Color(0xFFFFC107).copy(alpha = 0.5f) // Range highlight
+                                isStartDate || isEndDate -> AppTheme.colorScheme.primary // Use primary for start/end
+                                isInRange -> AppTheme.colorScheme.secondary.copy(alpha = 0.5f) // Use secondary for range
                                 else -> Color.Transparent
                             }
                         )
@@ -311,22 +288,17 @@ fun CalendarView(
                                 when {
                                     tempStartDate == null -> tempStartDate = date
                                     tempEndDate == null && date > tempStartDate -> {
-                                        // Check if all dates in range are available
                                         val allDatesAvailable = (tempStartDate!!.dayOfMonth..day)
-                                            .all { d ->
-                                                availability[d] == "Available"
-                                            }
-
+                                            .all { d -> availability[d] == "Available" }
                                         if (allDatesAvailable) {
                                             tempEndDate = date
                                             onDateRangeSelected(tempStartDate, tempEndDate)
                                         } else {
-                                            // Reset if range contains NotAvailable
                                             tempStartDate = date
                                             tempEndDate = null
                                         }
                                     }
-                                    else -> { // Reset selection
+                                    else -> {
                                         tempStartDate = date
                                         tempEndDate = null
                                     }
@@ -339,7 +311,7 @@ fun CalendarView(
                         Text(
                             text = day.toString(),
                             fontSize = 16.sp,
-                            color = if (status == "Available") Color.Black else Color.Gray,
+                            color = if (status == "Available") AppTheme.colorScheme.onSurface else AppTheme.colorScheme.onSecondary,
                             textAlign = TextAlign.Center
                         )
                         Box(
@@ -348,8 +320,8 @@ fun CalendarView(
                                 .clip(CircleShape)
                                 .background(
                                     when {
-                                        isStartDate || isEndDate -> Color(0xFFFF5733)
-                                        isInRange -> Color(0xFFFFC107)
+                                        isStartDate || isEndDate -> AppTheme.colorScheme.primary
+                                        isInRange -> AppTheme.colorScheme.secondary
                                         else -> Color.Transparent
                                     }
                                 )
@@ -365,17 +337,16 @@ fun CalendarView(
                 .padding(top = 16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            LegendItem(color = Color.Black, label = "Available")
-//            LegendItem(color = Color.Gray, label = "Not Available")
-            LegendItem(color = Color(0xFFFF5733), label = "Start/End Date")
+            LegendItem(color = AppTheme.colorScheme.onSurface, label = "Available")
+            LegendItem(color = AppTheme.colorScheme.primary, label = "Start/End Date")
         }
 
         Spacer(modifier = Modifier.height(40.dp))
 
         Text(
             text = "Selected Date",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
+            style = AppTheme.typography.titleLarge,
+            color = AppTheme.colorScheme.onSurface // Text on surface
         )
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -390,7 +361,6 @@ fun CalendarView(
 
         Button(
             onClick = {
-
                 val hotelID = URLEncoder.encode(hotelID, "UTF-8")
                 val hotelPrice = URLEncoder.encode(hotelPrice, "UTF-8")
                 val startDate = URLEncoder.encode(tempStartDate.toString(), "UTF-8")
@@ -400,23 +370,26 @@ fun CalendarView(
                 )
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Black,
-                contentColor = Color.White
+                containerColor = AppTheme.colorScheme.primary, // Use primary for button
+                contentColor = AppTheme.colorScheme.onPrimary // Text/icon on primary
             ),
             contentPadding = PaddingValues(8.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Next")
+            Text(
+                text = "Next",
+                color = AppTheme.colorScheme.onPrimary, // Text on primary
+                modifier = Modifier
+            )
         }
 
-        LaunchedEffect(key1 = tempStartDate ==null && tempEndDate == null) {
-            if (tempStartDate ==null && tempEndDate ==null) {
+        LaunchedEffect(key1 = tempStartDate == null && tempEndDate == null) {
+            if (tempStartDate == null && tempEndDate == null) {
                 Log.d("HotelBookingForm", "Both start and end dates are empty")
             }
         }
     }
 }
-
 
 @Composable
 fun LegendItem(color: Color, label: String) {
@@ -428,22 +401,13 @@ fun LegendItem(color: Color, label: String) {
                 .background(color)
         )
         Spacer(modifier = Modifier.width(4.dp))
-        Text(text = label, fontSize = 12.sp)
+        Text(
+            text = label,
+            style = AppTheme.typography.smallSemiBold,
+            color = AppTheme.colorScheme.onSurface // Text on surface
+        )
     }
 }
-
-@Preview(showBackground = true, widthDp = 400, heightDp = 600)
-@Composable
-fun PreviewCalendarView() {
-    var currentMonth by remember { mutableStateOf(YearMonth.of(2025, 3)) }
-    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
-
-    RangeBetweenDate(currentMonth, onMonthChange = { newMonth ->
-        currentMonth = newMonth // 🔥 State updates correctly
-    }) {
-        DateFormat(currentMonth) // ✅ Correctly passes the updated state
-    }
-
 
 //    CalendarView(
 //        selectedDate = selectedDate,
@@ -452,4 +416,3 @@ fun PreviewCalendarView() {
 //        },
 //        navController =
 //    )
-}

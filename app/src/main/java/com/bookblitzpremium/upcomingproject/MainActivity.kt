@@ -50,17 +50,6 @@ import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.google.firebase.FirebaseApp
 import dagger.hilt.android.AndroidEntryPoint
 
-enum class TravelScreen() {
-    LOGIN,
-    REGRISTER,
-    HOME,
-    PROFILE,
-    BOOKINGS,
-    Start,
-    FORGETPASSWORD,
-    OTP
-}
-
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,13 +58,12 @@ class MainActivity : ComponentActivity() {
         FirebaseApp.initializeApp(this)
         setContent {
             AppTheme {
-//                InitializeDatabase()
+//              InitializeDatabase()
                 App()
             }
         }
     }
 }
-
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 806)
 @Composable

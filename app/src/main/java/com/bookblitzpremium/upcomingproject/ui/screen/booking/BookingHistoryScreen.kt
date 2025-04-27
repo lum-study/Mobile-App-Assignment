@@ -7,12 +7,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,6 +32,7 @@ import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
+import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import java.net.URLEncoder
 
 @Composable
@@ -43,7 +46,10 @@ fun HotelBookingItem(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = AppTheme.colorScheme.surface // Use surface for card background
+        )
     ) {
         hotelImageUrl?.let {
             UrlImage(
@@ -53,7 +59,6 @@ fun HotelBookingItem(
                     .clip(RoundedCornerShape(32.dp))
                     .clickable(onClick = {
                         if (booking.isNotEmpty()) {
-                            // Safely navigating with booking ID as an argument
                             navController.navigate("${AppScreen.BookingHistory.route}/$booking")
                             Log.d("Navigation", "${AppScreen.BookingHistory.route}/$booking")
                         } else {
@@ -63,58 +68,79 @@ fun HotelBookingItem(
                 contentScale = ContentScale.Crop,
             )
         } ?: run {
-            // Show a placeholder or default image when imageUrl is null
+            // Show a placeholder when imageUrl is null
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Gray),
+                    .background(AppTheme.colorScheme.surfaceVariant), // Use surfaceVariant for placeholder
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "No Image", color = Color.White)
+                Text(
+                    text = "No Image",
+                    color = AppTheme.colorScheme.onSurface, // Text on surface
+                    style = AppTheme.typography.mediumBold
+                )
             }
         }
     }
 }
 
-// Composable to display the list of HotelBookings
 @Composable
-fun HotelBookingListScreen(navController: NavController, userId:String) {
-
-    val viewModelHotelBooking : LocalHotelBookingViewModel = hiltViewModel()
-    val viewModelHotel : LocalHotelViewModel= hiltViewModel()
+fun HotelBookingListScreen(navController: NavController, userId: String) {
+    val viewModelHotelBooking: LocalHotelBookingViewModel = hiltViewModel()
+    val viewModelHotel: LocalHotelViewModel = hiltViewModel()
 
     LaunchedEffect(Unit) {
         viewModelHotelBooking.fetchHotelBookingsByUserId(userId)
     }
 
-    val bookingData by viewModelHotelBooking.hotelBookings.collectAsState()
+    val bookingData by viewModelHotelBooking.hotelUserID.collectAsState()
     val hotelData by viewModelHotel.selectedHotel.collectAsState()
 
-
-    if (bookingData != null) {
+    if (bookingData == null) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(AppTheme.colorScheme.background),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                color = AppTheme.colorScheme.primary
+            )
+        }
+    } else if (bookingData.isEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(AppTheme.colorScheme.background),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "No Bookings Found",
+                color = AppTheme.colorScheme.onSurface,
+                style = AppTheme.typography.mediumBold
+            )
+        }
+    } else {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
+                .background(AppTheme.colorScheme.background)
                 .padding(top = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(bookingData) { booking ->
-
                 LaunchedEffect(booking) {
                     viewModelHotel.getHotelByID(booking.hotelID)
                 }
-
-                hotelData?.let { selectedHotel ->
+                hotelData?.let {
                     HotelBookingItem(
-                        hotelImageUrl = hotelData!!.imageUrl,  //if you're absolutely sure the variable is non-null
+                        hotelImageUrl = it.imageUrl,
                         booking = booking.id.toString(),
                         navController = navController
                     )
                 }
             }
         }
-    }else{
-        Text(text = "Empty")
     }
 }

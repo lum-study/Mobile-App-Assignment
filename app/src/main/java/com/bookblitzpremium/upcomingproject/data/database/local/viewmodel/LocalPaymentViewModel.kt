@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalPaymentRepository
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalUserRepository
+import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemotePaymentRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LocalPaymentViewModel @Inject constructor(
-    private val paymentRepository: LocalPaymentRepository,
+    private val localPaymentRepository: LocalPaymentRepository,
     private val userRepository: LocalUserRepository
 ) : ViewModel() {
     private val _loading = MutableStateFlow(false)
@@ -25,7 +26,7 @@ class LocalPaymentViewModel @Inject constructor(
     val error: StateFlow<String?> = _error.asStateFlow()
 
     suspend fun getPaymentByID(id: String): Payment? {
-        return paymentRepository.getPaymentByID(id)
+        return localPaymentRepository.getPaymentByID(id)
     }
 
     fun addOrUpdatePayment(payment: Payment) {
@@ -36,8 +37,7 @@ class LocalPaymentViewModel @Inject constructor(
             val result = kotlin.runCatching {
                 userRepository.getUserByID(payment.userID)
                     ?: throw IllegalArgumentException("Invalid user ID")
-
-                paymentRepository.addOrUpdatePayment(payment)
+                localPaymentRepository.addOrUpdatePayment(payment)
             }
             result.onFailure { e ->
                 _error.value = when (e) {
@@ -55,7 +55,7 @@ class LocalPaymentViewModel @Inject constructor(
             _error.value = null
 
             try {
-                paymentRepository.deletePayment(payment)
+                localPaymentRepository.deletePayment(payment)
             } catch (e: SQLiteException) {
                 _error.value = "Database error: ${e.localizedMessage}"
             } catch (e: Exception) {

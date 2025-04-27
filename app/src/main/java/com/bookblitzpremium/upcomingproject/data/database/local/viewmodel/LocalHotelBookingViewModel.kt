@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalHotelBookingRepo
+import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteHotelBookingRepository
+import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteHotelBookingViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LocalHotelBookingViewModel @Inject constructor(
-    private val repo: LocalHotelBookingRepo
+    private val repo: LocalHotelBookingRepo,
+    private val remoteRepo: RemoteHotelBookingRepository,
 ) : ViewModel() {
 
     private val _loading = MutableStateFlow(false)
@@ -28,6 +31,9 @@ class LocalHotelBookingViewModel @Inject constructor(
 
     private val _hotelBookingHistory =  MutableStateFlow<List<HotelBooking>>(emptyList())
     val hotelBookingHistory:  StateFlow<List<HotelBooking>> = _hotelBookingHistory.asStateFlow()
+
+    private val _hotelUserID =  MutableStateFlow<List<HotelBooking>>(emptyList())
+    val hotelUserID:  StateFlow<List<HotelBooking>> = _hotelUserID.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -43,7 +49,7 @@ class LocalHotelBookingViewModel @Inject constructor(
             _error.value = null
             try {
                 val bookings = repo.getHotelBookingsByBookingUserId(userId)
-                _hotelBookings.value = bookings // Make sure _hotelBookings is a StateFlow<List<HotelBooking>>
+                _hotelUserID.value = bookings // Make sure _hotelBookings is a StateFlow<List<HotelBooking>>
             } catch (e: SQLiteException) {
                 _error.value = "Database error: ${e.localizedMessage}"
             } catch (e: Exception) {
@@ -61,6 +67,7 @@ class LocalHotelBookingViewModel @Inject constructor(
 
             try {
                 repo.insertHotelBooking(hotelBooking)
+                remoteRepo.updatePayment(hotelBooking)
             } catch (e: SQLiteException) {
                 _error.value = "Database error: ${e.localizedMessage}"
             } catch (e: Exception) {
@@ -87,6 +94,7 @@ class LocalHotelBookingViewModel @Inject constructor(
             }
         }
     }
+
 
     fun fetchHotelBookingsById(hotelId: String) {
         viewModelScope.launch {

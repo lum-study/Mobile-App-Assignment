@@ -2,6 +2,7 @@ package com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
 import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemotePaymentRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -52,22 +53,20 @@ class RemotePaymentViewModel @Inject constructor(private val remotePaymentReposi
         }
     }
 
-    fun addPayment(payment: Payment): String {
-        var id: String = ""
-        viewModelScope.launch {
-            _loading.value = true
-            _error.value = null
+    suspend fun addPayment(payment: Payment): String {
+        _loading.value = true
+        _error.value = null
 
-            try {
-                id = remotePaymentRepository.addPayment(payment)
-                _payments.value += payment
-            } catch (e: Exception) {
-                _error.value = "Failed to add payment: ${e.localizedMessage}"
-            } finally {
-                _loading.value = false
-            }
+        return try {
+            val id = remotePaymentRepository.addPayment(payment)
+            _payments.value += payment.copy(id = id) // include ID if needed
+            id
+        } catch (e: Exception) {
+            _error.value = "Failed to add payment: ${e.localizedMessage}"
+            ""
+        } finally {
+            _loading.value = false
         }
-        return id
     }
 
     fun updatePayment(payment: Payment) {
