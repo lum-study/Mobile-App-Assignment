@@ -12,31 +12,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Color schemes
 private val darkColorScheme = MainDesign(
-    background = Color(0xFF121212),
-    onBackground = Color.White,
-    primary = Color(0xFFBB86FC),
-    onPrimary = Color.Black,
-    secondary = Color(0xFF03DAC6),
-    onSecondary = Color.Black,
-    surface = Color(0xFF1E1E1E),
-    onSurface = Color.White,
-    surfaceVariant = Color(0xFF333333),
-    error = Color(0xFFCF6679)
+    background      = Color(0xFF121212), // leave dark gray
+    onBackground    = Color.Black,       // was White
+    primary         = Color.White,       // was Black
+    onPrimary       = Color.White,       // was Black
+    secondary       = Color.Gray,
+    onSecondary     = Color.White,       // was Black
+    surface         = Color(0xFF1E1E1E),
+    onSurface       = Color.Black,       // was White
+    surfaceVariant  = Color(0xFF333333),
+    error           = Color(0xFFCF6679),
+    onText          = Color.Black        // was White
 )
 
 private val lightColorScheme = MainDesign(
-    background = Color.White,
-    onBackground = Color.Black,
-    primary = Color(0xFF6750A4), // Corrected hex to a valid purple
-    onPrimary = Color.White,
-    secondary = Color(0xFF625B71),
-    onSecondary = Color.White,
-    surface = Color(0xFFF5F5F5),
-    onSurface = Color.Black,
-    surfaceVariant = Color(0xFFE0E0E0),
-    error = Color(0xFFB00020)
+    background      = Color.White,      // ← light background
+    onBackground    = Color.Black,      // ← dark text on light
+    primary         = Color(0xFF6750A4),// your accent
+    onPrimary       = Color.White,
+    secondary       = Color(0xFF625B71),
+    onSecondary     = Color.White,
+    surface         = Color(0xFFF5F5F5),
+    onSurface       = Color.Black,
+    surfaceVariant  = Color(0xFFE0E0E0),
+    error           = Color(0xFFB00020),
+    onText          = Color.Black
 )
 
 private val typography = AppTypography(
@@ -96,6 +97,14 @@ private val typography = AppTypography(
         letterSpacing = (-0.25).sp,
         color = Color.Unspecified
     ),
+    smallBold = TextStyle(
+        fontFamily = poppinsBold,
+        fontWeight = FontWeight.Bold,
+        fontSize = 16.sp,
+//        lineHeight = 28.sp,
+        letterSpacing = (-0.25).sp,
+        color = Color.Unspecified
+    ),
     smallRegular = TextStyle(
         fontFamily = poppinsRegular,
         fontWeight = FontWeight.Normal,
@@ -112,8 +121,6 @@ private val typography = AppTypography(
         letterSpacing = (-0.25).sp,
         color = Color.Unspecified
     ),
-
-
     displayLarge = TextStyle(
         fontFamily = poppinsBold,
         fontWeight = FontWeight.Bold,
@@ -161,6 +168,12 @@ private val typography = AppTypography(
         lineHeight = 16.sp, // Adjusted for readability
         letterSpacing = 0.1.sp,
         color = Color.Unspecified
+    ),
+    dateBold = TextStyle(
+        fontFamily = poppinsRegular, // Changed from poppinsThin
+        fontWeight = FontWeight.Normal,
+        fontSize = 20.sp, // Changed from 6.sp to standard caption size
+        color = Color.Unspecified
     )
 )
 
@@ -182,7 +195,7 @@ fun AppTheme( // Fixed typo
     isDark: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (isDark) darkColorScheme else lightColorScheme
+    val colorScheme = if (isDark)  darkColorScheme else  lightColorScheme
 //    val rippleIndication = rememberRipple() // Fixed typo
     CompositionLocalProvider(
         LocalAppTypography provides typography, // Fixed typo

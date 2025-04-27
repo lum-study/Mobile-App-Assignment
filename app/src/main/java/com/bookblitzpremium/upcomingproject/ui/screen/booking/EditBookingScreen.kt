@@ -1,17 +1,22 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.booking
 
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.LocationOn
@@ -24,6 +29,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -47,6 +53,7 @@ import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
+import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -96,11 +103,11 @@ fun BookingDaySelector(
             modifier = Modifier.menuAnchor()
                 .fillMaxWidth(),
             colors = TextFieldDefaults.textFieldColors(
-                focusedIndicatorColor = Color.Black,
-                unfocusedIndicatorColor = Color.Black,
-                focusedLabelColor = Color.Black,
-                unfocusedLabelColor = Color.Black,
-                cursorColor = Color.Black
+                focusedIndicatorColor = AppTheme.colorScheme.primary,
+                unfocusedIndicatorColor = AppTheme.colorScheme.secondary,
+                focusedLabelColor = AppTheme.colorScheme.primary,
+                unfocusedLabelColor = AppTheme.colorScheme.onSurface,
+                cursorColor = AppTheme.colorScheme.primary,
             )
         )
 
@@ -131,9 +138,8 @@ fun ModifyHotelBooking(
     booking : String
 ) {
 
-
-    val bookingViewModel : LocalHotelBookingViewModel = hiltViewModel()
-    val hotelViewModel : LocalHotelViewModel = hiltViewModel()
+    val bookingViewModel: LocalHotelBookingViewModel = hiltViewModel()
+    val hotelViewModel: LocalHotelViewModel = hiltViewModel()
 
     var selectedStartDate by remember { mutableStateOf<LocalDate?>(null) }
     var selectedEndDate by remember { mutableStateOf<LocalDate?>(null) }
@@ -146,7 +152,7 @@ fun ModifyHotelBooking(
     val hotelData by hotelViewModel.selectedHotel.collectAsState()
 
     booking?.let {
-        if(hotelData !=null){
+        if (hotelData != null) {
             // The start date and maximum range
             val startDate = booking.startDate
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -214,46 +220,54 @@ fun ModifyHotelBooking(
                             Icon(
                                 imageVector = Icons.Filled.LocationOn,
                                 contentDescription = null,
-                                tint = Color.Black,
+                                tint = AppTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "Malaysia, ${extractMalaysianState(hotelData?.address.toString())}",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold
+                                style = AppTheme.typography.mediumBold
                             )
                         }
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // — LEGEND ROW: spaced evenly across width —
+                    // Row to split the screen into two equal sections for Check-In and Check-Out
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                            .height(80.dp)
+                            .background(Color.LightGray) // Light gray background for the row
+                            .padding(horizontal = 40.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween, // Evenly distribute items
+                        verticalAlignment = Alignment.CenterVertically // Center items vertically
                     ) {
+                        // Check-In section
                         LegendItem1(
                             icon = Icons.Filled.CalendarToday,
-                            iconDescription = "Check In",
-                            label = "Check‑In",
-                            date = selectedStartDate?.toString() ?: booking.startDate
+                            iconDescription = "Check-In Icon",
+                            label = "Check-In",
+                            date = selectedStartDate?.toString() ?: booking.startDate,
+                            modifier = Modifier.weight(1f) // Equal width for balanced layout
                         )
+
+                        // Spacer for consistent spacing between sections
+                        Spacer(modifier = Modifier.width(16.dp))
+
+                        // Check-Out section
                         LegendItem1(
                             icon = Icons.Filled.CalendarToday,
-                            iconDescription = "Check Out",
-                            label = "Check‑Out",
-                            date = selectedEndDate?.toString() ?: booking.endDate
-                        )
-                        LegendItem1(
-                            icon = Icons.Filled.TurnedInNot,
-                            iconDescription = "Ticket",
-                            label = "Ticket",
-                            date = ""
+                            iconDescription = "Check-Out Icon",
+                            label = "Check-Out",
+                            date = selectedEndDate?.toString() ?: booking.endDate,
+                            modifier = Modifier.weight(1f) // Equal width for balanced layout
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    MapsButton(onClick = {})
 
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -264,6 +278,8 @@ fun ModifyHotelBooking(
                         onBookingRangeSelected = onBookingRangeSelected,
                         modifier = Modifier.fillMaxWidth()
                     )
+
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     // — DETAILS SECTION —
                     DetailsSection(
@@ -293,8 +309,8 @@ fun ModifyHotelBooking(
                             .fillMaxWidth()
                             .padding(vertical = 16.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Black,
-                            contentColor = Color.White
+                            containerColor = AppTheme.colorScheme.onBackground,
+                            contentColor = AppTheme.colorScheme.background
                         )
                     ) {
                         Text("Next")
@@ -304,6 +320,28 @@ fun ModifyHotelBooking(
         }
     }
 }
+
+@Composable
+fun MapsButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFFE0E0E0),
+            contentColor = Color.Black
+        ),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Text(
+            text = "Maps",
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp
+        )
+    }
+}
+
 
 fun extractMalaysianState(address: String): String? {
     val states = listOf(
@@ -321,3 +359,30 @@ fun extractMalaysianState(address: String): String? {
     }
 }
 
+
+//                    // — LEGEND ROW: spaced evenly across width —
+//                    Row(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(vertical = 8.dp),
+//                        horizontalArrangement = Arrangement.SpaceBetween,
+//                    ) {
+//                        LegendItem1(
+//                            icon = Icons.Filled.CalendarToday,
+//                            iconDescription = "Check In",
+//                            label = "Check‑In",
+//                            date = selectedStartDate?.toString() ?: booking.startDate
+//                        )
+//                        LegendItem1(
+//                            icon = Icons.Filled.CalendarToday,
+//                            iconDescription = "Check Out",
+//                            label = "Check‑Out",
+//                            date = selectedEndDate?.toString() ?: booking.endDate
+//                        )
+//                        LegendItem1(
+//                            icon = Icons.Filled.TurnedInNot,
+//                            iconDescription = "Ticket",
+//                            label = "Ticket",
+//                            date = ""
+//                        )
+//                    }

@@ -1,5 +1,6 @@
 package com.bookblitzpremium.upcomingproject.data.database.remote.repository
 
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -20,6 +21,13 @@ class RemotePaymentRepository @Inject constructor(private val firestore: Firebas
         docRef.set(newPayment).await()
         return docRef.id
     }
+
+    suspend fun getAllPayment(): List<Payment> = try {
+        paymentRef.get().await().toObjects(Payment::class.java)
+    } catch (e: Exception) {
+        throw Exception(e)
+    }
+
 
     suspend fun deletePayment(id: String) {
         require(id.isNotEmpty()) { "Payment ID cannot be empty" }

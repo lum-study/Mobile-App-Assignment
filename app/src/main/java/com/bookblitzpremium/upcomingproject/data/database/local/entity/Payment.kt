@@ -9,14 +9,14 @@ import com.google.firebase.firestore.IgnoreExtraProperties
 @IgnoreExtraProperties
 @Entity(
     tableName = "payment",
-    foreignKeys = [
-        ForeignKey(
-            entity = User::class,
-            parentColumns = ["id"],
-            childColumns = ["userID"]
-        )
-    ],
-    indices = [Index(value = ["userID"])]
+//    foreignKeys = [
+//        ForeignKey(
+//            entity = User::class,
+//            parentColumns = ["id"],
+//            childColumns = ["userID"]
+//        )
+//    ],
+//    indices = [Index(value = ["userID"])]
 )
 data class Payment(
     @PrimaryKey val id: String = "",

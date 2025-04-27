@@ -19,7 +19,7 @@ import java.net.URLDecoder
 
 fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
     navigation(
-        startDestination = AppScreen.Home.route,
+        startDestination = AppScreen.EditScreen.route,
         route = AppScreen.HomeGraph.route
     ) {
         composable(AppScreen.Home.route) {

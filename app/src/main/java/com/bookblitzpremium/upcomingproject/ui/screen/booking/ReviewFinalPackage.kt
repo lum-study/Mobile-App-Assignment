@@ -1,7 +1,6 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.booking
 
 import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
@@ -41,7 +39,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -49,31 +46,35 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import androidx.room.PrimaryKey
-import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteHotelBookingViewModel
+import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemotePaymentViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
+import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
-@Preview(showBackground = true , widthDp = 500 , heightDp = 1000)
+@Preview(showBackground = true, widthDp = 500, heightDp = 1000)
 @Composable
-fun PreviewFinalPackage(){
-
+fun PreviewFinalPackage() {
     val navController = rememberNavController()
 
     ReviewFinalPackageSelected(
-        navController,
+        navController = navController,
         modifier = Modifier,
         hotelID = "fdgdfgf",
-        totalPrice = "fdgdfgf",
-        startDate = "fdgdfgf",
-        endDate = "fdgdfgf",
-        totalPerson = "fdgdfgf",
-        roomBooked = "fdgdfgf",
+        totalPrice = "1000.00",
+        startDate = "2025-05-23",
+        endDate = "2025-05-25",
+        totalPerson = "4",
+        roomBooked = "1",
+        paymentID = "vgdfgfhfh",
+        paymentMethod = "DebitCard",
+        cardNumber = "1234567890123456"
     )
 }
 
@@ -81,44 +82,47 @@ fun PreviewFinalPackage(){
 fun ReviewFinalPackageSelected(
     navController: NavController,
     modifier: Modifier,
-    hotelID :String,
-    totalPrice :String,
-    startDate : String,
-    endDate : String,
+    hotelID: String,
+    totalPrice: String,
+    startDate: String,
+    endDate: String,
     totalPerson: String,
-    roomBooked: String
-){
+    roomBooked: String,
+    paymentID: String,
+    paymentMethod: String,
+    cardNumber: String
+) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .padding(16.dp)
             .fillMaxSize()
-        , verticalArrangement = Arrangement.spacedBy(8.dp)
-    ){
-
-        val viewModel : LocalHotelViewModel = hiltViewModel()
-        val localBookingViewModel : LocalHotelBookingViewModel = hiltViewModel()
-        val remoteBookingViewModel : RemoteHotelBookingViewModel = hiltViewModel()
-
+            .background(AppTheme.colorScheme.background), // Use background for column
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        val viewModel: LocalHotelViewModel = hiltViewModel()
+        val localBookingViewModel: LocalHotelBookingViewModel = hiltViewModel()
+        val remoteBookingViewModel: RemoteHotelBookingViewModel = hiltViewModel()
+        val remotePaymentViewModel: RemotePaymentViewModel = hiltViewModel()
         val loading = viewModel.loading.collectAsState()
+        val hotel by viewModel.selectedHotel.collectAsState()
 
         LaunchedEffect(Unit) {
             viewModel.getHotelByID(hotelID)
         }
-
-        val hotel by viewModel.selectedHotel.collectAsState()
 
         if (loading.value) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(
+                    color = AppTheme.colorScheme.primary // Use primary for loader
+                )
             }
         } else if (hotel != null) {
-
             val hotelData = hotel!!
 
-            StyledImage(hotel?.imageUrl.toString())
+            StyledImage(hotelData.imageUrl.toString())
 
             Spacer(modifier = Modifier.height(18.dp))
 
@@ -127,18 +131,19 @@ fun ReviewFinalPackageSelected(
                     .fillMaxWidth()
                     .padding(start = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-            ){
+            ) {
                 Text(
                     text = hotelData.name,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
+                    style = AppTheme.typography.largeBold,
+                    color = AppTheme.colorScheme.onSurface // Text on surface
                 )
                 Row(
                     modifier = Modifier,
-                    ){
-                    repeat(3){
+                ) {
+                    repeat(3) {
                         Text(
                             text = "⭐",
+                            color = AppTheme.colorScheme.secondary, // Use secondary for stars
                             modifier = Modifier
                         )
                     }
@@ -148,19 +153,19 @@ fun ReviewFinalPackageSelected(
                             .padding(start = 24.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(50.dp)
-                    ){
+                    ) {
                         Icon(
                             imageVector = Icons.Filled.LocationOn,
                             contentDescription = "Location",
-                            tint = Color.Black,
+                            tint = AppTheme.colorScheme.primary, // Use primary for icon
                             modifier = Modifier
                                 .size(24.dp)
                         )
 
                         Text(
                             text = "Malaysia Johor",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
+                            style = AppTheme.typography.mediumBold,
+                            color = AppTheme.colorScheme.onSurface, // Text on surface
                             modifier = Modifier
                                 .padding(start = 12.dp)
                         )
@@ -168,52 +173,64 @@ fun ReviewFinalPackageSelected(
                 }
             }
 
-            // Legend
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start =  20.dp),
-                horizontalArrangement = Arrangement.spacedBy(24.dp),
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(AppTheme.colorScheme.surface) // Use surface for background
+                    .border(1.dp, AppTheme.colorScheme.primary, RoundedCornerShape(12.dp)),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                LegendItem1(
-                    icon = Icons.Filled.CalendarToday,
-                    iconDescription = "Check In Icon",
-                    label = "CheckIn",
-                    date = startDate
+                // Check-In half
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    LegendItem1(
+                        icon = Icons.Filled.CalendarToday,
+                        iconDescription = "Check-In Icon",
+                        label = "Check-In",
+                        date = startDate,
+                        modifier = Modifier
+                    )
+                }
+
+                // Vertical divider
+                Divider(
+                    color = AppTheme.colorScheme.primary, // Use primary for divider
+                    modifier = Modifier
+                        .width(1.dp)
+                        .fillMaxHeight()
                 )
 
-                LegendItem1(
-                    icon = Icons.Filled.CalendarToday,
-                    iconDescription = "Check out Icon",
-                    label = " CheckOut",
-                    date = endDate
-                )
-
-                LegendItem1(
-                    icon = Icons.Filled.TurnedInNot,
-                    iconDescription = "Ticket Icon",
-                    label = " Ticket",
-                    date =""
-                )
+                // Check-Out half
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    LegendItem1(
+                        icon = Icons.Filled.CalendarToday,
+                        iconDescription = "Check-Out Icon",
+                        label = "Check-Out",
+                        date = endDate,
+                        modifier = Modifier
+                    )
+                }
             }
 
-//            Image(
-//                painter = painterResource(id = R.drawable.maps),
-//                contentDescription = null,
-//                contentScale = ContentScale.Crop,
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(150.dp)
-//                    .padding(horizontal = 16.dp)
-//                    .clip(RoundedCornerShape(16.dp))
-//            )
-            
             Spacer(modifier = Modifier.weight(1f))
 
             DetailsSection(
-                totalPrice, totalPerson, roomBooked, modifier  = Modifier
+                totalPrice = totalPrice,
+                totalPerson = totalPerson,
+                roomBooked = roomBooked,
+                modifier = Modifier
             )
-
 
             val coroutineScope = rememberCoroutineScope()
 
@@ -226,67 +243,126 @@ fun ReviewFinalPackageSelected(
                         numberOfRoom = roomBooked.toIntOrNull() ?: 1,
                         hotelID = hotelData.id,
                         userid = "", // Add real user ID if available
-                        paymentID = "" // Add real payment ID if available
+                        paymentID = paymentID
                     )
-//                    coroutineScope.launch{
-//                        try {
-//                            // Step 1: Save to Firestore and get the ID
-//                            val firestoreId = remoteBookingViewModel.addHotelBooking(booking)
-//
-//                            // Step 2: Update the booking with the Firestore ID
-//                            val updatedBooking = booking.copy(id = firestoreId)
-//
-//                            // Step 3: Save to local database with the Firestore ID
-//                            localBookingViewModel.insertHotelBooking(updatedBooking)
-//
-//                            // Step 4: Navigate after both operations are complete
-//                            navController.navigate(AppScreen.Home.route)
-//                        } catch (e: Exception) {
-//                            Log.e("HotelBookingForm", "Failed to save booking: ${e.message}")
-//                        }
-//                    }
+
+                    val localPayment = Payment(
+                        id = paymentID,
+                        createDate = LocalDate.now().toString(),
+                        totalAmount = totalPrice.toDoubleOrNull() ?: 0.0,
+                        paymentMethod = paymentMethod,
+                        cardNumber = cardNumber,
+                        currency = "Ringgit Malaysia",
+                        userID = "userID"
+                    )
+
+                    remotePaymentViewModel.updatePayment(localPayment)
+
+                    coroutineScope.launch {
+                        try {
+                            // Step 1: Save to Firestore and get the ID
+                            val firestoreId = remoteBookingViewModel.addHotelBooking(booking)
+                            // Step 2: Update the booking with the Firestore ID
+                            val updatedBooking = booking.copy(id = firestoreId)
+                            // Step 3: Save to local database with the Firestore ID
+                            localBookingViewModel.insertHotelBooking(updatedBooking)
+                            // Step 4: Navigate after both operations are complete
+                            navController.navigate(AppScreen.Home.route)
+                        } catch (e: Exception) {
+                            Log.e("HotelBookingForm", "Failed to save booking: ${e.message}")
+                        }
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black, // Ensure the background is visible
-                    contentColor = Color.White
+                    containerColor = AppTheme.colorScheme.primary, // Use primary for button
+                    contentColor = AppTheme.colorScheme.onPrimary // Text/icon on primary
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-                Text(text = "Next")
+                Text(
+                    text = "Next",
+                    color = AppTheme.colorScheme.onPrimary // Text on primary
+                )
             }
         }
     }
 }
 
-
 @Composable
-fun LegendItem1(icon: ImageVector, iconDescription: String, label: String,date: String) {
+fun LegendItem1(
+    icon: ImageVector,
+    iconDescription: String,
+    label: String,
+    date: String,
+    modifier: Modifier
+) {
     Column(
-        modifier = Modifier,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ){
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = icon, // Use the passed icon argument
-                contentDescription = iconDescription, // Use the passed description argument
-                tint = Color.Black,
+                imageVector = icon,
+                contentDescription = iconDescription,
+                tint = AppTheme.colorScheme.primary, // Use primary for icon
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
-            Text(text = label, fontSize = 12.sp)
-        }
-
-        Column(
-        ){
             Text(
-                text = date,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
+                text = label,
+                style = AppTheme.typography.smallBold,
+                color = AppTheme.colorScheme.onSurface // Text on surface
             )
         }
+
+        Column {
+            Text(
+                text = date,
+                style = AppTheme.typography.smallBold,
+                color = AppTheme.colorScheme.onSurface // Text on surface
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun Preview() {
+    val startDate = "2023-05-23"
+    val endDate = "2023-05-25"
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(width = 1.dp, color = AppTheme.colorScheme.primary)
+            .height(50.dp)
+            .background(AppTheme.colorScheme.surface), // Use surface for background
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Check-In section
+        LegendItem1(
+            icon = Icons.Filled.CalendarToday,
+            iconDescription = "Check-In Icon",
+            label = "Check-In",
+            date = startDate,
+            modifier = Modifier.weight(1f)
+        )
+
+        // Spacer for consistent spacing between sections
+        Spacer(modifier = Modifier.width(16.dp))
+
+        // Check-Out section
+        LegendItem1(
+            icon = Icons.Filled.CalendarToday,
+            iconDescription = "Check-Out Icon",
+            label = "Check-Out",
+            date = endDate,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
@@ -298,9 +374,10 @@ fun DetailsSection(
     modifier: Modifier
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(16.dp),
+//            .background(AppTheme.colorScheme.surface), // Use surface for background
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Row(
@@ -309,13 +386,13 @@ fun DetailsSection(
         ) {
             Text(
                 text = "Adult",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                style = AppTheme.typography.mediumBold,
+                color = AppTheme.colorScheme.onSurface // Text on surface
             )
             Text(
                 text = totalPerson,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                style = AppTheme.typography.mediumBold,
+                color = AppTheme.colorScheme.onSurface // Text on surface
             )
         }
 
@@ -325,17 +402,20 @@ fun DetailsSection(
         ) {
             Text(
                 text = "Room",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                style = AppTheme.typography.mediumBold,
+                color = AppTheme.colorScheme.onSurface // Text on surface
             )
             Text(
                 text = roomBooked,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                style = AppTheme.typography.mediumBold,
+                color = AppTheme.colorScheme.onSurface // Text on surface
             )
         }
 
-        Divider(thickness = 1.dp)
+        Divider(
+            color = AppTheme.colorScheme.primary, // Use primary for divider
+            thickness = 1.dp
+        )
 
         Row(
             modifier = Modifier
@@ -345,28 +425,30 @@ fun DetailsSection(
         ) {
             Text(
                 text = "Total Price",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                style = AppTheme.typography.largeBold,
+                color = AppTheme.colorScheme.onSurface // Text on surface
             )
             Text(
-                text = "RM $totalPrice", // or apply formatting if needed
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                text = "RM $totalPrice",
+                style = AppTheme.typography.largeBold,
+                color = AppTheme.colorScheme.onSurface // Text on surface
             )
         }
     }
 }
-
 
 @Composable
 fun StyledImage(
     hotelImages: String
 ) {
     Card(
-        elevation = CardDefaults.cardElevation(4.dp), // Slight shadow for depth
+        elevation = CardDefaults.cardElevation(4.dp),
         modifier = Modifier
             .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(16.dp)) // Ensure proper clipping
+            .clip(RoundedCornerShape(16.dp)),
+        colors = CardDefaults.cardColors(
+            containerColor = AppTheme.colorScheme.surface // Use surface for card
+        )
     ) {
         UrlImage(
             imageUrl = hotelImages,
