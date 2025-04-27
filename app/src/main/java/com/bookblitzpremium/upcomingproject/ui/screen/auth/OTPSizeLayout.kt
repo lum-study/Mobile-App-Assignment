@@ -11,6 +11,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
@@ -21,7 +22,7 @@ import com.bookblitzpremium.upcomingproject.ui.utility.isTablet
 
 @SuppressLint("ContextCastToActivity")
 @Composable
-fun DynamicOTPPage(navController: NavController, userModel: AuthViewModel) {
+fun DynamicOTPPage(navController: NavController, userModel: AuthViewModel, email: String) {
     val activity = LocalContext.current as? Activity ?: return PlaceholderUI()
 
     val windowSizeClass = getWindowSizeClass(activity)
@@ -79,7 +80,8 @@ fun DynamicOTPPage(navController: NavController, userModel: AuthViewModel) {
         },
         viewModel = userModel,
         navController = navController,
-        modifier = Modifier
+        modifier = Modifier,
+        email = email
     )
 
 }

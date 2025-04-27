@@ -1,10 +1,12 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.auth
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.view.KeyEvent
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -21,17 +23,27 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +66,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
@@ -62,25 +75,11 @@ import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.model.OtpAction
 import com.bookblitzpremium.upcomingproject.data.model.OtpState
+import com.bookblitzpremium.upcomingproject.data.model.VerifyEmail
 
-@SuppressLint("ObsoleteSdkInt")
 @Composable
-fun OtpScreen2(
-    state: OtpState,
-    focusRequesters: List<FocusRequester>,
-    viewModel: AuthViewModel,
-    onAction: (OtpAction) -> Unit,
-    navController: NavController,
-    modifier: Modifier = Modifier
-) {
-
+fun PermissionRequestScreen() {
     val context = LocalContext.current
-    val launcher =
-        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (!isGranted) {
-                Toast.makeText(context, "Please allow notifications", Toast.LENGTH_SHORT).show()
-            }
-        }
 
     // Check if permission is granted (for UI feedback)
     val permissionGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -92,6 +91,171 @@ fun OtpScreen2(
         true // Not required for pre-Android 13
     }
 
+    // Launcher to request permission
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        // Handle the result of the permission request (optional)
+        if (isGranted) {
+            // Permission granted, proceed with your app logic
+        } else {
+            // Permission denied, handle accordingly (e.g., show a message)
+        }
+    }
+
+    // State to control whether to show the custom permission screen
+    var showPermissionScreen by remember { mutableStateOf(false) }
+
+    // Automatically check permission and show custom screen if needed
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !permissionGranted) {
+            showPermissionScreen = true // Show custom screen instead of launching directly
+        }
+    }
+
+    // Show the custom permission screen if needed
+    if (showPermissionScreen) {
+        CustomPermissionScreen(
+            onRequestPermission = {
+                // When the user agrees, request the permission
+                launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                showPermissionScreen = false // Hide the screen after requesting
+            },
+            onDeny = {
+                // When the user denies, hide the screen (or handle differently)
+                showPermissionScreen = false
+            }
+        )
+    } else {
+        // Proceed with the rest of your app (e.g., show the main screen)
+        MainAppContent()
+    }
+}
+
+@Composable
+fun CustomPermissionScreen(
+    onRequestPermission: () -> Unit,
+    onDeny: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "We Need Your Permission",
+                fontSize = 24.sp,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            Text(
+                text = "To keep you updated, we need permission to send notifications. This will allow us to notify you about important updates and events.",
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 32.dp)
+            )
+
+            Button(
+                onClick = onRequestPermission,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .padding(horizontal = 16.dp)
+            ) {
+                Text("Grant Permission")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            TextButton(
+                onClick = onDeny,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                Text("Deny")
+            }
+        }
+    }
+}
+
+@Composable
+fun MainAppContent() {
+    // Replace this with your app's main content (e.g., CountrySelectionScreen)
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text("Main App Content")
+    }
+}
+
+@SuppressLint("ObsoleteSdkInt")
+@Composable
+fun OtpScreen2(
+    state: OtpState,
+    focusRequesters: List<FocusRequester>,
+    viewModel: AuthViewModel,
+    onAction: (OtpAction) -> Unit,
+    navController: NavController,
+    modifier: Modifier = Modifier,
+    email: String
+) {
+
+    val context = LocalContext.current
+
+    // Check if permission is granted (for UI feedback)
+    var permissionGranted by rememberSaveable {
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ContextCompat.checkSelfPermission(
+                    context,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+            } else {
+                true // Not required for pre-Android 13
+            }
+        )
+    }
+
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        permissionGranted = isGranted // Update the state
+        if (!isGranted) {
+            // Check if we should show rationale (i.e., user denied but didn't select "Don't ask again")
+            val activity = context as? ComponentActivity
+            val shouldShowRationale = activity?.let {
+                ActivityCompat.shouldShowRequestPermissionRationale(it, android.Manifest.permission.POST_NOTIFICATIONS)
+            } ?: false
+
+            if (!shouldShowRationale && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                // Permission permanently denied ("Don't ask again" selected)
+                Toast.makeText(
+                    context,
+                    "Notification permission was permanently denied. Please enable it in settings.",
+                    Toast.LENGTH_LONG
+                ).show()
+
+                // Optionally, direct the user to app settings
+                val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = android.net.Uri.fromParts("package", context.packageName, null)
+                }
+                context.startActivity(intent)
+            } else {
+                // Permission denied but can ask again
+                Toast.makeText(context, "Please allow notifications", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+
     // Automatically request permission on Android 13+
     LaunchedEffect(Unit) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !permissionGranted) {
@@ -99,11 +263,49 @@ fun OtpScreen2(
         }
     }
 
-    Box(
+    Column(
         modifier = modifier
             .fillMaxSize() // Fill the entire screen height
             .padding(16.dp)
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Tesla logo (replace R.drawable.logo with your actual logo resource)
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = null,
+//                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(64.dp)
+            )
+
+            // Language selector
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow, // Use a globe icon
+                    contentDescription = "Language",
+                    tint = Color.Black,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "en-MY",
+                    fontSize = 16.sp,
+                    color = Color.Black
+                )
+            }
+        }
+
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -112,44 +314,6 @@ fun OtpScreen2(
         ) {
 
             Spacer(modifier = Modifier.height(70.dp))
-
-            Box(
-                modifier = Modifier
-                    .size(280.dp)
-                    .clip(CircleShape)
-                    .background(Color.Gray) // or any color like Color.Gray
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.otp1),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//                when {
-//                    permissionState.status.isGranted -> {
-//                        Text(
-//                            text = "Notification permission granted",
-//                            color = Color.Green,
-//                            modifier = Modifier.padding(vertical = 8.dp)
-//                        )
-//                    }
-//                    permissionState.status is PermissionStatus.Denied -> {
-//                        val shouldShowRationale =
-//                            (permissionState.status as PermissionStatus.Denied).shouldShowRationale
-//                        if (shouldShowRationale) {
-//                            OutlinedButton(
-//                                onClick = {
-//                                    permissionState.launchPermissionRequest()
-//                                }
-//                            ) {
-//                                Text(text = "Allow Notifications")
-//                            }
-//                        }
-//                    }
-//                }
 
             Text(
                 text = "OTP Verification",
@@ -223,7 +387,8 @@ fun OtpScreen2(
                         ).show()
                     } else if (state.isValid == true) {
                         Toast.makeText(context, "Valid code", Toast.LENGTH_SHORT).show()
-                        navController.navigate(AppScreen.ForgotPassword.route) {
+                        viewModel.sendPasswordResetEmail(email = email)
+                        navController.navigate(AppScreen.Home.route) {
                             popUpTo(0) {
                                 inclusive = true
                             }

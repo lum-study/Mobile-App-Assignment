@@ -1,11 +1,9 @@
 package com.bookblitzpremium.upcomingproject.ui.navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
@@ -14,28 +12,16 @@ import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthVi
 fun AppNavigation(
     navController: NavHostController,
     startDestination: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: AuthViewModel = viewModel()
 ) {
-    val userModel: AuthViewModel = hiltViewModel()
-    val navigationCommand by userModel.navigationCommand.collectAsState()
-
-    LaunchedEffect(navigationCommand) {
-        navigationCommand?.let { destination ->
-            navController.navigate(destination) {
-                popUpTo(navController.graph.id) {
-                }
-                launchSingleTop = true
-            }
-            userModel.clearNavigationCommand()
-        }
-    }
-
     NavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier,
     ) {
-        authNavGraph(navController, userModel)
+        authNavGraph(navController, viewModel)
+        Log.e("MyTag", "This is an error log message")
         homeNavGraph(navController)
         hotelNavGraph(navController)
         searchNavGraph(navController)

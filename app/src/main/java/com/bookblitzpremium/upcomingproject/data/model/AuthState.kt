@@ -4,7 +4,5 @@ sealed class AuthState{
     object Authenticated : AuthState()
     object Unauthenticated : AuthState()
     object Loading : AuthState()
-    object Yes : AuthState()
-    object CodeValid : AuthState()
     data class Error(val message : String) : AuthState()
 }
