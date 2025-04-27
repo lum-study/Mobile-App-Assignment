@@ -3,6 +3,7 @@ package com.bookblitzpremium.upcomingproject.ui.navigation
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
@@ -12,7 +13,7 @@ fun AppNavigation(
     navController: NavHostController,
     startDestination: String,
     modifier: Modifier = Modifier,
-    viewModel: AuthViewModel
+    viewModel: AuthViewModel = viewModel()
 ) {
     NavHost(
         navController = navController,

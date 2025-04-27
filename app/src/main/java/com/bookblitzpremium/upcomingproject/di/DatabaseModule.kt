@@ -102,5 +102,11 @@ object DatabaseModule {
 
     @Provides
     @Singleton
+    fun provideLocalUser(appDatabase: AppDatabase): UserDao {
+        return appDatabase.userDao()
+    }
+
+    @Provides
+    @Singleton
     fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
 }
