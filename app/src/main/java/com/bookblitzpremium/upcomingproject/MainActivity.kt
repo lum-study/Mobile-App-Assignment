@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -61,7 +62,7 @@ class MainActivity : ComponentActivity() {
         FirebaseApp.initializeApp(this)
         setContent {
             AppTheme {
-//              InitializeDatabase()
+                InitializeDatabase()
                 App()
             }
         }
@@ -74,8 +75,10 @@ fun App(
     navController: NavHostController = rememberNavController()
 ) {
     val userViewModel: AuthViewModel = viewModel()
-    val userID = FirebaseAuth.getInstance().currentUser?.uid
-    val startDestination = if(userID.isNullOrEmpty()) AppScreen.AuthGraph.route else AppScreen.HomeGraph.route
+    val navigationRoute by userViewModel.newNavigationCommand.collectAsState()
+
+    val startDestination =
+        if (navigationRoute) AppScreen.HomeGraph.route else AppScreen.AuthGraph.route
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentScreen = AppScreen.fromRoute(
@@ -99,7 +102,12 @@ fun App(
             }
         }
     ) { innerPadding ->
-        AppNavigation(navController, startDestination, Modifier.padding(innerPadding), userViewModel)
+        AppNavigation(
+            navController,
+            startDestination,
+            Modifier.padding(innerPadding),
+            userViewModel
+        )
     }
 }
 
@@ -180,8 +188,9 @@ fun BottomNavigationBar(navController: NavHostController) {
                             ) {
                                 selectedIndex = index
                                 navController.navigate(item.navigation.route) {
-                                    popUpTo(AppScreen.Home.route){
-                                        inclusive = item.navigation.route == AppScreen.HomeGraph.route
+                                    popUpTo(AppScreen.Home.route) {
+                                        inclusive =
+                                            item.navigation.route == AppScreen.HomeGraph.route
                                     }
                                 }
                             }

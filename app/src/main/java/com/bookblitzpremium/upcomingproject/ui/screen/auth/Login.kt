@@ -19,10 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -52,14 +49,11 @@ import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
 import com.bookblitzpremium.upcomingproject.data.model.AuthState
-import com.bookblitzpremium.upcomingproject.data.model.PasswordVerificationState
-import com.bookblitzpremium.upcomingproject.isValidEmail
 import com.bookblitzpremium.upcomingproject.ui.components.ButtonHeader
 import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextFieldPassword
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
-import kotlinx.coroutines.delay
 
 
 @Composable
@@ -230,8 +224,8 @@ fun LoginPage(
                                 } else if (uid != null) {
                                     val username = email.substringBefore("@")
                                     val user = User(
-                                        uid = uid,
-                                        username = username,
+                                        id = uid,
+                                        name = username,
                                         email = email,
                                         password = password
                                     )

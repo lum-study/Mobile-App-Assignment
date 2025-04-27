@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.R
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
@@ -244,7 +245,7 @@ fun RegristerPage(
                         val uid = viewModel.signup(email, password)
                         if (uid.isNotEmpty()) {
                             val username = email.substringBefore("@")
-                            val user = User(uid = uid, username = username, email = email, password = password)
+                            val user = User(id = uid, name = username, email = email, password = password)
                             remoteUserViewModel.addUser(user)
                             localViewModel.insertNewUser(user)
                             viewModel.clearSignUpState()

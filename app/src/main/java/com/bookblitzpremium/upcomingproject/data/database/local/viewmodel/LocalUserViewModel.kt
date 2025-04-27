@@ -22,6 +22,9 @@ class LocalUserViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    private val _success = MutableStateFlow<String?>(null)
+    val success: StateFlow<String?> = _success.asStateFlow()
+
     suspend fun getUserByID(id: String): User? {
         return userRepository.getUserByID(id)
     }
@@ -61,4 +64,78 @@ class LocalUserViewModel @Inject constructor(
         }
     }
 
+
+    fun insertNewUser(user: User) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+            try {
+                userRepository.insertUsers(user)
+            } catch (e: SQLiteException) {
+                _error.value = "Database error: ${e.localizedMessage}"
+            } catch (e: Exception) {
+                _error.value = "Error fetching hotel: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    private val _users = MutableStateFlow<List<User>>(emptyList())
+    val users: StateFlow<List<User>> = _users.asStateFlow()
+
+    fun selectAllUser() {
+        viewModelScope.launch {
+//            _loading.value = true
+            _error.value = null
+            try {
+                // Collect the Flow<List<User>> from the repository
+                userRepository.selectAllUser().collect { userList ->
+                    _users.value = userList
+                }
+            } catch (e: SQLiteException) {
+                _error.value = "Database error: ${e.localizedMessage}"
+            } catch (e: Exception) {
+                _error.value = "Error fetching users: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    private val _emailExists = MutableStateFlow<Boolean?>(null)
+    val emailExists: StateFlow<Boolean?> = _emailExists.asStateFlow()
+
+    suspend fun checkUserEmail(email: String): Boolean {
+        _loading.value = true
+        _error.value = null
+        _emailExists.value = null
+        return try {
+            val exists = userRepository.findUserEmail(email)
+            _emailExists.value = exists
+        } catch (e: SQLiteException) {
+            _error.value = "Database error: ${e.localizedMessage}"
+            _emailExists.value = false
+            false
+        } catch (e: Exception) {
+            _error.value = "Error fetching users: ${e.localizedMessage}"
+            _emailExists.value = false
+            false
+        } finally {
+            _loading.value = false
+        } == true
+    }
+
+    fun loginLocalUser(email: String, password: String, onResult: (String?, String?) -> Unit) {
+        viewModelScope.launch {
+            val result = userRepository.validateUser(email, password)
+            result
+                .onSuccess { uid ->
+                    onResult(uid, null) // login success
+                }
+                .onFailure { exception ->
+                    onResult(null, exception.message) // show error
+                }
+        }
+    }
 }

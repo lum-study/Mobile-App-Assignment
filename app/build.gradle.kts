@@ -119,7 +119,4 @@ dependencies {
 
     //datastore
     implementation(libs.androidx.datastore.preferences)
-
-    //compare password
-    implementation("org.mindrot:jbcrypt:0.4")
 }

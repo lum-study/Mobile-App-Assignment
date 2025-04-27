@@ -49,7 +49,7 @@ class AuthViewModel @Inject constructor(
     }
 
     init {
-        auth.signOut()
+//        auth.signOut()
         checkAuthStatus()
     }
 

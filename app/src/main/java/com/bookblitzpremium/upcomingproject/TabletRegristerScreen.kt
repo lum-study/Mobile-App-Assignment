@@ -414,7 +414,7 @@ fun Step1Screen(
                     val uid = viewModel.signup(email, password)
                     if (uid.isNotEmpty()) {
                         val username = email.substringBefore("@")
-                        val user = User(uid = uid, username = username, email = email, password = password)
+                        val user = User(id = uid, name = username, email = email, password = password)
                         remoteUserViewModel.addUser(user)
                         localViewModel.insertNewUser(user)
                         viewModel.clearSignUpState()

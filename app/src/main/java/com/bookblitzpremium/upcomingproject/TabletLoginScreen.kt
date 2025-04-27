@@ -356,8 +356,8 @@ fun LoginScreen1(
                             } else if (uid != null) {
                                 val username = email.substringBefore("@")
                                 val user = User(
-                                    uid = uid,
-                                    username = username,
+                                    id = uid,
+                                    name = username,
                                     email = email,
                                     password = password
                                 )
@@ -444,8 +444,8 @@ fun LoginScreen1(
                                 } else if (uid != null) {
                                     val username = email.substringBefore("@")
                                     val user = User(
-                                        uid = uid,
-                                        username = username,
+                                        id = uid,
+                                        name = username,
                                         email = email,
                                         password = password
                                     )
