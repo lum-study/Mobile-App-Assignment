@@ -80,6 +80,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.runtime.setValue
+import com.bookblitzpremium.upcomingproject.common.enums.PaymentMethod
+import com.bookblitzpremium.upcomingproject.ui.screen.payment.PaymentOptionScreen
 
 @Composable
 fun NumberRoom(
@@ -645,154 +648,8 @@ fun PaymentMethod(){
     }
 }
 
-
 //@Preview(showBackground = true)
-@Composable
-fun PaymentDetails() {
 
-    var showReview by remember { mutableStateOf(false) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxHeight()
-            .background(Color.White)
-    ){
-        if(showReview){
-//            TravelHeaderTable()
-        }else{
-            LazyColumn( // 🔹 Now the whole screen scrolls
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 50.dp),
-                verticalArrangement = spacedBy(16.dp) // Add spacing between sections
-            ) {
-                item {
-                    Row {
-                        PaymentImageReview()
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(bottom = 12.dp, start = 30.dp)
-                    ) {
-                        Text(
-                            text = "Payment Method",
-                            style = AppTheme.typography.titleLarge
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(0.98f)
-                            .padding(bottom = AppTheme.size.normal)
-                            .padding(horizontal = 28.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp)
-                                .background(Color.LightGray, RoundedCornerShape(4.dp))
-                                .clickable { /* Handle click action, e.g., toggle selection */ }
-                                .padding(vertical = 8.dp)
-                        ) {
-                            Text(
-                                text = "Touch & Go",
-                                color = Color.Black,
-                                fontSize = 16.sp,
-                                modifier = Modifier
-                                    .align(Alignment.CenterStart)
-                                    .padding(horizontal = 16.dp)
-                            )
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(0.98f)
-                            .padding(bottom = AppTheme.size.normal)
-                            .padding(horizontal = 28.dp)
-                    ) {
-                        Text(
-                            text = "Pricing",
-                            style = AppTheme.typography.titleLarge
-                        )
-                    }
-
-                    Column(
-                        modifier = Modifier.padding(start = 30.dp, bottom = 30.dp),
-                        verticalArrangement = spacedBy(8.dp)
-                    ) {
-                        LazyRow {
-                            item {
-                                Text(
-                                    text = "RM160.00 x 1 nights                 RM160.00"
-                                )
-                            }
-                        }
-
-                        Text(text = "Tax                  Rm177")
-                        Text(text = "Total (MYR)          RM 177")
-                    }
-
-                    Row {
-                        Button(
-                            onClick = { showReview = true },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Black,
-                                contentColor = Color.White
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp)
-                        ) {
-                            Text(
-                                text = "Next",
-                                style = AppTheme.typography.labelMedium
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-//@Preview(showBackground = true)
-@Composable
-fun PaymentImageReview() {
-    Column( // ⬅️ Replacing LazyColumn with Column
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        Text(
-            text = "Packet",
-            style = AppTheme.typography.titleLarge,
-            modifier = Modifier
-                .padding(bottom = 20.dp)
-        )
-
-        Image(
-            painter = painterResource(id = R.drawable.hotel_images),
-            contentDescription = "Cottage by lake",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .width(350.dp)
-                .height(250.dp)
-                .clip(RoundedCornerShape(8.dp))
-        )
-
-//        Icon(
-//            imageVector = Icons.Default.ArrowBack,
-//            contentDescription = "Back",
-//            tint = Color.Black,
-//            modifier = Modifier
-//                .padding(16.dp)
-//                .size(32.dp)
-//                .clickable { /* Handle back navigation */ }
-//        )
-    }
-}
 
 //@Composable
 //fun TravelHeaderTable(){

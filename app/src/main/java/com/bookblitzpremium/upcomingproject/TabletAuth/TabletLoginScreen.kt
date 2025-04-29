@@ -1,14 +1,14 @@
-package com.bookblitzpremium.upcomingproject
+package com.bookblitzpremium.upcomingproject.TabletAuth
 
+import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
-import android.util.Log
+import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,20 +25,11 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Female
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Male
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -46,7 +37,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -60,16 +50,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.paint
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -85,17 +69,15 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
-import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
 import com.bookblitzpremium.upcomingproject.data.model.AuthState
 import com.bookblitzpremium.upcomingproject.data.model.OtpAction
@@ -108,11 +90,10 @@ import com.bookblitzpremium.upcomingproject.ui.screen.auth.OtpInputField
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
-import kotlin.collections.forEachIndexed
 
 
-
-
+//horizontal = false
+//vertical = true
 @Composable
 fun LoginAppVertical() {
     val navController = rememberNavController()
@@ -145,38 +126,6 @@ fun LoginAppVertical() {
     }
 }
 
-@Composable
-fun LoginAppHorizontal() {
-    val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "step1") {
-        composable("step1") { LoginScreen1(navController,false) }
-
-        composable(
-            route = "step1/{email}/{password}",
-            arguments = listOf(
-                navArgument("email") { type = NavType.StringType },
-                navArgument("password") { type = NavType.StringType }
-            )
-        ) { backStackEntry ->
-            val email = backStackEntry.arguments?.getString("email").toString()
-            val password = backStackEntry.arguments?.getString("password").toString()
-            LoginScreen1(navController,false, email, password) // pass it to your screen
-        }
-
-        composable(
-            route = "step2/{email}/{password}",
-            arguments = listOf(
-                navArgument("email") { type = NavType.StringType },
-                navArgument("password") { type = NavType.StringType }
-            )
-        ) { backStackEntry ->
-            val email = backStackEntry.arguments?.getString("email").toString()
-            val password = backStackEntry.arguments?.getString("password").toString()
-            LoginScreen2(navController,false, email, password) // pass it to your screen
-        }
-    }
-}
-
 fun String.encodeToUri(): String = this.toUri().toString().substringAfterLast("/")
 
 @Composable
@@ -189,8 +138,6 @@ fun LoginScreen1(
 ) {
     var email by rememberSaveable { mutableStateOf( email) }
     var password by rememberSaveable { mutableStateOf( password) }
-
-    var userID = FirebaseAuth.getInstance().currentUser?.uid.toString()
 
     val authState by viewModel.authState.collectAsState()
     val context = LocalContext.current
@@ -217,7 +164,7 @@ fun LoginScreen1(
     }
 
     fun isFormValid(): Boolean {
-        if (email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        if (email.isBlank() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             toastMessage = "Please enter a valid email address"
             return false
         }
@@ -292,13 +239,12 @@ fun LoginScreen1(
                                     if(authState is AuthState.Authenticated){
                                         when (stepNumber) {
                                             1 -> navController.navigate("step1/${email.encodeToUri()}/${password.encodeToUri()}")
-                                            //2 -> navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}")
                                             2 -> navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}")
                                         }
                                     }
                                 }
                             } else {
-                                Modifier // no click
+                                Modifier
                             }
                         ),
                     contentAlignment = Alignment.Center
@@ -309,7 +255,7 @@ fun LoginScreen1(
                         fontSize = 12.sp
                     )
                 }
-                if (index < 1) { // Draw line between steps
+                if (index < 1) {
                     Box(
                         modifier = Modifier
                             .width(24.dp)
@@ -414,7 +360,6 @@ fun LoginScreen1(
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Content for Row layout
                 Button(
                     onClick = {
                         if(isFormValid()){
@@ -492,7 +437,6 @@ fun LoginScreen1(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Next Button
                 Button(
                     onClick = {
                         if(isFormValid()){
@@ -597,8 +541,6 @@ fun LoginScreen2(navController: NavController, tabletScreen: Boolean, email : St
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    var userID = FirebaseAuth.getInstance().currentUser?.uid.toString()
-                    // Stepper (1/3) with clickable bubbles
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -723,7 +665,7 @@ fun PaymentDialog(
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                 ContextCompat.checkSelfPermission(
                                     context,
-                                    android.Manifest.permission.POST_NOTIFICATIONS
+                                    Manifest.permission.POST_NOTIFICATIONS
                                 ) == PackageManager.PERMISSION_GRANTED
                             } else {
                                 true // Not required for pre-Android 13
@@ -764,7 +706,7 @@ fun PaymentDialog(
                     // Automatically request permission on Android 13+
                     LaunchedEffect(Unit) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !permissionGranted) {
-                            launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                            launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
                         }
                     }
 
@@ -923,11 +865,6 @@ fun PaymentDialog(
                                 Toast.makeText(context, "Something went wrong. Please try again.", Toast.LENGTH_SHORT).show()
                             }
                         }
-
-                        // Trigger recomposition here by updating the state
-
-
-
                     }
                 )
 

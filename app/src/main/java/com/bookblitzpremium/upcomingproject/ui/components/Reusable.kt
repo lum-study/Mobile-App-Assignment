@@ -1,6 +1,5 @@
 package com.bookblitzpremium.upcomingproject.ui.components
 
-import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,28 +18,38 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -48,16 +57,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.R
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
-
-val videoUri = Uri.parse("android.resource://com.bookblitzpremium.upcomingproject/raw/entry_video")
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewDialog(){
 //    HotelFullNotication()
-
      val navContoller = rememberNavController()
     CustomDialog(onDismissRequest = {}, onNextClick = {})
 }
@@ -166,45 +171,6 @@ fun TextEmailSent(){
 }
 
 @Composable
-fun LineOver() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Left Divider
-        Divider(
-            color = Color.Gray,
-            thickness = 1.dp,
-            modifier = Modifier
-                .weight(1f) // Takes available space on the left
-                .padding(horizontal = 8.dp)
-        )
-
-        // Text in the center
-        Text(
-            text = "Or login with", // Replace with stringResource(R.string.or_login_with) if available
-            style = TextStyle( // Fallback style if AppTheme is not available
-                fontSize = 14.sp,
-                color = Color(0xFF6B7280) // Gray color
-            ),
-            modifier = Modifier.padding(horizontal = 8.dp)
-        )
-
-        // Right Divider
-        Divider(
-            color = Color.Gray,
-            thickness = 1.dp,
-            modifier = Modifier
-                .weight(1f) // Takes available space on the right
-                .padding(horizontal = 8.dp)
-        )
-    }
-}
-
-
-@Composable
 fun ButtonHeader(
     textResId: Int,
     valueHorizontal: Dp,
@@ -227,82 +193,6 @@ fun ButtonHeader(
         )
     }
 }
-//
-//fun showNotification(context: Context, otpCode: String) {
-//    val intent = Intent(context, MainActivity::class.java).apply {
-//        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-//    }
-//
-//    val pendingIntent = PendingIntent.getActivity(
-//        context, 0, intent, PendingIntent.FLAG_IMMUTABLE
-//    )
-//
-//    val fullScreenPendingIntent = PendingIntent.getActivity(
-//        context, 0, intent, PendingIntent.FLAG_IMMUTABLE
-//    )
-//
-//    val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-//        .setSmallIcon(R.drawable.logo2)
-//        .setContentTitle("OTP Code")
-//        .setContentText(otpCode)
-//        .setPriority(NotificationCompat.PRIORITY_HIGH)
-//        .setContentIntent(pendingIntent)
-//        .setAutoCancel(true)
-//        .setFullScreenIntent(fullScreenPendingIntent, true)
-//
-//    NotificationManagerCompat.from(context).notify(1001, builder.build())
-//}
-
-
-
-@Composable
-fun ClickableFun(
-    text: String,
-    onClick: () -> Unit
-) {
-    ClickableText(
-        text = AnnotatedString(text),
-        style = TextStyle(
-            color = Color.Black,
-            textDecoration = TextDecoration.Underline
-        ),
-        onClick = { onClick() } // Navigate when clicked
-    )
-}
-
-
-@Composable
-fun SignInWithGoogle(valueHorizontal: Dp, viewModel: AuthViewModel, email: String, password: String){
-    Button(
-        onClick = {
-
-        },
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Black, // Background color
-            contentColor = Color.White    // Text color (optional)
-        ),
-        border = BorderStroke(2.dp, Color.Black), // Black border
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = valueHorizontal)
-    ) {
-
-        Text(
-            text = stringResource(R.string.sign_in_with),
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .padding(end = 8.dp)
-        )
-
-        Image(
-            painter = painterResource( id = R.drawable.google_symbol),
-            contentDescription = "Google",
-            modifier = Modifier.size(16.dp)
-        )
-    }
-}
-
 
 @Composable
 fun HotelHeader(showBackButton: Int) {
@@ -335,9 +225,9 @@ fun HotelHeader(showBackButton: Int) {
 }
 
 @Composable
-fun HeaderDetails( textResId: Int , offsetX :Dp,modifier: Modifier ){
+fun HeaderDetails( textResId: String , offsetX :Dp,modifier: Modifier ){
     Text(
-        text = stringResource(id = textResId),
+        text = textResId,
         color = Color.Black,
         style = AppTheme.typography.largeBold,
         modifier = Modifier
@@ -346,8 +236,103 @@ fun HeaderDetails( textResId: Int , offsetX :Dp,modifier: Modifier ){
     )
 }
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Notication(){
+fun CustomTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String = "Enter text",
+    placeholder: String = "Type here...",
+    leadingIcon: ImageVector? = null,
+    trailingIcon: ImageVector? = null,
+    shape: RoundedCornerShape = RoundedCornerShape(0.dp),
+    keyBoardType: KeyboardType = KeyboardType.Text,  // Use `KeyboardType`
+    inputType: VisualTransformation = VisualTransformation.None,  // Use `VisualTransformation`
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(text = label) },
+        placeholder = { Text(text = placeholder) },
+        leadingIcon = leadingIcon?.let {
+            { Icon(imageVector = it, contentDescription = null, tint = Color.Gray) }
+        },
+        trailingIcon = trailingIcon?.let {
+            { IconButton(onClick = {
+                onValueChange("")
+            }) {
+                Icon(imageVector = it, contentDescription = null, tint = Color.Gray)
+            } }
+        },
+        textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
+        keyboardOptions = KeyboardOptions(  // ✅ Fixed: Merged both options
+            keyboardType = keyBoardType,
+            imeAction = ImeAction.Done
+        ),
+        visualTransformation = inputType,  // ✅ Correct usage
+        enabled = true,
+        modifier = modifier.fillMaxWidth()
+    )
+}
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CustomTextFieldPassword(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String = "Enter text",
+    placeholder: String = "Type here...",
+    leadingIcon: ImageVector? = null,
+    shape: RoundedCornerShape = RoundedCornerShape(0.dp),
+    keyBoardType: KeyboardType = KeyboardType.Text,
+    modifier: Modifier = Modifier
+) {
+    // State to track whether the password is visible
+    var isPasswordVisible by remember { mutableStateOf(false) }
+
+    // Toggle the visual transformation based on the visibility state
+    val visualTransformation = if (isPasswordVisible) {
+        VisualTransformation.None // Show password
+    } else {
+        PasswordVisualTransformation() // Hide password
+    }
+
+    // Toggle the trailing icon based on the visibility state
+    val trailingIcon = if (isPasswordVisible) {
+        Icons.Default.VisibilityOff // Eye-off icon (to hide password)
+    } else {
+        Icons.Default.Visibility // Eye icon (to show password)
+    }
+
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(text = label) },
+        placeholder = { Text(text = placeholder) },
+        leadingIcon = leadingIcon?.let {
+            { Icon(imageVector = it, contentDescription = null, tint = Color.Gray) }
+        },
+        trailingIcon = {
+            IconButton(onClick = {
+                // Toggle password visibility
+                isPasswordVisible = !isPasswordVisible
+            }) {
+                Icon(
+                    imageVector = trailingIcon,
+                    contentDescription = if (isPasswordVisible) "Hide password" else "Show password",
+                    tint = Color.Gray
+                )
+            }
+        },
+        textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
+
+        keyboardOptions = KeyboardOptions(
+            keyboardType = keyBoardType,
+            imeAction = ImeAction.Done
+        ),
+        visualTransformation = visualTransformation, // Apply the toggled transformation
+        enabled = true,
+        modifier = modifier.fillMaxWidth()
+    )
 }

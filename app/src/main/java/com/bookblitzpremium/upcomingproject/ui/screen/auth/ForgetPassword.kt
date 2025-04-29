@@ -1,5 +1,6 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.auth
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,15 +23,18 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -39,17 +43,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.util.Log
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
+import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.ButtonHeader
 import com.bookblitzpremium.upcomingproject.ui.components.CustomDialog
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.ui.components.TextEmailSent
 import com.bookblitzpremium.upcomingproject.ui.components.TextHeader
+import kotlinx.coroutines.launch
 
 @Preview(showBackground = true)
 @Composable
@@ -78,10 +85,11 @@ fun ForgetPassword(
 
 
     var emails by rememberSaveable { mutableStateOf("") }
-    var localViewModel : LocalUserViewModel = hiltViewModel()
+//    var localViewModel : LocalUserViewModel = hiltViewModel()
     var checkTrigger by remember { mutableStateOf(0) }
-    val emailExists by localViewModel.emailExists.collectAsState()
-    val success by localViewModel.success.collectAsState()
+//    val emailExists by localViewModel.emailExists.collectAsState()
+//    val success by localViewModel.success.collectAsState()
+    val remoteUser : RemoteUserViewModel = hiltViewModel()
 
 //    // Validate and check email when input changes or button is clicked
 //    LaunchedEffect(emails, checkTrigger) {
@@ -167,60 +175,97 @@ fun ForgetPassword(
             var verifyEmailEnter by rememberSaveable { mutableStateOf(false) }
 
             Spacer(modifier = Modifier.height(10.dp))
+
+            val scope = rememberCoroutineScope()
+            val context = LocalContext.current
+
             ButtonHeader(
                 textResId = R.string.login,
                 valueHorizontal = valueHorizontal,
                 onClick = {
-                    if (emails.isBlank()) {
-                        verifyEmailEnter = true
-                    }else{
-                        checkTrigger++
-                        viewModel.sendPasswordResetEmail(emails)
-                        navController.navigate("${AppScreen.OTP.route}/$emails")
+
+                    scope.launch {
+                        try {
+                            val existingId = remoteUser.checkEmails(emails)
+                            if (existingId.isNotEmpty()) {
+                                Log.e("Verification", "Email found: Proceeding to OTP")
+                                viewModel.sendPasswordResetEmail(emails)
+                                navController.navigate("${AppScreen.OTP.route}/$emails")
+                            } else {
+                                Log.e("Verification", "Email not found")
+                                Toast.makeText(context, "Email not registered!", Toast.LENGTH_SHORT).show()
+                            }
+                        } catch (e: Exception) {
+                            Log.e("Verification", "Error verifying email: ${e.localizedMessage}")
+                            Toast.makeText(context, "Something went wrong. Please try again.", Toast.LENGTH_SHORT).show()
+                        }
                     }
-//                    viewModel.resetVerifyEmailState()
                 }
             )
 
+//
+//            if(verifyEmailEnter){
+//                LaunchedEffect(verifyEmailEnter) {
+//                    val existingId = remoteUser.checkEmails(emails)
+//                    if (existingId.isNotEmpty()) {
+//                        viewModel.sendPasswordResetEmail(emails)
+//                        navController.navigate("${AppScreen.OTP.route}/$emails")
+//                    }
+//                }
+//            }
+//
+//            verifyEmailEnter = false
+        }
+    }
+}
 
-            if( verifyEmailEnter){
-                CustomDialog(
-                    onNextClick = {
-                        verifyEmailEnter = false
-                    },
-                    onDismissRequest = {
-                        verifyEmailEnter = false
-                    }
-                )
-            }else{
 
-            }
-
-            // Success message
-            success?.let { successMessage ->
-                Text(
-                    text = successMessage,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(8.dp)
-                )
-            }
-
-            // Email existence result and navigation
-            emailExists?.let { exists ->
-                if (exists) {
-                    Text(
-                        text = "Email is already registered",
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                } else {
-                    Text(
-                        text = "Email is available",
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
-            }
+//                    if (emails.isBlank()) {
+//                        verifyEmailEnter = true
+//                    }else{
+//                        checkTrigger++
+//                        viewModel.sendPasswordResetEmail(emails)
+//                        navController.navigate("${AppScreen.OTP.route}/$emails")
+//                    }
+//                    viewModel.resetVerifyEmailState()
+//            if( verifyEmailEnter){
+//                CustomDialog(
+//                    onNextClick = {
+//                        verifyEmailEnter = false
+//                    },
+//                    onDismissRequest = {
+//                        verifyEmailEnter = false
+//                    }
+//                )
+//            }else{
+//
+//            }
+//
+//            // Success message
+//            success?.let { successMessage ->
+//                Text(
+//                    text = successMessage,
+//                    color = MaterialTheme.colorScheme.primary,
+//                    modifier = Modifier.padding(8.dp)
+//                )
+//            }
+//
+//            // Email existence result and navigation
+//            emailExists?.let { exists ->
+//                if (exists) {
+//                    Text(
+//                        text = "Email is already registered",
+//                        color = MaterialTheme.colorScheme.error,
+//                        modifier = Modifier.padding(8.dp)
+//                    )
+//                } else {
+//                    Text(
+//                        text = "Email is available",
+//                        color = MaterialTheme.colorScheme.primary,
+//                        modifier = Modifier.padding(8.dp)
+//                    )
+//                }
+//            }
 
 //            CheckStatusLoading(
 //                isLoading = verifyEmail is VerifyEmail.Loading,
@@ -240,6 +285,3 @@ fun ForgetPassword(
 //                    viewModel.resetVerifyEmailState()
 //                }
 //            }
-        }
-    }
-}

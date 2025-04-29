@@ -22,13 +22,13 @@ fun DynamicHotelDetails(onNextButtonClicked: () -> Unit, navController: NavContr
 
     when {
         isTabletLandscape -> {
-            HotelHeaderTable(onNextButtonClicked = onNextButtonClicked)
+//            HotelHeaderTable(onNextButtonClicked = onNextButtonClicked, hotelID = "0HCQgp6kuauoYiRH094D",navController)
         }
         isPhonePortrait -> {
-            MobieLayout(2, 500.dp, 500.dp)
+//            MobieLayout(2, 500.dp, 500.dp)
         }
         else -> {
-            MobieLayout(3, 500.dp, 800.dp)
+//            MobieLayout(3, 500.dp, 800.dp)
         }
     }
 }

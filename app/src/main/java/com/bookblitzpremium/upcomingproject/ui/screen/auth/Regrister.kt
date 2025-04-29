@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.R
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
@@ -50,6 +51,7 @@ import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextFieldPassword
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import java.net.URLEncoder
 
 
 @Composable
@@ -231,7 +233,6 @@ fun RegristerPage(
                 }
             )
 
-
             if(triggerSignup) {
                 CheckStatusLoading(
                     isLoading = signupState is SignupState.Loading,
@@ -240,19 +241,18 @@ fun RegristerPage(
                 )
 
                 LaunchedEffect(Unit) {
-                    val exists = localViewModel.checkUserEmail(email)
-                    if (!exists) {
-                        val uid = viewModel.signup(email, password)
-                        if (uid.isNotEmpty()) {
-                            val username = email.substringBefore("@")
-                            val user = User(id = uid, name = username, email = email, password = password)
-                            remoteUserViewModel.addUser(user)
-                            localViewModel.insertNewUser(user)
-                            viewModel.clearSignUpState()
-                            triggerSignup = false
-                        }
-                    } else {
-                        viewModel.setSignupError("Email is already registered")
+                    val username = email.substringBefore("@")
+                    try {
+                        val customId = viewModel.signup(email,password)
+                        val user = User(id = customId, name = username, email = email, password = password)
+                        remoteUserViewModel.addUser(customId, user)
+                        // Optionally interact with localUserViewModel if needed
+//                        viewModel.setPath()
+                        val userID = URLEncoder.encode(customId, "UTF-8")
+                        navController.navigate(
+                            "${AppScreen.GenderScreen.route}/$userID"
+                        )
+                    } catch (e: Exception) {
                         triggerSignup = false
                     }
                 }
@@ -260,3 +260,22 @@ fun RegristerPage(
         }
     }
 }
+
+//                    remoteUserViewModel.addUser(user)
+//                    localViewModel.insertNewUser(user)
+
+//                    val exists = localViewModel.checkUserEmail(email)
+//                    if (!exists) {
+//                        val uid = viewModel.signup(email, password)
+//                        if (uid.isNotEmpty()) {
+//                            val username = email.substringBefore("@")
+//                            val user = User(id = uid, name = username, email = email, password = password)
+//                            remoteUserViewModel.addUser(user)
+//                            localViewModel.insertNewUser(user)
+//                            viewModel.clearSignUpState()
+//                            triggerSignup = false
+//                        }
+//                    } else {
+//                        viewModel.setSignupError("Email is already registered")
+//                        triggerSignup = false
+//                    }

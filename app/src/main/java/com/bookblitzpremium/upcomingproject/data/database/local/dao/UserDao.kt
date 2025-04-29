@@ -20,10 +20,6 @@ interface UserDao {
     @Query("SELECT * from user WHERE id = :userID")
     suspend fun getUserByID(userID: String): User?
 
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertUsers(vararg users: User)
-
     @Query("SELECT COUNT(*) > 0 FROM user WHERE email = :emails LIMIT 1")
     suspend fun findUserEmail(emails: String): Boolean?
 
@@ -35,4 +31,8 @@ interface UserDao {
 
     @Query("SELECT * FROM user WHERE email = :email LIMIT 1")
     suspend fun getUserByEmail(email: String): User?
+
+    @Query("UPDATE user SET gender = :gender WHERE id = :id")
+    suspend fun updateUserGender(id: String, gender: String)
+
 }

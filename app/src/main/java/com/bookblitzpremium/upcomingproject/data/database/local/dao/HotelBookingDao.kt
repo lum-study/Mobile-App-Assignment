@@ -5,6 +5,8 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import kotlinx.coroutines.flow.Flow
 
@@ -25,8 +27,7 @@ interface HotelBookingDao {
     @Update
     suspend fun updateHotelBooking(booking: HotelBooking)
 
-//    @Insert(onConflict = OnConflictStrategy.REPLACE)
-//    suspend fun insertHotelBookings(hotelBookings: List<HotelBooking>): List<Long>
-
+    @Upsert()
+    suspend fun upsertHotelBooking(booking: HotelBooking)
 
 }

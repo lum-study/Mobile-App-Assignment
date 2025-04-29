@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class LocalRatingRepository @Inject constructor(private val ratingDao: RatingDao) {
-
     fun getRatingsPagingFlowByHotel(hotelId: String): Flow<PagingData<Rating>> {
         return Pager(
             config = PagingConfig(pageSize = 20, enablePlaceholders = false),
@@ -17,12 +16,11 @@ class LocalRatingRepository @Inject constructor(private val ratingDao: RatingDao
         ).flow
     }
 
-    suspend fun addOrUpdateRating(rating: Rating) {
-        ratingDao.upsertRating(rating)
-    }
+    suspend fun addOrUpdateRating(rating: Rating) = ratingDao.upsertRating(rating)
+    suspend fun deleteRating(rating: Rating) = ratingDao.deleteRating(rating)
 
-    suspend fun deleteRating(rating: Rating) {
-        ratingDao.deleteRating(rating)
+    suspend fun getRatingByHotelId(hotelId: String): List<Rating> {
+        return ratingDao.getRatingByHotelId(hotelId)
     }
 
     fun getAllRatingsFlow(): Flow<List<Rating>> = ratingDao.getAllRatingsFlow()
