@@ -122,7 +122,7 @@ fun PreviewPaymentMethod( ) {
                         .fillMaxHeight()
                         .padding(bottom = 30.dp)
                 ){
-                    PaymentDetails()
+//                    PaymentDetails()
                 }
             }
 
@@ -134,7 +134,7 @@ fun PreviewPaymentMethod( ) {
                         .fillMaxHeight()
                         .padding(bottom = 30.dp)
                 ){
-                    PaymentDetails()
+//                    PaymentDetails()
                 }
             }
 
@@ -145,7 +145,7 @@ fun PreviewPaymentMethod( ) {
                         .fillMaxHeight()
                         .padding(bottom = 30.dp)
                 ){
-                    PaymentDetails()
+//                    PaymentDetails()
                 }
             }
         }

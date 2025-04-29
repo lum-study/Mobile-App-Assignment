@@ -3,7 +3,6 @@ package com.bookblitzpremium.upcomingproject.ui.navigation
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.bookblitzpremium.upcomingproject.ui.screen.hotel.PaymentDetails
 
 enum class Payment(val route: String) {
     Card(route = "Debit Card"),
@@ -15,7 +14,7 @@ enum class Payment(val route: String) {
 
 fun NavGraphBuilder.paymentNavGraph(navController: NavController) {
     composable(Payment.PaymentMethod.route) {
-        PaymentDetails()
+//        PaymentDetails()
     }
 
 //    composable(Payment.Receipt.route) {

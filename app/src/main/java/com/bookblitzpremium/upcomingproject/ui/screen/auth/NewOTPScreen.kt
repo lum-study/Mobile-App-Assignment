@@ -75,7 +75,6 @@ import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.model.OtpAction
 import com.bookblitzpremium.upcomingproject.data.model.OtpState
-import com.bookblitzpremium.upcomingproject.data.model.VerifyEmail
 
 @Composable
 fun PermissionRequestScreen() {
@@ -387,7 +386,7 @@ fun OtpScreen2(
                         ).show()
                     } else if (state.isValid == true) {
                         Toast.makeText(context, "Valid code", Toast.LENGTH_SHORT).show()
-                        viewModel.sendPasswordResetEmail(email = email)
+//                        viewModel.sendPasswordResetEmail(email = email)
                         navController.navigate(AppScreen.Home.route) {
                             popUpTo(0) {
                                 inclusive = true

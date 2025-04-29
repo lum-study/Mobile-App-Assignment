@@ -106,24 +106,4 @@ class LocalHotelViewModel @Inject constructor(private val hotelRepository: Local
         }
     }
 
-//    private val _hotels = MutableStateFlow<Map<String, Hotel>>(emptyMap())
-//    val hotels: StateFlow<Map<String, Hotel>> = _hotels.asStateFlow()
-//
-//    fun getHotelByID2(id: String) {
-//        if (_hotels.value.containsKey(id)) return // Avoid redundant fetches
-//        viewModelScope.launch {
-//            _loading.value = true
-//            _error.value = null
-//            try {
-//                val hotel = hotelRepository.getHotelByID(id)
-//                _hotels.value = _hotels.value.toMutableMap().apply { put(id, hotel) }
-//            } catch (e: Exception) {
-//                _error.value = "Error fetching hotel: ${e.localizedMessage}"
-//            } finally {
-//                _loading.value = false
-//            }
-//        }
-//    }
-
-
 }

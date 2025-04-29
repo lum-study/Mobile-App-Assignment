@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
 import androidx.navigation.navigation
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.booking.BookingAmount
@@ -23,115 +24,115 @@ enum class HotelScreen(val route: String) {
 
 fun NavGraphBuilder.hotelNavGraph(navController: NavController) {
 
-    composable(HotelScreen.Hotel_Details.route) {
-        DynamicHotelDetails( onNextButtonClicked = { }, navController)
-    }
+//        composable(AppScreen.Hotel_Details.route) {
+//            DynamicHotelDetails( onNextButtonClicked = { }, navController)
+//        }
 
-    composable(
-        "${AppScreen.Hotel.route}/{hotelID}/{tripPackageID}",
-    ){ backStackEntry ->
-        val hotelID = backStackEntry.arguments?.getString("hotelID") ?: ""
-        val tripPackageID = backStackEntry.arguments?.getString("tripPackageID") ?: ""
+        composable(
+            "${AppScreen.Hotel.route}/{hotelID}/{tripPackageID}",
+        ){ backStackEntry ->
+            val hotelID = backStackEntry.arguments?.getString("hotelID") ?: ""
+            val tripPackageID = backStackEntry.arguments?.getString("tripPackageID") ?: ""
 
-        HotelDetailScreen(
-            navController = navController,
-            hotelBookingId = hotelID,
-            tripPackageID = tripPackageID
-        )
-    }
-
-
-    composable(
-        AppScreen.EditScreen.route
-    ) {
-        HotelBookingListScreen(navController,userId = "123")
-    }
-
-    composable(
-        "${AppScreen.BookingHistory.route}/{encodedBooking}",
-    ) { backStackEntry ->
-        val encodedBooking = backStackEntry.arguments?.getString("encodedBooking") ?: ""
-        val booking = try {
-            URLDecoder.decode(encodedBooking, "UTF-8")
-        } catch (e: Exception) {
-            encodedBooking
+            HotelDetailScreen(
+                navController = navController,
+                hotelBookingId = hotelID,
+                tripPackageID = tripPackageID
+            )
         }
-        ModifyHotelBooking(
-            navController = navController,
-            modifier = Modifier,
-            booking = booking
-        )
-    }
 
-    composable(
-        "${AppScreen.BookingDate.route}/{hotelID}/{hotelPrice}",
-    ) { backStackEntry ->
-        val hotelID = backStackEntry.arguments?.getString("hotelID") ?: ""
-        val hotelPrice = backStackEntry.arguments?.getString("hotelPrice") ?: ""
+        composable(
+            AppScreen.EditScreen.route
+        ) {
+            HotelBookingListScreen(navController,userId = "123")
+        }
 
-        BookingDatePage(
-            modifier = Modifier,
-            navController = navController,
-            hotelID = hotelID,
-            hotelPrice = hotelPrice,
-        )
-    }
+        composable(
+            "${AppScreen.BookingHistory.route}/{encodedBooking}",
+        ) { backStackEntry ->
+            val encodedBooking = backStackEntry.arguments?.getString("encodedBooking") ?: ""
+            val booking = try {
+                URLDecoder.decode(encodedBooking, "UTF-8")
+            } catch (e: Exception) {
+                encodedBooking
+            }
+            ModifyHotelBooking(
+                navController = navController,
+                modifier = Modifier,
+                booking = booking
+            )
+        }
 
-    composable(
-        "${AppScreen.BookingPeople.route}/{hotelID}/{hotelPrice}/{startDate}/{endDate}",
-    ) { backStackEntry ->
+        composable(
+            "${AppScreen.BookingDate.route}/{hotelID}/{hotelPrice}",
+        ) { backStackEntry ->
+            val hotelID = backStackEntry.arguments?.getString("hotelID") ?: ""
+            val hotelPrice = backStackEntry.arguments?.getString("hotelPrice") ?: ""
 
-        val hotelID = backStackEntry.arguments?.getString("hotelID") ?: ""
-        val hotelPrice = backStackEntry.arguments?.getString("hotelPrice") ?: ""
-        val startDate = backStackEntry.arguments?.getString("startDate") ?: ""
-        val endDate = backStackEntry.arguments?.getString("endDate") ?: ""
+            BookingDatePage(
+                modifier = Modifier,
+                navController = navController,
+                hotelID = hotelID,
+                hotelPrice = hotelPrice,
+            )
+        }
 
-        BookingAmount(
-            modifier = Modifier,
-            navController = navController,
-            hotelID = hotelID,
-            hotelPrice = hotelPrice,
-            startDate = startDate,
-            endDate = endDate
-        )
+        composable(
+            "${AppScreen.BookingPeople.route}/{hotelID}/{hotelPrice}/{startDate}/{endDate}",
+        ) { backStackEntry ->
 
-        //add the maps image
-    }
+            val hotelID = backStackEntry.arguments?.getString("hotelID") ?: ""
+            val hotelPrice = backStackEntry.arguments?.getString("hotelPrice") ?: ""
+            val startDate = backStackEntry.arguments?.getString("startDate") ?: ""
+            val endDate = backStackEntry.arguments?.getString("endDate") ?: ""
 
+            BookingAmount(
+                modifier = Modifier,
+                navController = navController,
+                hotelID = hotelID,
+                hotelPrice = hotelPrice,
+                startDate = startDate,
+                endDate = endDate
+            )
 
-    composable(
-        "${AppScreen.BookingReview.route}/{hotelID}/{startDate}/{endDate}/{totalPerson}/{roomBooked}/{totalPrice}/{paymentMethod}/{cardNumber}/{encodedPaymentID}"
+            //add the maps image
+        }
 
-    ) { backStackEntry ->
-        val hotelID = URLDecoder.decode(backStackEntry.arguments?.getString("hotelID") ?: "", "UTF-8")
-        val totalPrice = URLDecoder.decode(backStackEntry.arguments?.getString("totalPrice") ?: "", "UTF-8")
-        val startDate = URLDecoder.decode(backStackEntry.arguments?.getString("startDate") ?: "", "UTF-8")
-        val endDate = URLDecoder.decode(backStackEntry.arguments?.getString("endDate") ?: "", "UTF-8")
-        val totalPerson = URLDecoder.decode(backStackEntry.arguments?.getString("totalPerson") ?: "", "UTF-8")
-        val roomBooked = URLDecoder.decode(backStackEntry.arguments?.getString("roomBooked") ?: "", "UTF-8")
-        val paymentMethod = URLDecoder.decode(backStackEntry.arguments?.getString("paymentMethod") ?: "", "UTF-8")
-        val paymentId = URLDecoder.decode(backStackEntry.arguments?.getString("encodedPaymentID") ?: "", "UTF-8")
-        val cardNumber = URLDecoder.decode(backStackEntry.arguments?.getString("cardNumber") ?: "", "UTF-8")
-        println("AppScreen.BookingReview.route}/{$hotelID}/{$startDate}/{$endDate}/{$totalPerson}/{$roomBooked}/{$totalPrice}/{$paymentMethod}/{$cardNumber}/{$paymentId}")
-
-
-        ReviewFinalPackageSelected(
-            modifier = Modifier,
-            navController = navController,
-            hotelID = hotelID,
-            totalPrice = totalPrice,
-            startDate = startDate,
-            endDate = endDate,
-            totalPerson = totalPerson,
-            roomBooked = roomBooked,
-            paymentID = paymentId,
-            paymentMethod = paymentMethod ?: "",
-            cardNumber = cardNumber ?: "",
-        )
-    }
+        composable(
+            AppScreen.PaymentHotels.route
+        ){
 
 
+        }
 
-
+//        composable(
+//            "${AppScreen.BookingReview.route}/{hotelID}/{startDate}/{endDate}/{totalPerson}/{roomBooked}/{totalPrice}/{paymentMethod}/{cardNumber}/{encodedPaymentID}"
+//
+//        ) { backStackEntry ->
+//            val hotelID = URLDecoder.decode(backStackEntry.arguments?.getString("hotelID") ?: "", "UTF-8")
+//            val totalPrice = URLDecoder.decode(backStackEntry.arguments?.getString("totalPrice") ?: "", "UTF-8")
+//            val startDate = URLDecoder.decode(backStackEntry.arguments?.getString("startDate") ?: "", "UTF-8")
+//            val endDate = URLDecoder.decode(backStackEntry.arguments?.getString("endDate") ?: "", "UTF-8")
+//            val totalPerson = URLDecoder.decode(backStackEntry.arguments?.getString("totalPerson") ?: "", "UTF-8")
+//            val roomBooked = URLDecoder.decode(backStackEntry.arguments?.getString("roomBooked") ?: "", "UTF-8")
+//            val paymentMethod = URLDecoder.decode(backStackEntry.arguments?.getString("paymentMethod") ?: "", "UTF-8")
+//            val paymentId = URLDecoder.decode(backStackEntry.arguments?.getString("encodedPaymentID") ?: "", "UTF-8")
+//            val cardNumber = URLDecoder.decode(backStackEntry.arguments?.getString("cardNumber") ?: "", "UTF-8")
+//            println("AppScreen.BookingReview.route}/{$hotelID}/{$startDate}/{$endDate}/{$totalPerson}/{$roomBooked}/{$totalPrice}/{$paymentMethod}/{$cardNumber}/{$paymentId}")
+//
+//            ReviewFinalPackageSelected(
+//                modifier = Modifier,
+//                navController = navController,
+//                hotelID = hotelID,
+//                totalPrice = totalPrice,
+//                startDate = startDate,
+//                endDate = endDate,
+//                totalPerson = totalPerson,
+//                roomBooked = roomBooked,
+//                paymentID = paymentId,
+//                paymentMethod = paymentMethod ?: "",
+//                cardNumber = cardNumber ?: "",
+//            )
+//        }
 
 }

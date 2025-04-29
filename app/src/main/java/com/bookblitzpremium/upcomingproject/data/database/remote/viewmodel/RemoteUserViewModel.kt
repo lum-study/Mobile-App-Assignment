@@ -2,18 +2,30 @@ package com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.util.Log
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
+import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalUserRepository
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteUserRepository
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
+
+//remote
+//local
+
 @HiltViewModel
-class RemoteUserViewModel @Inject constructor(private val remoteUserRepository: RemoteUserRepository) :
-    ViewModel() {
+class RemoteUserViewModel @Inject constructor(
+    private val remoteUserRepository: RemoteUserRepository,
+    private val localUserRepo : LocalUserRepository
+) : ViewModel() {
+
     private val _users = MutableStateFlow<User?>(null)
     val users: StateFlow<User?> = _users.asStateFlow()
 
@@ -52,37 +64,33 @@ class RemoteUserViewModel @Inject constructor(private val remoteUserRepository: 
         }
     }
 
-    fun addUser(user: User): String {
-        var id: String = ""
-        viewModelScope.launch {
-            _loading.value = true
-            _error.value = null
-
-            try {
-                id = remoteUserRepository.addUser(user)
-            } catch (e: Exception) {
-                _error.value = "Failed to add user: ${e.localizedMessage}"
-            } finally {
-                _loading.value = false
-            }
-        }
-        return id
-    }
-
-    fun updateUser(user: User) {
-        viewModelScope.launch {
-            _loading.value = true
-            _error.value = null
-
-            try {
-                remoteUserRepository.updateUser(user)
-            } catch (e: Exception) {
-                _error.value = "Failed to update user: ${e.localizedMessage}"
-            } finally {
-                _loading.value = false
-            }
+    suspend fun checkEmails(email: String): String {
+        _loading.value = true
+        _error.value = null
+        return try {
+            remoteUserRepository.checkEmails(email)
+        } catch (e: Exception) {
+            _error.value = e.localizedMessage ?: "Failed to check email"
+            throw e
+        } finally {
+            _loading.value = false
         }
     }
+
+
+    suspend fun addUser(id: String, user: User) {
+        _loading.value = true
+        _error.value = null
+        try {
+            val newId = remoteUserRepository.validateEmail(id, user)
+            localUserRepo.addOrUpdateUser(user.copy(id = newId))
+        } catch (e: Exception) {
+            _error.value = "Failed to add user: ${e.message}"
+        } finally {
+            _loading.value = false
+        }
+    }
+
 
     fun deleteUser(id: String) {
         viewModelScope.launch {
@@ -97,6 +105,35 @@ class RemoteUserViewModel @Inject constructor(private val remoteUserRepository: 
                 _loading.value = false
             }
         }
+    }
+
+    private val _selectedGender = MutableStateFlow<String?>(null)
+    val selectedGender: StateFlow<String?> = _selectedGender.asStateFlow()
+
+    fun selectGender(gender: String) {
+        _selectedGender.value = gender
+        _error.value = null // Clear any previous error
+    }
+
+    suspend fun updateUserGender(userId: String, gender: String) {
+        require(userId.isNotEmpty()) { "User ID cannot be empty" }
+        require(gender in listOf("Male", "Female")) { "Gender must be Male or Female" }
+        _loading.value = true
+        _error.value = null
+        try {
+            val updatedUser = remoteUserRepository.updateUserGender(userId, gender)
+                ?: throw IllegalStateException("User not found")
+            localUserRepo.addOrUpdateUser(updatedUser)
+        } catch (e: Exception) {
+            _error.value = "Failed to update gender: ${e.localizedMessage}"
+            throw e
+        } finally {
+            _loading.value = false
+        }
+    }
+
+    fun setError(message: String?) {
+        _error.value = message
     }
 
 }

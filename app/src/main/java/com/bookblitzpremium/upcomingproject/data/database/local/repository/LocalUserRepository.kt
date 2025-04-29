@@ -10,8 +10,6 @@ class LocalUserRepository @Inject constructor(private val userDao: UserDao) {
     suspend fun deleteUser(user: User) = userDao.deleteUser(user)
     suspend fun addOrUpdateUser(user: User) = userDao.upsertUser(user)
 
-    suspend fun insertUsers(user: User) = userDao.insertUsers(user)
-
     suspend fun findUserEmail(emails: String): Boolean? = userDao.findUserEmail(emails)
 
     fun selectAllUser(): Flow<List<User>> = userDao.selectAllUser()
@@ -27,4 +25,6 @@ class LocalUserRepository @Inject constructor(private val userDao: UserDao) {
             else -> Result.success(user.id)
         }
     }
+
+    suspend fun updateUserGender(id:String, gender:String) = userDao.updateUserGender(id,gender)
 }

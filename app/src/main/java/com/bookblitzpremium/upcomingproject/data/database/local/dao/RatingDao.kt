@@ -18,4 +18,7 @@ interface RatingDao {
     @Query("SELECT * FROM rating WHERE hotelId = :hotelId")
     fun getRatingsByHotelID(hotelId: String): PagingSource<Int, Rating>
 
+    @Query("SELECT * FROM rating WHERE hotelId = :hotelId")
+    suspend fun getRatingByHotelId(hotelId: String): List<Rating>
+
 }

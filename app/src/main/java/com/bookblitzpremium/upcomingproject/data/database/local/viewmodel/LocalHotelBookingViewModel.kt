@@ -3,6 +3,7 @@ package com.bookblitzpremium.upcomingproject.data.database.local.viewmodel
 import android.database.sqlite.SQLiteException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.Flight
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalHotelBookingRepo
 import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteHotelBookingRepository
@@ -43,6 +44,24 @@ class LocalHotelBookingViewModel @Inject constructor(
         }
     }
 
+    fun addOrUpdateHotelBooking(hotelBooking: HotelBooking) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+
+            try {
+                repo.upsertHotelBooking(hotelBooking)
+            } catch (e: SQLiteException) {
+                _error.value = "Database error: ${e.localizedMessage}"
+            } catch (e: Exception) {
+                _error.value = "Error updating hotel booking: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+
     fun fetchHotelBookingsByUserId(userId: String) {
         viewModelScope.launch {
             _loading.value = true
@@ -53,7 +72,7 @@ class LocalHotelBookingViewModel @Inject constructor(
             } catch (e: SQLiteException) {
                 _error.value = "Database error: ${e.localizedMessage}"
             } catch (e: Exception) {
-                _error.value = "Error fetching hotel: ${e.localizedMessage}"
+                _error.value = "Error fetching hotel booking: ${e.localizedMessage}"
             } finally {
                 _loading.value = false
             }
@@ -71,7 +90,7 @@ class LocalHotelBookingViewModel @Inject constructor(
             } catch (e: SQLiteException) {
                 _error.value = "Database error: ${e.localizedMessage}"
             } catch (e: Exception) {
-                _error.value = "Error fetching hotel: ${e.localizedMessage}"
+                _error.value = "Error fetching hotel booking: ${e.localizedMessage}"
             } finally {
                 _loading.value = false
             }
@@ -106,7 +125,7 @@ class LocalHotelBookingViewModel @Inject constructor(
             } catch (e: SQLiteException) {
                 _error.value = "Database error: ${e.localizedMessage}"
             } catch (e: Exception) {
-                _error.value = "Error fetching hotel: ${e.localizedMessage}"
+                _error.value = "Error fetching hotel booking: ${e.localizedMessage}"
             } finally {
                 _loading.value = false
             }

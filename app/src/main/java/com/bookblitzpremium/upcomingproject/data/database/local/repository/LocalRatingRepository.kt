@@ -18,4 +18,9 @@ class LocalRatingRepository @Inject constructor(private val ratingDao: RatingDao
 
     suspend fun addOrUpdateRating(rating: Rating) = ratingDao.upsertRating(rating)
     suspend fun deleteRating(rating: Rating) = ratingDao.deleteRating(rating)
+
+    suspend fun getRatingByHotelId(hotelId: String): List<Rating> {
+        return ratingDao.getRatingByHotelId(hotelId)
+    }
+
 }

@@ -34,7 +34,6 @@ import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.ui.components.VideoPlayer
 import com.bookblitzpremium.upcomingproject.ui.components.TextEmailSent
 import com.bookblitzpremium.upcomingproject.ui.components.TextHeader
-import com.bookblitzpremium.upcomingproject.ui.components.videoUri
 
 
 //@Preview(showBackground = true, widthDp = 500, heightDp = 1000)

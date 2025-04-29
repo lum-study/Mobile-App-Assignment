@@ -12,6 +12,7 @@ import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.ui.screen.auth.DynamicForgetPasswordPage
 import com.bookblitzpremium.upcomingproject.ui.screen.auth.DynamicOTPPage
+import com.bookblitzpremium.upcomingproject.ui.screen.auth.GenderMobileVersion
 import com.bookblitzpremium.upcomingproject.ui.screen.auth.LoginPage
 import com.bookblitzpremium.upcomingproject.ui.screen.auth.RegristerPage
 
@@ -56,6 +57,18 @@ fun NavGraphBuilder.authNavGraph(navController: NavHostController, viewModel: Au
 
         composable(AppScreen.Register.route) {
             RegristerPage(navController, viewModel = viewModel)
+        }
+
+        composable(
+            route = "${AppScreen.GenderScreen.route}/{userID}",
+            arguments = listOf(navArgument("userID") {
+                type = NavType.StringType
+            })
+        ) { backStackEntry ->
+            val userID = backStackEntry.arguments?.getString("userID") ?: ""
+            GenderMobileVersion(navController, userId = userID, onClick = {
+                navController.navigate(AppScreen.Home.route)
+            })
         }
 
         composable(

@@ -41,10 +41,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.data.model.Calendar
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import java.net.URLEncoder
 import java.time.LocalDate
@@ -52,11 +55,18 @@ import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
 
-//@Preview(showBackground = true , widthDp = 500 , heightDp = 1000)
-//@Composable
-//fun PreviewDate(){
-//    BookingDatePage(modifier = Modifier)
-//}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewDate(){
+    val navController = rememberNavController()
+    BookingDatePage(
+        modifier = Modifier,
+        navController = navController,
+        hotelID = "",
+        hotelPrice = ""
+    )
+}
 
 @Composable
 fun BookingDatePage(
@@ -65,10 +75,14 @@ fun BookingDatePage(
     hotelID : String,
     hotelPrice : String,
 ) {
-
     var selectedStartDate by remember { mutableStateOf<LocalDate?>(null) }
     var selectedEndDate by remember { mutableStateOf<LocalDate?>(null) }
-    val isValidResult = false
+
+    val calendarParameter = Calendar(
+        hotelID = hotelID,
+        hotelPrice = hotelPrice,
+        showNext = true
+    )
 
     CalendarView(
         navController = navController,
@@ -78,8 +92,7 @@ fun BookingDatePage(
             selectedStartDate = start
             selectedEndDate = end
         },
-        hotelID = hotelID,
-        hotelPrice = hotelPrice
+        optionalParameter = calendarParameter
     )
 }
 
@@ -209,9 +222,12 @@ fun CalendarView(
     startDate: LocalDate?,
     endDate: LocalDate?,
     onDateRangeSelected: (LocalDate?, LocalDate?) -> Unit,
-    hotelID: String,
-    hotelPrice: String
+    optionalParameter: Calendar,
 ) {
+    val hotelID = optionalParameter.hotelID
+    val hotelPrice = optionalParameter.hotelPrice
+    var showNext = optionalParameter.showNext
+
     var currentMonth by rememberSaveable { mutableStateOf(YearMonth.now()) }
     var tempStartDate by rememberSaveable { mutableStateOf<LocalDate?>(startDate) }
     var tempEndDate by rememberSaveable { mutableStateOf<LocalDate?>(endDate) }
@@ -220,6 +236,7 @@ fun CalendarView(
     val daysInMonth = currentMonth.lengthOfMonth()
     val firstDayOfMonth = LocalDate.of(currentMonth.year, currentMonth.month, 1)
     val firstDayOfWeek = firstDayOfMonth.dayOfWeek.value % 7
+
 
     // Define availability map
     val availability = (1..daysInMonth).associateWith { "Available" }
@@ -311,8 +328,8 @@ fun CalendarView(
                         Text(
                             text = day.toString(),
                             fontSize = 16.sp,
+                            textAlign = TextAlign.Center,
                             color = if (status == "Available") AppTheme.colorScheme.onSurface else AppTheme.colorScheme.onSecondary,
-                            textAlign = TextAlign.Center
                         )
                         Box(
                             modifier = Modifier
@@ -359,33 +376,34 @@ fun CalendarView(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Button(
-            onClick = {
-                val hotelID = URLEncoder.encode(hotelID, "UTF-8")
-                val hotelPrice = URLEncoder.encode(hotelPrice, "UTF-8")
-                val startDate = URLEncoder.encode(tempStartDate.toString(), "UTF-8")
-                val endDate = URLEncoder.encode(tempEndDate.toString(), "UTF-8")
-                navController.navigate(
-                    "${AppScreen.BookingPeople.route}/$hotelID/$hotelPrice/$startDate/$endDate"
+        if(showNext){
+            Button(
+                onClick = {
+                    val hotelID = URLEncoder.encode(hotelID, "UTF-8")
+                    val hotelPrice = URLEncoder.encode(hotelPrice, "UTF-8")
+                    val startDate = URLEncoder.encode(tempStartDate.toString(), "UTF-8")
+                    val endDate = URLEncoder.encode(tempEndDate.toString(), "UTF-8")
+                    navController.navigate(
+                        "${AppScreen.BookingPeople.route}/$hotelID/$hotelPrice/$startDate/$endDate"
+                    )
+//                if (tempStartDate == null && tempEndDate == null) {
+//                    navController.navigate(
+//                        "${AppScreen.BookingPeople.route}/$hotelID/$hotelPrice/$startDate/$endDate"
+//                    )
+//                }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = AppTheme.colorScheme.primary, // Use primary for button
+                    contentColor = AppTheme.colorScheme.onPrimary // Text/icon on primary
+                ),
+                contentPadding = PaddingValues(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Next",
+                    color = AppTheme.colorScheme.onPrimary, // Text on primary
+                    modifier = Modifier
                 )
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = AppTheme.colorScheme.primary, // Use primary for button
-                contentColor = AppTheme.colorScheme.onPrimary // Text/icon on primary
-            ),
-            contentPadding = PaddingValues(8.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = "Next",
-                color = AppTheme.colorScheme.onPrimary, // Text on primary
-                modifier = Modifier
-            )
-        }
-
-        LaunchedEffect(key1 = tempStartDate == null && tempEndDate == null) {
-            if (tempStartDate == null && tempEndDate == null) {
-                Log.d("HotelBookingForm", "Both start and end dates are empty")
             }
         }
     }
@@ -408,11 +426,3 @@ fun LegendItem(color: Color, label: String) {
         )
     }
 }
-
-//    CalendarView(
-//        selectedDate = selectedDate,
-//        onDateSelected = { newDate ->
-//            selectedDate = newDate // 🔥 Update selected date
-//        },
-//        navController =
-//    )

@@ -3,6 +3,10 @@ package com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
+import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalHotelBookingRepo
+import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalPaymentRepository
+import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalPaymentRepository_Factory
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteHotelBookingRepository
 import com.google.firebase.database.Exclude
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,7 +19,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RemoteHotelBookingViewModel @Inject constructor(
-    private val remoteHotelBookingRepository: RemoteHotelBookingRepository
+    private val remoteHotelBookingRepository: RemoteHotelBookingRepository,
+    private val localHotelBookingRepository: LocalHotelBookingRepo,
 ) : ViewModel() {
 
     private val _loading = MutableStateFlow(false)
@@ -41,6 +46,26 @@ class RemoteHotelBookingViewModel @Inject constructor(
         } finally {
             _loading.value = false
         }
+    }
+
+    suspend fun addNewIntegratedRecord(hotelBooking: HotelBooking){
+        _loading.value = true
+        _error.value = null
+        try {
+            val firestoreId = remoteHotelBookingRepository.addHotelBooking(hotelBooking)
+            // Step 2: Update the booking with the Firestore ID
+            val updatedBooking = hotelBooking.copy(id = firestoreId)
+            // Step 3: Save to local database with the Firestore ID
+            localHotelBookingRepository.insertHotelBooking(updatedBooking)
+
+        } catch (e: Exception) {
+            _error.value = "Failed to add hotel booking: ${e.localizedMessage}"
+            ""
+        } finally {
+            _loading.value = false
+        }
+
+
     }
 
     private val _hotelBookings = MutableStateFlow<List<HotelBooking>>(emptyList())
@@ -72,18 +97,4 @@ class RemoteHotelBookingViewModel @Inject constructor(
     }
 
 
-//    fun fetchHotelBookingsByUserId(userId: String) {
-//        viewModelScope.launch {
-//            _loading.value = true
-//            _error.value = null
-//            try {
-//                val bookings = remoteHotelBookingRepository.getHotelBookingsByUserId(userId)
-//                _hotel_booking.value = bookings
-//            } catch (e: Exception) {
-//                _error.value = "Failed to fetch hotel bookings: ${e.localizedMessage}"
-//            } finally {
-//                _loading.value = false
-//            }
-//        }
-//    }
 }

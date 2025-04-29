@@ -63,6 +63,7 @@ import com.bookblitzpremium.upcomingproject.ui.screen.payment.PaymentButton
 import com.bookblitzpremium.upcomingproject.ui.screen.payment.PaymentOptionScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.payment.PriceDetailsSection
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.net.URLEncoder
@@ -187,6 +188,13 @@ fun GuestSection(
         val coroutineScope = rememberCoroutineScope()
         val paymentmethodToString = paymentMethod.title.toString()
 
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        var userID = currentUser?.uid.toString()
+
+        Text(
+            text = userID.toString()
+        )
+
         Button(
             onClick = {
                 val totalPerson = selectedAdult
@@ -203,8 +211,9 @@ fun GuestSection(
                     paymentMethod = paymentMethod,
                     cardNumber = cardNumber,
                     currency = "Ringgit Malaysia",
-                    userID = "userID"
+                    userID = userID.toString()
                 )
+
 
                 coroutineScope.launch {
                     try {
