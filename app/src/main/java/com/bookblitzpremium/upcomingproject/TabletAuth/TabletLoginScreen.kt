@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,13 +26,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Female
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Male
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -49,6 +54,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -56,7 +62,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -73,17 +82,21 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
+import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
 import com.bookblitzpremium.upcomingproject.data.model.AuthState
 import com.bookblitzpremium.upcomingproject.data.model.OtpAction
 import com.bookblitzpremium.upcomingproject.data.model.OtpState
@@ -93,33 +106,94 @@ import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextFieldPassword
 import com.bookblitzpremium.upcomingproject.ui.screen.auth.OtpInputField
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 import kotlin.collections.forEachIndexed
 
+
+
+
 @Composable
-fun LoginApp() {
+fun LoginAppVertical() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "step1") {
         composable("step1") { LoginScreen1(navController,true) }
-        composable("step2") { LoginScreen2(navController,true) }
+
+        composable(
+            route = "step1/{email}/{password}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType },
+                navArgument("password") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email").toString()
+            val password = backStackEntry.arguments?.getString("password").toString()
+            LoginScreen1(navController,true, email, password) // pass it to your screen
+        }
+
+        composable(
+            route = "step2/{email}/{password}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType },
+                navArgument("password") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email").toString()
+            val password = backStackEntry.arguments?.getString("password").toString()
+            LoginScreen2(navController,true, email, password) // pass it to your screen
+        }
     }
 }
+
+@Composable
+fun LoginAppHorizontal() {
+    val navController = rememberNavController()
+    NavHost(navController = navController, startDestination = "step1") {
+        composable("step1") { LoginScreen1(navController,false) }
+
+        composable(
+            route = "step1/{email}/{password}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType },
+                navArgument("password") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email").toString()
+            val password = backStackEntry.arguments?.getString("password").toString()
+            LoginScreen1(navController,false, email, password) // pass it to your screen
+        }
+
+        composable(
+            route = "step2/{email}/{password}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType },
+                navArgument("password") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email").toString()
+            val password = backStackEntry.arguments?.getString("password").toString()
+            LoginScreen2(navController,false, email, password) // pass it to your screen
+        }
+    }
+}
+
+fun String.encodeToUri(): String = this.toUri().toString().substringAfterLast("/")
 
 @Composable
 fun LoginScreen1(
     navController: NavController,
     tabletScreen : Boolean,
+    email:String = "",
+    password:String = "",
     viewModel: AuthViewModel = hiltViewModel()
 ) {
+    var email by rememberSaveable { mutableStateOf( email) }
+    var password by rememberSaveable { mutableStateOf( password) }
 
-    var email by rememberSaveable { mutableStateOf("") }
-    var password by rememberSaveable { mutableStateOf("") }
+    var userID = FirebaseAuth.getInstance().currentUser?.uid.toString()
+
     val authState by viewModel.authState.collectAsState()
     val context = LocalContext.current
-    var showDialog by remember { mutableStateOf(false) }
-
-    var localViewModel : LocalUserViewModel = hiltViewModel()
-    var checkTrigger by remember { mutableStateOf(0) }
-
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastTrigger by remember { mutableStateOf(0) }
 
@@ -129,10 +203,6 @@ fun LoginScreen1(
                 val message = (authState as AuthState.Error).message
                 toastMessage= message
                 toastTrigger++
-            }
-            is AuthState.Authenticated -> {
-                toastMessage = "Login succesful"
-
             }
             else -> {}
         }
@@ -159,13 +229,7 @@ fun LoginScreen1(
         return true
     }
 
-    var canProceed = remember { mutableStateOf(false) }
-
-    LaunchedEffect(isFormValid()) {
-        if (isFormValid()) {
-            canProceed.value = true
-        }
-    }
+    var showDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -175,9 +239,10 @@ fun LoginScreen1(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        val valueVertical: Dp = if (tabletScreen) 60.dp else 300.dp
+        val valueVertical: Dp = if (tabletScreen) 300.dp else 60.dp
 
         Spacer(modifier = Modifier.height(valueVertical))
+
         // Header: Title and Stepper
         Text(
             text = "Sign Up for Free",
@@ -200,7 +265,8 @@ fun LoginScreen1(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-
+        val viewModel : AuthViewModel = hiltViewModel()
+        val authState by viewModel.authState.collectAsState()
         // Stepper (1/3) with clickable bubbles
         Row(
             modifier = Modifier
@@ -221,11 +287,14 @@ fun LoginScreen1(
                             shape = RoundedCornerShape(32.dp)
                         )
                         .then(
-                            if (stepNumber <= currentStep || canProceed.value) {
+                            if (stepNumber <= currentStep) {
                                 Modifier.clickable {
-                                    when (stepNumber) {
-                                        1 -> navController.navigate("step1") { popUpTo(navController.graph.startDestinationId) }
-                                        2 -> navController.navigate("step2") { popUpTo(navController.graph.startDestinationId) }
+                                    if(authState is AuthState.Authenticated){
+                                        when (stepNumber) {
+                                            1 -> navController.navigate("step1/${email.encodeToUri()}/${password.encodeToUri()}")
+                                            //2 -> navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}")
+                                            2 -> navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}")
+                                        }
                                     }
                                 }
                             } else {
@@ -284,7 +353,7 @@ fun LoginScreen1(
             placeholder = "Enter your username",
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal =0.dp, vertical = 12.dp)
+                .padding(horizontal = 0.dp, vertical = 12.dp)
         )
 
         CustomTextFieldPassword(
@@ -331,7 +400,6 @@ fun LoginScreen1(
                                 focusRequesters[action.index].freeFocus()
                             }
                         }
-
                         else -> Unit
                     }
                     viewModel.onAction(action)
@@ -341,30 +409,18 @@ fun LoginScreen1(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        if (tabletScreen) {
+
+        if (tabletScreen == false) {
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 // Content for Row layout
                 Button(
                     onClick = {
-                        localViewModel.loginLocalUser(email, password) { uid, error ->
-                            Log.e("User", uid.toString())
-                            if (error != null) {
-                                Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
-                                toastTrigger++
-                            } else if (uid != null) {
-                                val username = email.substringBefore("@")
-                                val user = User(
-                                    id = uid,
-                                    name = username,
-                                    email = email,
-                                    password = password
-                                )
-                                localViewModel.insertNewUser(user)
-                                viewModel.login(email, password)
-                                navController.navigate("step2")
-                            }
+                        if(isFormValid()){
+                            viewModel.login(email,password, onClick = {
+                                navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}")
+                            })
                         }
                     },
                     modifier = Modifier
@@ -388,12 +444,16 @@ fun LoginScreen1(
                 // Next Button
                 Button(
                     onClick = {
-                       navController.navigate("step2")
+                        if(isFormValid()){
+                            viewModel.login(email,password, onClick = {
+                                navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}")
+                            })
+                        }
                     },
                     modifier = Modifier
                         .weight(0.5f)
                         .height(48.dp)
-                        .border( 1.dp, Color.Black, RoundedCornerShape(24.dp)),
+                        .border(1.dp, Color.Black, RoundedCornerShape(24.dp)),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (valueVertical == 20.dp) Color.Black else Color.White
                     ),
@@ -435,25 +495,10 @@ fun LoginScreen1(
                 // Next Button
                 Button(
                     onClick = {
-                        if (isFormValid()) {
-                            localViewModel.loginLocalUser(email, password) { uid, error ->
-                                Log.e("User", uid.toString())
-                                if (error != null) {
-                                    Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
-                                    toastTrigger++
-                                } else if (uid != null) {
-                                    val username = email.substringBefore("@")
-                                    val user = User(
-                                        id = uid,
-                                        name = username,
-                                        email = email,
-                                        password = password
-                                    )
-                                    localViewModel.insertNewUser(user)
-                                    viewModel.login(email, password)
-                                    navController.navigate("step2")
-                                }
-                            }
+                        if(isFormValid()){
+                            viewModel.login(email,password, onClick = {
+                                navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}")
+                            })
                         }
                     },
                     modifier = Modifier
@@ -482,7 +527,14 @@ fun LoginScreen1(
 }
 
 @Composable
-fun LoginScreen2(navController: NavController, tabletScreen: Boolean) {
+fun LoginScreen2(navController: NavController, tabletScreen: Boolean, email : String = "", password: String = "") {
+    val viewModel : AuthViewModel = hiltViewModel()
+    val authState by viewModel.authState.collectAsState()
+
+    LaunchedEffect(authState) {
+        println("AuthState: $authState")
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -490,11 +542,11 @@ fun LoginScreen2(navController: NavController, tabletScreen: Boolean) {
     ) {
         // Background image
         Image(
-            painter = painterResource(id = R.drawable.hiking_new),
+            painter = painterResource(id =  if(tabletScreen) R.drawable.hiking_potrait else R.drawable.hiking_new),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(1200.dp,800.dp)
+                .fillMaxSize()
         )
 
         // Content over the background image
@@ -505,7 +557,7 @@ fun LoginScreen2(navController: NavController, tabletScreen: Boolean) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center // Align elements in the center
         ) {
-            val valueVertical: Dp = if (tabletScreen) 0.dp else 100.dp
+            val valueVertical: Dp = if (tabletScreen) 60.dp else 60.dp
             Spacer(modifier = Modifier.height(valueVertical))
 
             // Header: Title and Stepper
@@ -545,6 +597,7 @@ fun LoginScreen2(navController: NavController, tabletScreen: Boolean) {
 
                     Spacer(modifier = Modifier.height(20.dp))
 
+                    var userID = FirebaseAuth.getInstance().currentUser?.uid.toString()
                     // Stepper (1/3) with clickable bubbles
                     Row(
                         modifier = Modifier
@@ -564,14 +617,21 @@ fun LoginScreen2(navController: NavController, tabletScreen: Boolean) {
                                         color = if (isActive) Color.Black else Color.LightGray,
                                         shape = RoundedCornerShape(32.dp)
                                     )
-                                    .clickable {
-                                        // Navigate to the corresponding step
-                                        when (stepNumber) {
-                                            1 -> navController.navigate("step1") { popUpTo(navController.graph.startDestinationId) }
-                                            2 -> navController.navigate("step2") { popUpTo(navController.graph.startDestinationId) }
-                                            3 -> navController.navigate("step3") { popUpTo(navController.graph.startDestinationId) }
+                                    .then(
+                                        if (stepNumber <= currentStep) {
+                                            Modifier.clickable {
+                                                if(authState is AuthState.Authenticated){
+                                                    when (stepNumber) {
+                                                        1 -> navController.navigate("step1/${email.encodeToUri()}/${password.encodeToUri()}")
+                                                        //2 -> navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}")
+                                                        2 -> navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}")
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            Modifier // no click
                                         }
-                                    },
+                                    ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
@@ -618,8 +678,6 @@ fun LoginScreen2(navController: NavController, tabletScreen: Boolean) {
 }
 
 
-
-
 @Composable
 fun PaymentDialog(
     onDismissRequest: () -> Unit,
@@ -656,17 +714,9 @@ fun PaymentDialog(
                     modifier = Modifier.size(100.dp) // Adjust size as needed
                 )
 
-                Text(
-                    text = "Forget Passwords",
-                    style = AppTheme.typography.largeBold,
-                    textAlign = TextAlign.Center
-                )
-
                 // This Column will recompose when `isRecomposed` state changes
                 if (isRecomposed) {
-
                     val context = LocalContext.current
-
                     // Check if permission is granted (for UI feedback)
                     var permissionGranted by rememberSaveable {
                         mutableStateOf(
@@ -725,8 +775,6 @@ fun PaymentDialog(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
 
-                        Spacer(modifier = Modifier.height(70.dp))
-
                         Text(
                             text = "OTP Verification",
                             style = TextStyle(
@@ -736,16 +784,13 @@ fun PaymentDialog(
                             ),
                             textAlign = TextAlign.Center,
                             modifier = Modifier
-                                .padding(vertical = 30.dp)
                         )
-
-
 
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 24.dp)
+                                .padding(horizontal = 60.dp, vertical = 24.dp)
                         ) {
                             state.code.forEachIndexed { index, number ->
                                 OtpInputField(
@@ -832,17 +877,57 @@ fun PaymentDialog(
                             )
                         }
                     }
+                }else{
+                    Text(
+                        text = "Forget Passwords",
+                        style = AppTheme.typography.largeBold,
+                        textAlign = TextAlign.Center
+                    )
+
+                    CustomTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = "Enter",
+                        placeholder = "Enter your Emails",
+                        shape = RoundedCornerShape(12.dp),
+                        leadingIcon = Icons.Default.Email,
+                        trailingIcon = Icons.Default.Clear,
+                        keyBoardType = KeyboardType.Email,  // ✅ Correctly passing KeyboardType
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 0.dp, vertical = 16.dp)
+                    )
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
-
+                val context = LocalContext.current
+                var scope = rememberCoroutineScope()
+                var remoteUser : RemoteUserViewModel = hiltViewModel()
                 ButtonHeader(
                     textResId = R.string.next_button,
                     valueHorizontal = 16.dp,
                     onClick = {
+                        scope.launch {
+                            try {
+                                val existingId = remoteUser.checkEmails(email)
+                                if (existingId.isNotEmpty()) {
+                                    androidx.media3.common.util.Log.e("Verification", "Email found: Proceeding to OTP")
+//                                    viewModel.sendPasswordResetEmail(email)
+                                    isRecomposed = !isRecomposed
+                                } else {
+                                    androidx.media3.common.util.Log.e("Verification", "Email not found")
+                                    Toast.makeText(context, "Email not registered!", Toast.LENGTH_SHORT).show()
+                                }
+                            } catch (e: Exception) {
+                                androidx.media3.common.util.Log.e("Verification", "Error verifying email: ${e.localizedMessage}")
+                                Toast.makeText(context, "Something went wrong. Please try again.", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+
                         // Trigger recomposition here by updating the state
-                        isRecomposed = !isRecomposed
-                        onNextClick()
+
+
+
                     }
                 )
 
@@ -865,4 +950,5 @@ fun PaymentDialog(
         }
     }
 }
+
 
