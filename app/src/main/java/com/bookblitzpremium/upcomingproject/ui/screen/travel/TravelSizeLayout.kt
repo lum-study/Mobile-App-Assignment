@@ -28,7 +28,7 @@ fun DynamicTravelPage(onNextButtonClicked: () -> Unit, navController: NavControl
 //    }
 
     if(isTabletLandscape){
-        TravelHeaderTable()
+//        TravelHeaderTable()
     }else if (isPhonePortrait){
 
     }else{

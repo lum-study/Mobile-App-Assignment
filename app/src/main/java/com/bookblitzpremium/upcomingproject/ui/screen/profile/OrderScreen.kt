@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -43,20 +44,21 @@ import com.bookblitzpremium.upcomingproject.common.enums.BookingStatus
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalTPBookingViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.Base64Image
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import com.google.firebase.auth.FirebaseAuth
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun OrderScreen(navController: NavHostController) {
+    val isMobile = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT
     val windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
-    val hotelImages = List(10) { R.drawable.beach }
-    val packageImages = List(10) { R.drawable.beach }
     val isTabletPortrait = windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.MEDIUM &&
             windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.EXPANDED
 
+    val userID = FirebaseAuth.getInstance().currentUser?.uid ?: ""
     val localTPBookingViewModel: LocalTPBookingViewModel = hiltViewModel()
     val tripPackageBookingList =
-        remember { localTPBookingViewModel.getTPBookingByUserID("B34BK0zsrBb7zryePAwrvUWAKRn2") }.collectAsLazyPagingItems()
+        remember { localTPBookingViewModel.getTPBookingByUserID(userID) }.collectAsLazyPagingItems()
 
     Column(
         modifier = Modifier
@@ -70,27 +72,42 @@ fun OrderScreen(navController: NavHostController) {
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(tripPackageBookingList.itemCount) { index ->
-                val booking = tripPackageBookingList[index]
-                BookingCard(
-                    amount = booking!!.paymentAmount.toFloat(),
-                    quantity = booking.purchaseCount.toString(),
-                    tripPackageName = booking.tripPackageName,
-                    status = getBookingStatus(booking.tripPackageStartDate, booking.status),
-                    imageUrl = booking.tripPackageImageUrl,
-                    orderDate = booking.purchaseDate,
-                    onColumnClick = {
-                        navController.navigate(
-                            AppScreen.TripPackage.passData(
-                                booking.tripPackageID,
-                                booking.id
+
+        if(tripPackageBookingList.itemCount > 0) {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(tripPackageBookingList.itemCount) { index ->
+                    val booking = tripPackageBookingList[index]
+                    BookingCard(
+                        amount = booking!!.paymentAmount.toFloat(),
+                        quantity = booking.purchaseCount.toString(),
+                        tripPackageName = booking.tripPackageName,
+                        status = getBookingStatus(booking.tripPackageStartDate, booking.status),
+                        imageUrl = booking.tripPackageImageUrl,
+                        orderDate = booking.purchaseDate,
+                        onColumnClick = {
+                            navController.navigate(
+                                AppScreen.TripPackage.passData(
+                                    booking.tripPackageID,
+                                    booking.id
+                                )
                             )
-                        )
-                    },
-                    onRatingClick = { navController.navigate(AppScreen.Ratings.route) }
+                        },
+                        onRatingClick = { navController.navigate(AppScreen.Ratings.route) },
+                        isMobile = isMobile
+                    )
+                }
+            }
+        }
+        else {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                Text(
+                    text = "No record found",
+                    style = AppTheme.typography.largeBold,
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
         }
@@ -228,6 +245,7 @@ fun BookingCard(
     orderDate: String,
     onColumnClick: () -> Unit,
     onRatingClick: () -> Unit,
+    isMobile: Boolean = true,
 ) {
     Column(
         modifier = Modifier
@@ -247,8 +265,8 @@ fun BookingCard(
             Base64Image(
                 imageUrl,
                 modifier = Modifier
-                    .height(120.dp)
-                    .width(120.dp)
+                    .height(if(isMobile)100.dp else 120.dp)
+                    .width(if(isMobile)100.dp else 150.dp)
                     .clip(RoundedCornerShape(12.dp)),
                 contentScale = ContentScale.Crop
             )

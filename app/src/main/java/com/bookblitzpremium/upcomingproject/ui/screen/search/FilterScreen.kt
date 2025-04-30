@@ -5,6 +5,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -64,7 +66,8 @@ fun FilterScreen(
     navController: NavController,
     keyword: String,
     minPrice: String,
-    maxPrice: String
+    maxPrice: String,
+    isMobile: Boolean = true,
 ) {
     val localRecentSearchViewModel: LocalRecentSearchViewModel = hiltViewModel()
 
@@ -140,44 +143,92 @@ fun FilterScreen(
                 }
                 HorizontalDivider()
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(32.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.weight(1f)
+                if (isMobile) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(32.dp)
                     ) {
-                        Text(
-                            text = stringResource(R.string.filter_start_date),
-                            style = AppTheme.typography.mediumSemiBold
-                        )
-                        OutlinedButton(
-                            onClick = { showStartDatePicker = !showStartDatePicker },
+                        Column(
+                            modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = startDate.format(dateFormatter),
-                                style = AppTheme.typography.mediumNormal
+                                text = stringResource(R.string.filter_start_date),
+                                style = AppTheme.typography.mediumSemiBold
                             )
+                            OutlinedButton(
+                                onClick = { showStartDatePicker = !showStartDatePicker },
+                            ) {
+                                Text(
+                                    text = startDate.format(dateFormatter),
+                                    style = AppTheme.typography.mediumNormal
+                                )
+                            }
                         }
-                    }
-                    Column(
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.filter_end_date),
-                            style = AppTheme.typography.mediumSemiBold
-                        )
-                        OutlinedButton(
-                            onClick = { showEndDatePicker = !showEndDatePicker }
+                        Column(
+                            modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = endDate.format(dateFormatter),
-                                style = AppTheme.typography.mediumNormal
+                                text = stringResource(R.string.filter_end_date),
+                                style = AppTheme.typography.mediumSemiBold
                             )
+                            OutlinedButton(
+                                onClick = { showEndDatePicker = !showEndDatePicker }
+                            ) {
+                                Text(
+                                    text = endDate.format(dateFormatter),
+                                    style = AppTheme.typography.mediumNormal
+                                )
+                            }
                         }
                     }
                 }
-
+                else {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(R.string.filter_start_date),
+                                style = AppTheme.typography.mediumSemiBold,
+                                modifier = Modifier.weight(.75f),
+                            )
+                            OutlinedButton(
+                                onClick = { showStartDatePicker = !showStartDatePicker },
+                                modifier = Modifier.weight(1f),
+                                contentPadding = PaddingValues(4.dp)
+                            ) {
+                                Text(
+                                    text = startDate.format(dateFormatter),
+                                    style = AppTheme.typography.mediumNormal
+                                )
+                            }
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(R.string.filter_end_date),
+                                style = AppTheme.typography.mediumSemiBold,
+                                modifier = Modifier.weight(.75f),
+                            )
+                            OutlinedButton(
+                                onClick = { showEndDatePicker = !showEndDatePicker },
+                                modifier = Modifier.weight(1f),
+                                contentPadding = PaddingValues(4.dp)
+                            ) {
+                                Text(
+                                    text = endDate.format(dateFormatter),
+                                    style = AppTheme.typography.mediumNormal
+                                )
+                            }
+                        }
+                    }
+                }
                 if (showStartDatePicker) {
                     CustomDatePickerDialog(
                         onDateChange = {
@@ -221,10 +272,12 @@ fun FilterScreen(
                         )
                         localRecentSearchViewModel.addOrUpdateRecentSearch(recentSearch)
                     }
-                    navController.navigate(AppScreen.Result.route) {
-                        popUpTo(
-                            AppScreen.Search.route
-                        )
+                    if (isMobile) {
+                        navController.navigate(AppScreen.Result.route) {
+                            popUpTo(
+                                AppScreen.Search.route
+                            )
+                        }
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),

@@ -1,15 +1,20 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.booking
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
@@ -18,6 +23,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -28,12 +35,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.common.enums.BookingStatus
+import com.bookblitzpremium.upcomingproject.common.enums.DeviceType
 import com.bookblitzpremium.upcomingproject.common.enums.PaymentMethod
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.TPBooking
@@ -43,7 +52,9 @@ import com.bookblitzpremium.upcomingproject.ui.screen.payment.PaymentButton
 import com.bookblitzpremium.upcomingproject.ui.screen.payment.PaymentOptionScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.payment.PriceDetailsSection
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.delay
 import java.time.LocalDate
 
 @Composable
@@ -54,6 +65,11 @@ fun TripPackageBookingScreen(
     tripPackagePrice: String,
     availableSlots: Int,
 ) {
+    val context = LocalContext.current
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val configuration = LocalConfiguration.current
+    val deviceType = getDeviceType(windowSizeClass, configuration)
+
     val remoteTPBookingViewModel: RemoteTPBookingViewModel = hiltViewModel()
     val currentUser = FirebaseAuth.getInstance().currentUser
     val userID = currentUser?.uid
@@ -71,100 +87,296 @@ fun TripPackageBookingScreen(
     }
     //Loading
     val isLoading by remoteTPBookingViewModel.loading.collectAsState()
+    val hasError by remoteTPBookingViewModel.error.collectAsState()
+
 
     //Handle Alert Dialog
     var showDialog by remember { mutableStateOf(false) }
 
     AppTheme {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Column {
-                Text(
-                    text = "Number of packages",
-                    style = AppTheme.typography.mediumBold,
-                )
-                TripPackageCount(
-                    label = "Adult",
-                    description = "18+ years",
-                    quantity = adultQuantity,
-                    onDecrement = { if (it >= 0) adultQuantity = it },
-                    onIncrement = { adultQuantity = it }
-                )
-                TripPackageCount(
-                    label = "Children",
-                    description = "Under 18 years",
-                    quantity = childQuantity,
-                    onDecrement = { if (it >= 0) childQuantity = it },
-                    onIncrement = { childQuantity = it }
-                )
+        when (deviceType){
+            DeviceType.MobilePortrait -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp, vertical = 16.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Column {
+                        Text(
+                            text = "Number of packages",
+                            style = AppTheme.typography.mediumBold,
+                        )
+                        TripPackageCount(
+                            label = "Adult",
+                            description = "18+ years",
+                            quantity = adultQuantity,
+                            onDecrement = { if (it >= 0) adultQuantity = it },
+                            onIncrement = { adultQuantity = it }
+                        )
+                        TripPackageCount(
+                            label = "Children",
+                            description = "Under 18 years",
+                            quantity = childQuantity,
+                            onDecrement = { if (it >= 0) childQuantity = it },
+                            onIncrement = { childQuantity = it }
+                        )
+                    }
+                    HorizontalDivider()
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "Payment method",
+                            style = AppTheme.typography.mediumBold,
+                        )
+                        PaymentOptionScreen(
+                            selectedPaymentMethod = paymentMethod,
+                            onPaymentMethodChange = {
+                                paymentMethod = it
+                            },
+                            cardNumber = cardNumber,
+                            onCardNumberChange = {
+                                cardNumber = it.filter { it.isDigit() }
+                            },
+                        )
+                    }
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        PriceDetailsSection(totalAmount, tripPackageName, childQuantity + adultQuantity)
+                        PaymentButton(
+                            onclick = {
+                                showDialog = !showDialog
+                                if (userID != null && childQuantity + adultQuantity <= availableSlots) {
+                                    val payment = Payment(
+                                        createDate = LocalDate.now().toString(),
+                                        totalAmount = totalAmount,
+                                        paymentMethod = paymentMethod.title,
+                                        cardNumber = cardNumber,
+                                        currency = "Ringgit Malaysia",
+                                        userID = userID
+                                    )
+                                    val booking = TPBooking(
+                                        purchaseCount = childQuantity + adultQuantity,
+                                        paymentID = "",
+                                        tripPackageID = tripPackageID,
+                                        userID = userID,
+                                        status = BookingStatus.Confirmed.title
+                                    )
+                                    remoteTPBookingViewModel.addPaymentAndBooking(
+                                        payment = payment,
+                                        tpBooking = booking,
+                                        context = context
+                                    )
+                                }
+                            },
+                            enabled = !showDialog && (isValidCardNumber(
+                                cardNumber,
+                                paymentMethod
+                            ) || isValidPhoneNumber(
+                                cardNumber,
+                                paymentMethod
+                            )) && childQuantity + adultQuantity > 0
+                        )
+                    }
+                }
             }
-            HorizontalDivider()
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = "Payment method",
-                    style = AppTheme.typography.mediumBold,
-                )
-                PaymentOptionScreen(
-                    selectedPaymentMethod = paymentMethod,
-                    onPaymentMethodChange = {
-                        paymentMethod = it
-                    },
-                    cardNumber = cardNumber,
-                    onCardNumberChange = {
-                        cardNumber = it.filter { it.isDigit() }
-                    },
-                )
-            }
-            Spacer(Modifier.weight(1f))
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                PriceDetailsSection(totalAmount, tripPackageName, childQuantity + adultQuantity)
-                PaymentButton(
-                    onclick = {
-                        showDialog = !showDialog
-                        if (userID != null && childQuantity + adultQuantity <= availableSlots) {
-                            val payment = Payment(
-                                createDate = LocalDate.now().toString(),
-                                totalAmount = totalAmount,
-                                paymentMethod = paymentMethod.title,
-                                cardNumber = cardNumber,
-                                currency = "Ringgit Malaysia",
-                                userID = userID
+            DeviceType.TabletLandscape -> {
+                Column (
+                    modifier = Modifier
+                        .fillMaxSize().padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ){
+                    Row (
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp)
+                    ){
+                        Column (
+                            modifier = Modifier.weight(1f).padding(vertical = 16.dp, horizontal = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ){
+                            Text(
+                                text = "Number of packages",
+                                style = AppTheme.typography.mediumBold,
                             )
-                            val booking = TPBooking(
-                                purchaseCount = childQuantity + adultQuantity,
-                                paymentID = "",
-                                tripPackageID = tripPackageID,
-                                userID = userID,
-                                status = BookingStatus.Confirmed.title
+                            TripPackageCount(
+                                label = "Adult",
+                                description = "18+ years",
+                                quantity = adultQuantity,
+                                onDecrement = { if (it >= 0) adultQuantity = it },
+                                onIncrement = { adultQuantity = it }
                             )
-                            remoteTPBookingViewModel.addPaymentAndBooking(
-                                payment = payment,
-                                tpBooking = booking
+                            TripPackageCount(
+                                label = "Children",
+                                description = "Under 18 years",
+                                quantity = childQuantity,
+                                onDecrement = { if (it >= 0) childQuantity = it },
+                                onIncrement = { childQuantity = it }
                             )
                         }
-                    },
-                    enabled = !showDialog && (isValidCardNumber(
-                        cardNumber,
-                        paymentMethod
-                    ) || isValidPhoneNumber(
-                        cardNumber,
-                        paymentMethod
-                    )) && childQuantity + adultQuantity > 0
-                )
+                        VerticalDivider()
+                        Column(
+                            modifier = Modifier.weight(1f).padding(vertical = 16.dp, horizontal = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text(
+                                text = "Payment method",
+                                style = AppTheme.typography.mediumBold,
+                            )
+                            PaymentOptionScreen(
+                                selectedPaymentMethod = paymentMethod,
+                                onPaymentMethodChange = {
+                                    paymentMethod = it
+                                },
+                                cardNumber = cardNumber,
+                                onCardNumberChange = {
+                                    cardNumber = it.filter { it.isDigit() }
+                                },
+                            )
+                        }
+                    }
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        PriceDetailsSection(totalAmount = totalAmount, tripPackageName = tripPackageName, totalQuantity = childQuantity + adultQuantity)
+                        PaymentButton(
+                            onclick = {
+                                showDialog = !showDialog
+                                if (userID != null && childQuantity + adultQuantity <= availableSlots) {
+                                    val payment = Payment(
+                                        createDate = LocalDate.now().toString(),
+                                        totalAmount = totalAmount,
+                                        paymentMethod = paymentMethod.title,
+                                        cardNumber = cardNumber,
+                                        currency = "Ringgit Malaysia",
+                                        userID = userID
+                                    )
+                                    val booking = TPBooking(
+                                        purchaseCount = childQuantity + adultQuantity,
+                                        paymentID = "",
+                                        tripPackageID = tripPackageID,
+                                        userID = userID,
+                                        status = BookingStatus.Confirmed.title
+                                    )
+                                    remoteTPBookingViewModel.addPaymentAndBooking(
+                                        payment = payment,
+                                        tpBooking = booking,
+                                        context = context
+                                    )
+                                }
+                            },
+                            enabled = !showDialog && (isValidCardNumber(
+                                cardNumber,
+                                paymentMethod
+                            ) || isValidPhoneNumber(
+                                cardNumber,
+                                paymentMethod
+                            )) && childQuantity + adultQuantity > 0
+                        )
+                    }
+                }
+            }
+            else -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 32.dp, vertical = 16.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Column (
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ){
+                        Text(
+                            text = "Number of packages",
+                            style = AppTheme.typography.mediumBold,
+                        )
+                        TripPackageCount(
+                            label = "Adult",
+                            description = "18+ years",
+                            quantity = adultQuantity,
+                            onDecrement = { if (it >= 0) adultQuantity = it },
+                            onIncrement = { adultQuantity = it }
+                        )
+                        TripPackageCount(
+                            label = "Children",
+                            description = "Under 18 years",
+                            quantity = childQuantity,
+                            onDecrement = { if (it >= 0) childQuantity = it },
+                            onIncrement = { childQuantity = it }
+                        )
+                    }
+                    HorizontalDivider()
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "Payment method",
+                            style = AppTheme.typography.mediumBold,
+                        )
+                        PaymentOptionScreen(
+                            selectedPaymentMethod = paymentMethod,
+                            onPaymentMethodChange = {
+                                paymentMethod = it
+                            },
+                            cardNumber = cardNumber,
+                            onCardNumberChange = {
+                                cardNumber = it.filter { it.isDigit() }
+                            },
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(150.dp))
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        PriceDetailsSection(totalAmount, tripPackageName, childQuantity + adultQuantity)
+                        PaymentButton(
+                            onclick = {
+                                showDialog = !showDialog
+                                if (userID != null && childQuantity + adultQuantity <= availableSlots) {
+                                    val payment = Payment(
+                                        createDate = LocalDate.now().toString(),
+                                        totalAmount = totalAmount,
+                                        paymentMethod = paymentMethod.title,
+                                        cardNumber = cardNumber,
+                                        currency = "Ringgit Malaysia",
+                                        userID = userID
+                                    )
+                                    val booking = TPBooking(
+                                        purchaseCount = childQuantity + adultQuantity,
+                                        paymentID = "",
+                                        tripPackageID = tripPackageID,
+                                        userID = userID,
+                                        status = BookingStatus.Confirmed.title
+                                    )
+                                    remoteTPBookingViewModel.addPaymentAndBooking(
+                                        payment = payment,
+                                        tpBooking = booking,
+                                        context = context
+                                    )
+                                }
+                            },
+                            enabled = !showDialog && (isValidCardNumber(
+                                cardNumber,
+                                paymentMethod
+                            ) || isValidPhoneNumber(
+                                cardNumber,
+                                paymentMethod
+                            )) && childQuantity + adultQuantity > 0
+                        )
+                    }
+                }
             }
         }
 
         if (showDialog) {
+            Log.d("runtime", hasError.toString())
             if (childQuantity + adultQuantity <= availableSlots) {
                 TripPackageBookingDialog(
+                    modifier = Modifier.height(300.dp).width(300.dp),
+                    hasError = hasError ?: "",
                     isLoading = isLoading,
                     onHomeButtonClick = {
                         showDialog = it
@@ -179,6 +391,9 @@ fun TripPackageBookingScreen(
                         navController.navigate(AppScreen.OrderGraph.route) {
                             popUpTo(AppScreen.Home.route)
                         }
+                    },
+                    onDismissButtonClick = {
+                        showDialog = !showDialog
                     }
                 )
             } else {
