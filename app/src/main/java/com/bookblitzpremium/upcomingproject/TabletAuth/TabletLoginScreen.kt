@@ -54,6 +54,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -90,6 +92,8 @@ import com.bookblitzpremium.upcomingproject.ui.screen.auth.OtpInputField
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
+import kotlin.collections.forEachIndexed
+import kotlin.collections.none
 
 
 //horizontal = false
@@ -628,7 +632,8 @@ fun PaymentDialog(
     navController: NavController,
     focusRequesters: List<FocusRequester>,
     onAction: (OtpAction) -> Unit,
-    viewModel: AuthViewModel = hiltViewModel()
+    viewModel: AuthViewModel = hiltViewModel(),
+    userModel: AuthViewModel = hiltViewModel()
 ) {
     Dialog(
         onDismissRequest = {}
@@ -728,29 +733,32 @@ fun PaymentDialog(
                             modifier = Modifier
                         )
 
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 60.dp, vertical = 24.dp)
-                        ) {
-                            state.code.forEachIndexed { index, number ->
-                                OtpInputField(
-                                    number = number,
-                                    focusRequester = focusRequesters[index],
-                                    onFocusChanged = { if (it) onAction(OtpAction.OnChangeFieldFocused(index)) },
-                                    onNumberChanged = { newNumber ->
-                                        onAction(
-                                            OtpAction.OnEnterNumber(
-                                                newNumber,
-                                                index
-                                            )
-                                        )
-                                    },
-                                    onKeyboardBack = { onAction(OtpAction.OnKeyboardBack) },
-                                )
-                            }
-                        }
+                        OTP()
+
+//                        Row(
+//                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .padding(horizontal = 60.dp, vertical = 24.dp)
+//                        ) {
+//                            state.code.forEachIndexed { index, number ->
+//
+////                                OtpInputField(
+////                                    number = number,
+////                                    focusRequester = focusRequesters[index],
+////                                    onFocusChanged = { if (it) onAction(OtpAction.OnChangeFieldFocused(index)) },
+////                                    onNumberChanged = { newNumber ->
+////                                        onAction(
+////                                            OtpAction.OnEnterNumber(
+////                                                newNumber,
+////                                                index
+////                                            )
+////                                        )
+////                                    },
+////                                    onKeyboardBack = { onAction(OtpAction.OnKeyboardBack) },
+////                                )
+//                            }
+//                        }
                         Text(
                             text = "Resend OTP",
                             style = TextStyle(
@@ -790,12 +798,12 @@ fun PaymentDialog(
                                 } else if (state.isValid == true) {
                                     Toast.makeText(context, "Valid code", Toast.LENGTH_SHORT).show()
                                     viewModel.sendPasswordResetEmail(email = email)
-                                    navController.navigate(AppScreen.Home.route) {
-                                        popUpTo(0) {
-                                            inclusive = true
-                                        }
-                                        launchSingleTop = true
-                                    }
+//                                    navController.navigate(AppScreen.Home.route) {
+//                                        popUpTo(0) {
+//                                            inclusive = true
+//                                        }
+//                                        launchSingleTop = true
+//                                    }
 
                                 } else {
                                     Toast.makeText(context, "Invalid code", Toast.LENGTH_SHORT).show()
@@ -854,7 +862,7 @@ fun PaymentDialog(
                                 val existingId = remoteUser.checkEmails(email)
                                 if (existingId.isNotEmpty()) {
                                     androidx.media3.common.util.Log.e("Verification", "Email found: Proceeding to OTP")
-//                                    viewModel.sendPasswordResetEmail(email)
+                                    viewModel.sendPasswordResetEmail(email)
                                     isRecomposed = !isRecomposed
                                 } else {
                                     androidx.media3.common.util.Log.e("Verification", "Email not found")
@@ -889,3 +897,83 @@ fun PaymentDialog(
 }
 
 
+@Composable
+fun OTP(
+    userModel: AuthViewModel = hiltViewModel()
+){
+
+    val state by userModel.state.collectAsStateWithLifecycle()
+    val focusRequesters = remember {
+        List(4) { FocusRequester() }
+    }
+
+    val focusManager = LocalFocusManager.current
+    val keyboardManager = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(state.focusedIndex) {
+        state.focusedIndex?.let { index ->
+            focusRequesters.getOrNull(index)?.requestFocus()
+        }
+    }
+
+    LaunchedEffect(state.code, keyboardManager) {
+        val allNumbersEntered = state.code.none { it == null }
+        if (allNumbersEntered) {
+            focusRequesters.forEach {
+                it.freeFocus()
+            }
+            focusManager.clearFocus()
+            keyboardManager?.hide()
+        }
+    }
+
+
+    OTPScreen(
+        state = state,
+        focusRequesters = focusRequesters,
+        onAction = { action ->
+            when (action) {
+                is OtpAction.OnEnterNumber -> {
+                    if (action.number != null) {
+                        focusRequesters[action.index].freeFocus()
+                    }
+                }
+
+                else -> Unit
+            }
+            userModel.onAction(action)
+        },
+    )
+}
+
+
+@Composable
+fun OTPScreen(
+    state: OtpState,
+    focusRequesters: List<FocusRequester>,
+    onAction: (OtpAction) -> Unit,
+){
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 60.dp, vertical = 24.dp)
+    ) {
+        state.code.forEachIndexed { index, number ->
+            OtpInputField(
+                number = number,
+                focusRequester = focusRequesters[index],
+                onFocusChanged = { if (it) onAction(OtpAction.OnChangeFieldFocused(index)) },
+                onNumberChanged = { newNumber ->
+                    onAction(
+                        OtpAction.OnEnterNumber(
+                            newNumber,
+                            index
+                        )
+                    )
+                },
+                onKeyboardBack = { onAction(OtpAction.OnKeyboardBack) },
+            )
+        }
+    }
+}

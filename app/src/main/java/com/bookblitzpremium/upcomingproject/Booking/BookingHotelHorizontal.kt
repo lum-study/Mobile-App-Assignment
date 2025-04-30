@@ -214,6 +214,12 @@ fun HotelBookingHorizontalScreen(
                             item { HotelDescriptionSection(showBackButton = 1, modifier = Modifier,generateHotelDescription(hotelData.name,hotelData.rating)) }
 
                             item{
+                                FeatureDisplay(
+                                    hotel = hotelData
+                                )
+                            }
+
+                            item{
                                 BookingSummaryTable(
                                     startDate = startDate.toString(),
                                     endDate = endDate.toString(),

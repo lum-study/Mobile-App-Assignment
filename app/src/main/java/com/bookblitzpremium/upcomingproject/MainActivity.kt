@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,9 +31,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Female
 import androidx.compose.material.icons.filled.Male
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -64,6 +67,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -85,6 +89,7 @@ import com.bookblitzpremium.upcomingproject.TabletAuth.RegristerVertical
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.common.enums.BottomNavigation
 import com.bookblitzpremium.upcomingproject.common.enums.Feature
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalRatingViewModel
@@ -116,19 +121,67 @@ class MainActivity : ComponentActivity() {
 //              InitializeDatabase()
 //                App()
 //                LoginAppVertical()
-                RegristerVertical()
+//                RegristerVertical()
+                var cancel by remember { mutableStateOf(false) }
 
-//                OptionScreen(
-//                    onClose ={ finish() },
-//                    modifier = Modifier
-//                )
+
             }
         }
     }
 }
 
 
+@Composable
+fun TripPackageBookingDialog(
+    image: Int,
+    updateText:String,
+    cancel :() -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = {},
+        confirmButton = {},
+        text = {
+            AppTheme {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceAround,
+                    modifier = Modifier.fillMaxSize()
+                ) {
 
+                    Image(
+                        painter = painterResource(id = image ),
+                        contentDescription = null,
+                        modifier = Modifier.size(100.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = updateText,
+                        style = AppTheme.typography.mediumBold
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(onClick = {
+                            cancel()
+                        }) {
+                            Text(
+                                text = "Home",
+                                style = AppTheme.typography.smallSemiBold
+                            )
+                        }
+
+                    }
+                }
+            }
+        },
+        modifier = Modifier
+            .height(250.dp)
+            .width(300.dp)
+    )
+}
 
 @Composable
 fun StarRating(rating: Int, maxRating: Int = 5, modifier: Modifier = Modifier) {

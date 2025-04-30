@@ -290,6 +290,10 @@ fun DragableToTop(
             description = ""
         )
 
+        FeatureDisplay(
+            hotel = hotel
+        )
+
         BookingSummaryTable(
             startDate = startDate,
             endDate = endDate,

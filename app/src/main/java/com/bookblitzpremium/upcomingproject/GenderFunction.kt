@@ -58,22 +58,15 @@ data class genderField(
 fun GenderSelectionScreen(
     remoteUserViewModel: RemoteUserViewModel = hiltViewModel(),
     navController: NavController,
-    gender : genderField,
+    tabletScreen: Boolean,
+    email: String = "",
+    password: String = "",
     onClick: () -> Unit
 ) {
 
     val selectedGender by remoteUserViewModel.selectedGender.collectAsState()
     val loading by remoteUserViewModel.loading.collectAsState()
     val error by remoteUserViewModel.error.collectAsState()
-
-    // Ensure userId is valid
-    if (gender.userId.isEmpty()) {
-        LaunchedEffect(Unit) {
-            remoteUserViewModel.setError("User ID is missing")
-            navController.popBackStack()
-        }
-        return
-    }
 
     Column(
         modifier = Modifier
@@ -114,9 +107,9 @@ fun GenderSelectionScreen(
                             if (stepNumber <= currentStep) {
                                 Modifier.clickable {
                                     when (stepNumber) {
-                                        1 -> navController.navigate("step1/${gender.email.encodeToUri()}/${gender.password.encodeToUri()}")
-                                        2 -> navController.navigate("gender/${userID.encodeToUris()}/${gender.email.encodeToUri()}/${gender.password.encodeToUri()}")
-                                        3 -> navController.navigate("step2/${gender.email.encodeToUri()}/${gender.password.encodeToUri()}")
+                                        1 -> navController.navigate("step1/${email.encodeToUri()}/${password.encodeToUri()}")
+                                        2 -> navController.navigate("gender/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender?.encodeToUri()}")
+                                        3 -> navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender?.encodeToUri()}")
 
                                     }
                                 }
@@ -154,7 +147,7 @@ fun GenderSelectionScreen(
                 gender = "Male",
                 isSelected = selectedGender == "Male",
                 icon = Icons.Default.Male,
-                tableScreen = gender.tabletScreen ,
+                tableScreen = tabletScreen ,
                 onClick = { remoteUserViewModel.selectGender("Male") }
             )
 
@@ -186,7 +179,6 @@ fun GenderSelectionScreen(
             onClick = {
                 conrotine.launch {
                     if (selectedGender != null) {
-                        remoteUserViewModel.updateUserGender(gender.userId, selectedGender!!)
                         onClick()
                     } else {
                         remoteUserViewModel.setError("Please select a gender")
