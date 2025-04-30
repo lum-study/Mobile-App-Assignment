@@ -11,6 +11,7 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object ForgotPassword : AppScreen("ForgotPassword", hasTopBar = false, hasBottomBar = false)
     data object VerifyEmailWaiting : AppScreen("VerifyEmailWaiting", hasTopBar = false, hasBottomBar = false)
     data object ChangePassword : AppScreen("ChangePassword", hasTopBar = false, hasBottomBar = false)
+    data object GenderScreen: AppScreen("GenderScreen", hasTopBar = false, hasBottomBar = false )
 
     // Home Screens
     data object HomeGraph : AppScreen("HomeGraph", hasTopBar = false, hasBottomBar = false)
@@ -39,6 +40,7 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object EditProfile : AppScreen("EditProfile", hasTopBar = true, hasBottomBar = false)
     data object PaymentMethods : AppScreen("PaymentMethods", hasTopBar = true, hasBottomBar = false)
     data object RatingRecords : AppScreen("RatingRecords", hasTopBar = true, hasBottomBar = false)
+    data object PaymentHotels: AppScreen("PaymentHotels", hasTopBar = false, hasBottomBar = false )
 
     // Booking Date and People
     data object BookingDate : AppScreen("BookingDate", hasTopBar = true, hasBottomBar = false)
@@ -69,6 +71,7 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
                 Login.route -> Login
                 Register.route -> Register
                 OTP.route -> OTP
+                GenderScreen.route -> GenderScreen
                 ForgotPassword.route -> ForgotPassword
                 VerifyEmailWaiting.route -> VerifyEmailWaiting
                 ChangePassword.route -> ChangePassword
@@ -91,6 +94,7 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
                 EditProfile.route -> EditProfile
                 PaymentMethods.route -> PaymentMethods
                 RatingRecords.route -> RatingRecords
+                PaymentHotels.route -> PaymentHotels
                 BookingDate.route -> BookingDate
                 BookingPeople.route -> BookingPeople
                 BookingReview.route -> BookingReview

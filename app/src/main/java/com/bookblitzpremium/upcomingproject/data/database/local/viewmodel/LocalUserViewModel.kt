@@ -1,6 +1,7 @@
 package com.bookblitzpremium.upcomingproject.data.database.local.viewmodel
 
 import android.database.sqlite.SQLiteException
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
@@ -33,7 +34,6 @@ class LocalUserViewModel @Inject constructor(
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
-
             val result = kotlin.runCatching {
                 userRepository.addOrUpdateUser(user)
             }
@@ -44,6 +44,26 @@ class LocalUserViewModel @Inject constructor(
                 }
             }
             _loading.value = false
+        }
+    }
+
+    private val _updateGender = MutableStateFlow<String?>(null)
+    val updateGender: StateFlow<String?> = _updateGender.asStateFlow()
+
+    fun updateRoomCount(id: String, gender: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+            try {
+                userRepository.updateUserGender(id, gender)
+                _updateGender.value = updateGender.toString()
+            } catch (e: SQLiteException) {
+                _error.value = "Database error: ${e.localizedMessage}"
+            } catch (e: Exception) {
+                _error.value = "Error deleting user: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 
@@ -64,22 +84,6 @@ class LocalUserViewModel @Inject constructor(
         }
     }
 
-
-    fun insertNewUser(user: User) {
-        viewModelScope.launch {
-            _loading.value = true
-            _error.value = null
-            try {
-                userRepository.insertUsers(user)
-            } catch (e: SQLiteException) {
-                _error.value = "Database error: ${e.localizedMessage}"
-            } catch (e: Exception) {
-                _error.value = "Error fetching hotel: ${e.localizedMessage}"
-            } finally {
-                _loading.value = false
-            }
-        }
-    }
 
     private val _users = MutableStateFlow<List<User>>(emptyList())
     val users: StateFlow<List<User>> = _users.asStateFlow()

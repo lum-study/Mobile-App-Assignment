@@ -75,7 +75,6 @@ import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.model.OtpAction
 import com.bookblitzpremium.upcomingproject.data.model.OtpState
-import com.bookblitzpremium.upcomingproject.data.model.VerifyEmail
 
 @Composable
 fun PermissionRequestScreen() {
@@ -266,55 +265,22 @@ fun OtpScreen2(
     Column(
         modifier = modifier
             .fillMaxSize() // Fill the entire screen height
-            .padding(16.dp)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Row(
+        Image(
+            painter = painterResource(id = R.drawable.icon_logo),
+            contentDescription = null,
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Tesla logo (replace R.drawable.logo with your actual logo resource)
-            Image(
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = null,
-//                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(64.dp)
-            )
-
-            // Language selector
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.PlayArrow, // Use a globe icon
-                    contentDescription = "Language",
-                    tint = Color.Black,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "en-MY",
-                    fontSize = 16.sp,
-                    color = Color.Black
-                )
-            }
-        }
-
-
+                .height(100.dp)
+        )
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp), // Reduced padding to avoid excessive spacing
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-            Spacer(modifier = Modifier.height(70.dp))
-
             Text(
                 text = "OTP Verification",
                 style = TextStyle(
@@ -387,7 +353,7 @@ fun OtpScreen2(
                         ).show()
                     } else if (state.isValid == true) {
                         Toast.makeText(context, "Valid code", Toast.LENGTH_SHORT).show()
-                        viewModel.sendPasswordResetEmail(email = email)
+//                        viewModel.sendPasswordResetEmail(email = email)
                         navController.navigate(AppScreen.Home.route) {
                             popUpTo(0) {
                                 inclusive = true
@@ -419,6 +385,8 @@ fun OtpScreen2(
         }
     }
 }
+
+
 
 @Composable
 fun OtpInputField(

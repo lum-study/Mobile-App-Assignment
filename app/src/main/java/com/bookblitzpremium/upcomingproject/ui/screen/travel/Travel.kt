@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Flight
-import androidx.compose.material.icons.outlined.HomeWork
 import androidx.compose.material.icons.outlined.Task
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -37,7 +36,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -45,13 +43,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.R
-import com.bookblitzpremium.upcomingproject.model.Hotel
 import com.bookblitzpremium.upcomingproject.model.TripPackageTabs
-import com.bookblitzpremium.upcomingproject.ui.screen.home.HotelCard
-import com.bookblitzpremium.upcomingproject.ui.screen.hotel.DynamicHotelDetails
-import com.bookblitzpremium.upcomingproject.ui.screen.hotel.MobieLayout
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.FlightScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.ScheduleScreen
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
@@ -66,7 +59,7 @@ fun TravelHeaderTable() {
     val tabs: List<TripPackageTabs> = listOf(
         TripPackageTabs("Schedule", Icons.Outlined.Task, {ScheduleScreen()}),
         TripPackageTabs("Flight", Icons.Outlined.Flight, { FlightScreen()}),
-        TripPackageTabs("Hotel", Icons.Outlined.HomeWork, {  MobieLayout(2, 500.dp, 500.dp) }),
+//        TripPackageTabs("Hotel", Icons.Outlined.HomeWork, {  MobieLayout(2, 500.dp, 500.dp) }),
     )
 
     Row(

@@ -18,8 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.TurnedInNot
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -27,34 +26,43 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.common.enums.PaymentMethod
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalPaymentViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemotePaymentViewModel
+import com.bookblitzpremium.upcomingproject.ui.components.TripPackageBookingDialog
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
+import com.bookblitzpremium.upcomingproject.ui.screen.payment.PaymentOptionScreen
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -62,7 +70,6 @@ import java.time.LocalDate
 @Composable
 fun PreviewFinalPackage() {
     val navController = rememberNavController()
-
     ReviewFinalPackageSelected(
         navController = navController,
         modifier = Modifier,
@@ -74,9 +81,71 @@ fun PreviewFinalPackage() {
         roomBooked = "1",
         paymentID = "vgdfgfhfh",
         paymentMethod = "DebitCard",
-        cardNumber = "1234567890123456"
+        cardNumber = "1234567890123456",
+        tabletPortrait = "false"
     )
 }
+
+
+@Composable
+fun DialogPaymentMethod(
+    onDismissRequest: () -> Unit,
+    onDateSelected: (String?, String?) -> Unit
+) {
+    Dialog(
+        onDismissRequest = {}
+    ) {
+        Box(
+            modifier = Modifier
+                .height(450.dp)
+                .width(500.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(Color.White)
+        ) {
+
+            var paymentMethod by remember { mutableStateOf(PaymentMethod.DebitCard) }
+            var cardNumber by remember { mutableStateOf("") }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "Payment method",
+                    style = AppTheme.typography.mediumBold,
+                    color = AppTheme.colorScheme.onSurface // Text on surface
+                )
+                PaymentOptionScreen(
+                    selectedPaymentMethod = paymentMethod,
+                    onPaymentMethodChange = {
+                        paymentMethod = it
+                    },
+                    cardNumber = cardNumber,
+                    onCardNumberChange = {
+                        cardNumber = it.filter { it.isDigit() }
+                    },
+                )
+
+                onDateSelected(paymentMethod.toString(), cardNumber)
+            }
+
+            IconButton(
+                onClick = onDismissRequest,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+                    .size(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close dialog",
+                    tint = Color.Black,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+    }
+}
+
 
 @Composable
 fun ReviewFinalPackageSelected(
@@ -90,7 +159,8 @@ fun ReviewFinalPackageSelected(
     roomBooked: String,
     paymentID: String,
     paymentMethod: String,
-    cardNumber: String
+    cardNumber: String,
+    tabletPortrait: String = "false"
 ) {
     Column(
         modifier = modifier
@@ -99,12 +169,22 @@ fun ReviewFinalPackageSelected(
             .background(AppTheme.colorScheme.background), // Use background for column
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+
+        println("nbye" + tabletPortrait)
         val viewModel: LocalHotelViewModel = hiltViewModel()
-        val localBookingViewModel: LocalHotelBookingViewModel = hiltViewModel()
         val remoteBookingViewModel: RemoteHotelBookingViewModel = hiltViewModel()
         val remotePaymentViewModel: RemotePaymentViewModel = hiltViewModel()
         val loading = viewModel.loading.collectAsState()
         val hotel by viewModel.selectedHotel.collectAsState()
+        val localPaymentviewModel: LocalPaymentViewModel = hiltViewModel()
+        var paymentMethods by remember { mutableStateOf<String?>(null) }
+        var cardNumbers by remember { mutableStateOf<String?>(null) }
+
+        //Loading
+        val isLoading by remoteBookingViewModel.loading.collectAsState()
+
+        //Handle Alert Dialog
+        var showDialog by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
             viewModel.getHotelByID(hotelID)
@@ -122,61 +202,69 @@ fun ReviewFinalPackageSelected(
         } else if (hotel != null) {
             val hotelData = hotel!!
 
-            StyledImage(hotelData.imageUrl.toString())
+            val isTablet = tabletPortrait == "true"
+
+            StyledImage(hotelData.imageUrl.toString(), isTablet.toString())
 
             Spacer(modifier = Modifier.height(18.dp))
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(
-                    text = hotelData.name,
-                    style = AppTheme.typography.largeBold,
-                    color = AppTheme.colorScheme.onSurface // Text on surface
-                )
-                Row(
-                    modifier = Modifier,
-                ) {
-                    repeat(3) {
-                        Text(
-                            text = "⭐",
-                            color = AppTheme.colorScheme.secondary, // Use secondary for stars
-                            modifier = Modifier
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier
-                            .padding(start = 24.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(50.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.LocationOn,
-                            contentDescription = "Location",
-                            tint = AppTheme.colorScheme.primary, // Use primary for icon
-                            modifier = Modifier
-                                .size(24.dp)
-                        )
-
-                        Text(
-                            text = "Malaysia Johor",
-                            style = AppTheme.typography.mediumBold,
-                            color = AppTheme.colorScheme.onSurface, // Text on surface
-                            modifier = Modifier
-                                .padding(start = 12.dp)
-                        )
-                    }
-                }
-            }
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(70.dp)
+                    .padding(start = 16.dp),
+            ) {
+                if ((isTablet.toString() == "true")) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                        ){
+                            HotelInfoContent(hotelData, AppTheme.typography.largeBold)
+                        }
+                        var dialogTrue by remember { mutableStateOf(false) }
+
+                        Button(
+                            onClick ={
+                                dialogTrue = true
+                            },
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .weight(1f)
+                        ) {
+                            Text(
+                                text = paymentMethods ?: "Payment Method",
+                                style = AppTheme.typography.mediumBold,
+                                color = AppTheme.colorScheme.onSurface,
+                            )
+                        }
+
+                        if(dialogTrue){
+                            DialogPaymentMethod(
+                                onDismissRequest = {dialogTrue = false} ,
+                                onDateSelected = { paymentMethod, cardNumber ->
+                                    paymentMethods = (paymentMethod ?: 0).toString()
+                                    cardNumbers = (cardNumber ?: 0).toString()
+                                }
+                            )
+                        }
+
+
+                    }
+                } else {
+                    HotelInfoContent(hotelData, AppTheme.typography.largeBold)
+                }
+            }
+
+            val heightSize = if((isTablet.toString() == "true")) 150.dp else 80.dp
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(heightSize)
                     .clip(RoundedCornerShape(12.dp))
                     .background(AppTheme.colorScheme.surface) // Use surface for background
                     .border(1.dp, AppTheme.colorScheme.primary, RoundedCornerShape(12.dp)),
@@ -223,6 +311,13 @@ fun ReviewFinalPackageSelected(
                 }
             }
 
+            MapsButton(
+                onClick = {},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(heightSize)
+            )
+
             Spacer(modifier = Modifier.weight(1f))
 
             DetailsSection(
@@ -234,6 +329,13 @@ fun ReviewFinalPackageSelected(
 
             val coroutineScope = rememberCoroutineScope()
 
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            var userID = currentUser?.uid.toString()
+
+            Text(
+                text = userID.toString()
+            )
+
             Button(
                 onClick = {
                     val booking = HotelBooking(
@@ -242,7 +344,7 @@ fun ReviewFinalPackageSelected(
                         numberOFClient = totalPerson.toIntOrNull() ?: 1,
                         numberOfRoom = roomBooked.toIntOrNull() ?: 1,
                         hotelID = hotelData.id,
-                        userid = "", // Add real user ID if available
+                        userid = userID.toString(), // Add real user ID if available
                         paymentID = paymentID
                     )
 
@@ -253,21 +355,26 @@ fun ReviewFinalPackageSelected(
                         paymentMethod = paymentMethod,
                         cardNumber = cardNumber,
                         currency = "Ringgit Malaysia",
-                        userID = "userID"
+                        userID = userID.toString()
                     )
 
-                    remotePaymentViewModel.updatePayment(localPayment)
+//                    remotePaymentViewModel.updatePayment(localPayment)
+//                    localPaymentviewModel.addOrUpdatePayment(localPayment)
 
+                    remotePaymentViewModel.updatePaymentBoth(localPayment)
                     coroutineScope.launch {
                         try {
+                            remoteBookingViewModel.addNewIntegratedRecord(booking)
+                            showDialog = true
                             // Step 1: Save to Firestore and get the ID
-                            val firestoreId = remoteBookingViewModel.addHotelBooking(booking)
-                            // Step 2: Update the booking with the Firestore ID
-                            val updatedBooking = booking.copy(id = firestoreId)
-                            // Step 3: Save to local database with the Firestore ID
-                            localBookingViewModel.insertHotelBooking(updatedBooking)
-                            // Step 4: Navigate after both operations are complete
-                            navController.navigate(AppScreen.Home.route)
+//                            val firestoreId = remoteBookingViewModel.addHotelBooking(booking)
+//                            // Step 2: Update the booking with the Firestore ID
+//                            val updatedBooking = booking.copy(id = firestoreId)
+//                            // Step 3: Save to local database with the Firestore ID
+//                            localBookingViewModel.insertHotelBooking(updatedBooking)
+//                            // Step 4: Navigate after both operations are complete
+//                            navController.navigate(AppScreen.Home.route)
+
                         } catch (e: Exception) {
                             Log.e("HotelBookingForm", "Failed to save booking: ${e.message}")
                         }
@@ -286,8 +393,76 @@ fun ReviewFinalPackageSelected(
                 )
             }
         }
+
+        if(showDialog){
+            TripPackageBookingDialog(
+                isLoading = isLoading,
+                onHomeButtonClick = {
+                    showDialog = it
+                    navController.navigate(AppScreen.Home.route) {
+                        popUpTo(AppScreen.Home.route) {
+                            inclusive = true
+                        }
+                    }
+                },
+                onViewOrderButtonClick = {
+                    showDialog = it
+                    navController.navigate(AppScreen.OrderGraph.route) {
+                        popUpTo(AppScreen.Home.route)
+                    }
+                }
+            )
+        }
+
+
     }
 }
+
+
+@Composable
+fun HotelInfoContent(
+    hotelData: Hotel,
+    textSize: TextStyle
+){
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+    ){
+        Text(
+            text = hotelData.name,
+            style = textSize,
+            color = AppTheme.colorScheme.onSurface // Text on surface
+        )
+        Row(
+            modifier = Modifier,
+        ) {
+            repeat(3) {
+                Text(
+                    text = "⭐",
+                    color = AppTheme.colorScheme.secondary, // Use secondary for stars
+                    modifier = Modifier
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .padding(start = 24.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(50.dp)
+            ) {
+                Text(
+                    text = "Malaysia Johor",
+                    style = AppTheme.typography.mediumBold,
+                    color = AppTheme.colorScheme.onSurface, // Text on surface
+                    modifier = Modifier
+                        .padding(start = 12.dp)
+                )
+            }
+        }
+    }
+}
+
+
 
 @Composable
 fun LegendItem1(
@@ -371,6 +546,8 @@ fun DetailsSection(
     totalPrice: String,
     totalPerson: String,
     roomBooked: String,
+    startDate:String = "",
+    endDate:String = "",
     modifier: Modifier
 ) {
     Column(
@@ -412,6 +589,42 @@ fun DetailsSection(
             )
         }
 
+        if (startDate.isNotEmpty() && endDate.isNotEmpty()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "startDate",
+                    style = AppTheme.typography.mediumBold,
+                    color = AppTheme.colorScheme.onSurface // Text on surface
+                )
+                Text(
+                    text = startDate.toString(),
+                    style = AppTheme.typography.mediumBold,
+                    color = AppTheme.colorScheme.onSurface // Text on surface
+                )
+            }
+
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "endDate",
+                    style = AppTheme.typography.mediumBold,
+                    color = AppTheme.colorScheme.onSurface // Text on surface
+                )
+                Text(
+                    text = endDate.toString(),
+                    style = AppTheme.typography.mediumBold,
+                    color = AppTheme.colorScheme.onSurface // Text on surface
+                )
+            }
+
+        }
+
         Divider(
             color = AppTheme.colorScheme.primary, // Use primary for divider
             thickness = 1.dp
@@ -439,8 +652,12 @@ fun DetailsSection(
 
 @Composable
 fun StyledImage(
-    hotelImages: String
+    hotelImages: String,
+    tabletPortrait: String
 ) {
+    val isTablet = tabletPortrait == "true"
+    val imageHeight = if (isTablet) 400.dp else 200.dp
+
     Card(
         elevation = CardDefaults.cardElevation(4.dp),
         modifier = Modifier
@@ -454,7 +671,7 @@ fun StyledImage(
             imageUrl = hotelImages,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp),
+                .height(imageHeight),
             contentScale = ContentScale.Crop,
         )
     }

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.R
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
@@ -50,6 +52,7 @@ import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextFieldPassword
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import java.net.URLEncoder
 
 
 @Composable
@@ -130,47 +133,19 @@ fun RegristerPage(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Row(
+        Image(
+            painter = painterResource(id = R.drawable.icon_logo),
+            contentDescription = null,
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Tesla logo (replace R.drawable.logo with your actual logo resource)
-            Image(
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(64.dp)
-            )
-
-            // Language selector
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.PlayArrow, // Use a globe icon
-                    contentDescription = "Language",
-                    tint = Color.Black,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "en-MY",
-                    fontSize = 16.sp,
-                    color = Color.Black
-                )
-            }
-        }
+                .height(100.dp)
+        )
 
         Column(
             modifier = Modifier
-                .fillMaxHeight()
                 .fillMaxWidth()
                 .padding(horizontal = 28.dp)
                 .offset(x = 0.dp),
@@ -178,7 +153,7 @@ fun RegristerPage(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Regrister new Account!",
+                text = "Register new account!",
                 style = AppTheme.typography.largeBold,
                 modifier = Modifier
                     .padding(top = 0.dp, bottom = 30.dp)
@@ -231,7 +206,6 @@ fun RegristerPage(
                 }
             )
 
-
             if(triggerSignup) {
                 CheckStatusLoading(
                     isLoading = signupState is SignupState.Loading,
@@ -240,19 +214,18 @@ fun RegristerPage(
                 )
 
                 LaunchedEffect(Unit) {
-                    val exists = localViewModel.checkUserEmail(email)
-                    if (!exists) {
-                        val uid = viewModel.signup(email, password)
-                        if (uid.isNotEmpty()) {
-                            val username = email.substringBefore("@")
-                            val user = User(id = uid, name = username, email = email, password = password)
-                            remoteUserViewModel.addUser(user)
-                            localViewModel.insertNewUser(user)
-                            viewModel.clearSignUpState()
-                            triggerSignup = false
-                        }
-                    } else {
-                        viewModel.setSignupError("Email is already registered")
+                    val username = email.substringBefore("@")
+                    try {
+                        val customId = viewModel.signup(email,password)
+                        val user = User(id = customId, name = username, email = email, password = password)
+                        remoteUserViewModel.addUser(customId, user)
+                        // Optionally interact with localUserViewModel if needed
+//                        viewModel.setPath()
+                        val userID = URLEncoder.encode(customId, "UTF-8")
+                        navController.navigate(
+                            "${AppScreen.GenderScreen.route}/$userID"
+                        )
+                    } catch (e: Exception) {
                         triggerSignup = false
                     }
                 }
@@ -260,3 +233,22 @@ fun RegristerPage(
         }
     }
 }
+
+//                    remoteUserViewModel.addUser(user)
+//                    localViewModel.insertNewUser(user)
+
+//                    val exists = localViewModel.checkUserEmail(email)
+//                    if (!exists) {
+//                        val uid = viewModel.signup(email, password)
+//                        if (uid.isNotEmpty()) {
+//                            val username = email.substringBefore("@")
+//                            val user = User(id = uid, name = username, email = email, password = password)
+//                            remoteUserViewModel.addUser(user)
+//                            localViewModel.insertNewUser(user)
+//                            viewModel.clearSignUpState()
+//                            triggerSignup = false
+//                        }
+//                    } else {
+//                        viewModel.setSignupError("Email is already registered")
+//                        triggerSignup = false
+//                    }

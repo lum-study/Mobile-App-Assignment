@@ -48,6 +48,7 @@ import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
+import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
 import com.bookblitzpremium.upcomingproject.data.model.AuthState
 import com.bookblitzpremium.upcomingproject.ui.components.ButtonHeader
 import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
@@ -71,10 +72,6 @@ fun LoginPage(
     var password by rememberSaveable { mutableStateOf("") }
     val authState by viewModel.authState.collectAsState()
     val context = LocalContext.current
-
-    var localViewModel : LocalUserViewModel = hiltViewModel()
-    var checkTrigger by remember { mutableStateOf(0) }
-
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastTrigger by remember { mutableStateOf(0) }
 
@@ -86,8 +83,7 @@ fun LoginPage(
                 toastTrigger++
             }
             is AuthState.Authenticated -> {
-                toastMessage = "Login succesful"
-
+                toastMessage = "Login succesfully"
             }
             else -> {}
         }
@@ -116,54 +112,23 @@ fun LoginPage(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-
-        Row(
+        Image(
+            painter = painterResource(id = R.drawable.icon_logo),
+            contentDescription = null,
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Tesla logo (replace R.drawable.logo with your actual logo resource)
-            Image(
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = null,
-//                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(64.dp)
-            )
-
-            // Language selector
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.PlayArrow, // Use a globe icon
-                    contentDescription = "Language",
-                    tint = Color.Black,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "en-MY",
-                    fontSize = 16.sp,
-                    color = Color.Black
-                )
-            }
-        }
+                .height(100.dp)
+        )
 
         Column(
             modifier = Modifier
-                .fillMaxHeight()
                 .fillMaxWidth(maxSizeAvailable)
                 .padding(horizontal = 28.dp)
                 .offset(x = offsetValueX),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = "Welcome Back!",
@@ -207,6 +172,7 @@ fun LoginPage(
                         }
                     }
             )
+
             Column(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.padding(top = 40.dp)
@@ -216,23 +182,7 @@ fun LoginPage(
                     valueHorizontal = valueHorizontal,
                     onClick ={
                         if(isFormValid()){
-                            localViewModel.loginLocalUser(email, password) { uid, error ->
-                                Log.e("User", uid.toString())
-                                if (error != null) {
-                                    Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
-                                    toastTrigger++
-                                } else if (uid != null) {
-                                    val username = email.substringBefore("@")
-                                    val user = User(
-                                        id = uid,
-                                        name = username,
-                                        email = email,
-                                        password = password
-                                    )
-                                    localViewModel.insertNewUser(user)
-                                    viewModel.login(email,password)
-                                }
-                            }
+                            viewModel.login(email,password, onClick = {})
                         }
                     }
                 )

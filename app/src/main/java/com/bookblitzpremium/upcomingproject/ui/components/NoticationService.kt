@@ -70,3 +70,6 @@ class NotificationService(
         private const val NOTIFICATION_ID = 1
     }
 }
+
+
+//add the custom notication style

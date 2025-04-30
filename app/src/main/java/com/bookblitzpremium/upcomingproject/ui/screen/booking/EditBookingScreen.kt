@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.TurnedInNot
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,12 +49,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.media3.common.util.Log
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import com.google.firebase.auth.FirebaseAuth
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -178,7 +181,7 @@ fun ModifyHotelBooking(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                StyledImage(hotelData?.imageUrl.toString())
+                StyledImage(hotelData?.imageUrl.toString(), tabletPortrait = "true")
 
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -267,7 +270,7 @@ fun ModifyHotelBooking(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    MapsButton(onClick = {})
+                    MapsButton(onClick = {},modifier = Modifier)
 
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -291,19 +294,23 @@ fun ModifyHotelBooking(
                             .weight(1f)
                     )
 
+                    val currentUser = FirebaseAuth.getInstance().currentUser
+                    var userID = currentUser?.uid.toString()
+
+                    Text(
+                        text = userID.toString()
+                    )
+
                     // — NEXT BUTTON: fixed at bottom, centered horizontally —
                     Button(
                         onClick = {
                             val booking = HotelBooking(
                                 startDate = selectedStartDate?.toString() ?: booking.startDate,
                                 endDate = selectedEndDate?.toString() ?: booking.endDate,
-                                numberOFClient = booking.numberOFClient,
-                                numberOfRoom = booking.numberOfRoom,
-                                hotelID = booking.hotelID.toString(),
-                                userid = "user999",
-                                paymentID = "payment123"
                             )
                             bookingViewModel.updateHotelBooking(booking)
+
+                            //whetever to direct to homepage or where
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -317,17 +324,17 @@ fun ModifyHotelBooking(
                     }
                 }
             }
+        }else{
+            CircularProgressIndicator()
         }
     }
 }
 
 @Composable
-fun MapsButton(onClick: () -> Unit) {
+fun MapsButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     Button(
         onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp),
+        modifier = modifier,
         colors = ButtonDefaults.buttonColors(
             containerColor = Color(0xFFE0E0E0),
             contentColor = Color.Black

@@ -63,6 +63,7 @@ import com.bookblitzpremium.upcomingproject.ui.screen.payment.PaymentButton
 import com.bookblitzpremium.upcomingproject.ui.screen.payment.PaymentOptionScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.payment.PriceDetailsSection
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.net.URLEncoder
@@ -187,6 +188,13 @@ fun GuestSection(
         val coroutineScope = rememberCoroutineScope()
         val paymentmethodToString = paymentMethod.title.toString()
 
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        var userID = currentUser?.uid.toString()
+
+        Text(
+            text = userID.toString()
+        )
+
         Button(
             onClick = {
                 val totalPerson = selectedAdult
@@ -203,19 +211,25 @@ fun GuestSection(
                     paymentMethod = paymentMethod,
                     cardNumber = cardNumber,
                     currency = "Ringgit Malaysia",
-                    userID = "userID"
+                    userID = userID.toString()
                 )
+
 
                 coroutineScope.launch {
                     try {
                         val paymentID = paymentViewModel.addPayment(payment)
                         if (paymentID.isNotEmpty()) {
                             val encodedPaymentID = URLEncoder.encode(paymentID, "UTF-8")
-                            navController.navigate(
-                                "${AppScreen.BookingReview.route}/$hotelID/$startDate/$endDate/$totalPerson/$roomBooked/$totalPrice/$paymentMethod/$cardNumber/$encodedPaymentID"
-                            )
+                            if(encodedPaymentID.isNotEmpty() && cardNumber.isNotEmpty() && paymentMethod.isNotEmpty()){
+                                navController.navigate(
+                                    "${AppScreen.BookingReview.route}/$hotelID/$startDate/$endDate/$totalPerson/$roomBooked/$totalPrice/$paymentMethod/$cardNumber/$encodedPaymentID"
+                                )
+                            }else{
+                                //add the resposen to user
+                            }
                         } else {
                             // Handle empty paymentID
+                            //error appear can make the dialog to redirect the user to the homePage
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()

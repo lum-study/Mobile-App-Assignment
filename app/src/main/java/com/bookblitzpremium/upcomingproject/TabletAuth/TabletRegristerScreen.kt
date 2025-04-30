@@ -1,9 +1,7 @@
-package com.bookblitzpremium.upcomingproject
+package com.bookblitzpremium.upcomingproject.TabletAuth
 
-import android.util.Log
+import android.util.Patterns
 import android.widget.Toast
-import androidx.compose.foundation.lazy.grid.*
-import androidx.compose.runtime.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,19 +18,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -46,64 +48,107 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.bookblitzpremium.upcomingproject.GenderSelectionScreen
+import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
-import com.bookblitzpremium.upcomingproject.data.model.AuthState
 import com.bookblitzpremium.upcomingproject.data.model.SignupState
-import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
-import java.nio.file.WatchEvent
+import com.bookblitzpremium.upcomingproject.ui.components.CustomTextFieldPassword
+import com.google.firebase.auth.FirebaseAuth
 
 // Main entry point for the navigation
+
+//vertical = true
+//regrister = false
+
 @Composable
-fun Regrister() {
+fun RegristerVertical() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "step1") {
-        composable("step1") { Step1Screen(navController,true) }
-        composable("step2") { LoginScreen1(navController,true) }
-        composable("step3") { Step3Screen(navController,true) }
+
+        composable("step1") { Step1Screen(navController,false) }
+
+        composable(route = "step1/{email}/{password}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType },
+                navArgument("password") { type = NavType.StringType },
+            )) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email").toString()
+            val password = backStackEntry.arguments?.getString("password").toString()
+
+            Step1Screen(
+                navController,
+                tabletScreen = false,
+                email = email,
+                password =password
+            )
+        }
+
+        composable(
+            route = "gender/{email}/{password}/{selectedGender}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType },
+                navArgument("password") { type = NavType.StringType },
+                navArgument("selectedGender") { type = NavType.StringType },
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email").toString()
+            val password = backStackEntry.arguments?.getString("password").toString()
+            val selectedGender = backStackEntry.arguments?.getString("password").toString()
+
+            GenderSelectionScreen(remoteUserViewModel = hiltViewModel(), navController,false, email,password, onClick = { navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}") })
+        }
+
+        composable(
+            route = "step2/{email}/{password}/{genderSelected}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType },
+                navArgument("password") { type = NavType.StringType },
+                navArgument("genderSelected") { type = NavType.StringType },
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email").toString()
+            val password = backStackEntry.arguments?.getString("password").toString()
+            val genderSelected = backStackEntry.arguments?.getString("genderSelected").toString()
+
+            Step2Screen(navController, true, email ,password ,genderSelected ) // pass it to your screen
+        }
+
     }
 }
+
+
+fun String.encodeToUris(): String = this.toUri().toString().substringAfterLast("/")
 
 @Composable
 fun Step1Screen(
     navController: NavController,
     tabletScreen: Boolean,
-    viewModel : AuthViewModel = hiltViewModel(),
-    localViewModel: LocalUserViewModel = hiltViewModel(),
-    remoteUserViewModel : RemoteUserViewModel = hiltViewModel()
+    email :String  = "",
+    password :String =""
 ) {
+    val valueVertical: Dp = if (tabletScreen) 280.dp else 100.dp
+    var email by rememberSaveable { mutableStateOf( email) }
+    var password by rememberSaveable { mutableStateOf(password) }
+    var confirmPassword by rememberSaveable { mutableStateOf(password) }
 
-    val valueVertical: Dp = if (tabletScreen) 50.dp else 100.dp
-
-    var email by rememberSaveable { mutableStateOf("") }
-    var password by rememberSaveable { mutableStateOf("") }
-    var confirmPassword by rememberSaveable { mutableStateOf("") }
     val context = LocalContext.current
+
     var toastMessage by remember { mutableStateOf<String?>(null) } // State for Toast message
     var toastTrigger by remember { mutableStateOf(0) } // Unique trigger for Toast
-    val signupState by viewModel.signupState.collectAsState()
-    var triggerSignup by rememberSaveable { mutableStateOf(false) }
-
-    LaunchedEffect(signupState) {
-        if (signupState is SignupState.Error) {
-            toastMessage = (signupState as SignupState.Error).message
-            toastTrigger++
-            viewModel.clearSignUpState()
-            triggerSignup = false
-        }
-    }
 
     LaunchedEffect(toastMessage, toastTrigger) {
         toastMessage?.let { message ->
@@ -135,7 +180,7 @@ fun Step1Screen(
     fun doPasswordsMatch(): Boolean = password == confirmPassword
 
     fun isFormValid(): Boolean {
-        if (email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        if (email.isBlank() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             Toast.makeText(context, "Please enter a valid email address", Toast.LENGTH_SHORT).show()
             return false
         }
@@ -155,6 +200,8 @@ fun Step1Screen(
         }
         return true
     }
+
+    val selectedGender = ""
 
     Column(
         modifier = Modifier
@@ -210,9 +257,7 @@ fun Step1Screen(
                         .clickable {
                             // Navigate to the corresponding step
                             when (stepNumber) {
-                                1 -> navController.navigate("step1") { popUpTo(navController.graph.startDestinationId) }
-                                2 -> navController.navigate("step2") { popUpTo(navController.graph.startDestinationId) }
-                                3 -> navController.navigate("step3") { popUpTo(navController.graph.startDestinationId) }
+                                1 -> navController.navigate("step1/${email.encodeToUri()}/${password.encodeToUri()}")
                             }
                         },
                     contentAlignment = Alignment.Center
@@ -260,8 +305,6 @@ fun Step1Screen(
                 .padding(top = 4.dp, bottom = 16.dp)
         )
 
-
-
         // Business Name
         OutlinedTextField(
             value = email,
@@ -274,54 +317,47 @@ fun Step1Screen(
             singleLine = true
         )
 
-        // Business Email
-        OutlinedTextField(
+        CustomTextFieldPassword(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Business password") },
+            label = "Password",
+            placeholder = "Enter your Password",
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            textStyle = TextStyle(fontSize = 16.sp),
-            singleLine = true
         )
 
-        // Business Email
-        OutlinedTextField(
+        CustomTextFieldPassword(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
-            label = { Text("Business confirmPassword") },
+            label = "Confirm Password",
+            placeholder = "Enter your Confirm Password",
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            textStyle = TextStyle(fontSize = 16.sp),
-            singleLine = true
         )
-
 
         Spacer(modifier = Modifier.weight(1f))
 
-        if (valueVertical == 20.dp) {
+        if (tabletScreen == false) {
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Content for Row layout
                 Button(
                     onClick = {
-                        navController.navigate("step2")
+                        if(isFormValid()){
+                            navController.navigate("gender/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}")
+                        }
                     },
                     modifier = Modifier
                         .weight(0.5f)
-                        .height(48.dp),
+                        .height(48.dp)
+                    ,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Black
                     ),
                     shape = RoundedCornerShape(24.dp)
                 ) {
                     Text(
-                        text = "Sign up a account",
+                        text = "Login account",
                         color = Color.White,
                         fontSize = 16.sp
                     )
@@ -333,12 +369,13 @@ fun Step1Screen(
                 Button(
                     onClick = {
                         if(isFormValid()){
-                            triggerSignup = true
+                            navController.navigate("gender/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}")
                         }
                     },
                     modifier = Modifier
                         .weight(0.5f)
-                        .height(48.dp),
+                        .height(48.dp)
+                        .border(1.dp, Color.Black, RoundedCornerShape(24.dp)),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (valueVertical == 20.dp) Color.Black else Color.White
                     ),
@@ -358,7 +395,7 @@ fun Step1Screen(
                 // Content for Column layout
                 Button(
                     onClick = {
-                        navController.navigate("step2")
+                        navController.navigate("step3")
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -369,7 +406,7 @@ fun Step1Screen(
                     shape = RoundedCornerShape(24.dp)
                 ) {
                     Text(
-                        text = "Sign up a account",
+                        text = "Login account",
                         color = Color.White,
                         fontSize = 16.sp
                     )
@@ -381,7 +418,7 @@ fun Step1Screen(
                 Button(
                     onClick = {
                         if(isFormValid()){
-                            triggerSignup = true
+                            navController.navigate("gender/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}")
                         }
                     },
                     modifier = Modifier
@@ -400,254 +437,210 @@ fun Step1Screen(
                 }
             }
         }
-
-        if(triggerSignup) {
-            CheckStatusLoading(
-                isLoading = signupState is SignupState.Loading,
-                backgroundAlpha = 0.5f,
-                indicatorColor = MaterialTheme.colorScheme.primary,
-            )
-
-            LaunchedEffect(Unit) {
-                val exists = localViewModel.checkUserEmail(email)
-                if (!exists) {
-                    val uid = viewModel.signup(email, password)
-                    if (uid.isNotEmpty()) {
-                        val username = email.substringBefore("@")
-                        val user = User(id = uid, name = username, email = email, password = password)
-                        remoteUserViewModel.addUser(user)
-                        localViewModel.insertNewUser(user)
-                        viewModel.clearSignUpState()
-                        triggerSignup = false
-                    }
-                } else {
-                    viewModel.setSignupError("Email is already registered")
-                    triggerSignup = false
-                }
-            }
-        }
     }
 }
 
 @Composable
-fun Step2Screen(navController: NavController, tabletScreen: Boolean) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        val valueVertical: Dp = if (tabletScreen) 20.dp else 100.dp
+fun Step2Screen(
+    navController: NavController,
+    tabletScreen: Boolean,
+    email : String,
+    password : String,
+    genderSelected : String,
+    viewModel: AuthViewModel = hiltViewModel(),
+    remoteUserViewModel: RemoteUserViewModel = hiltViewModel(),
+) {
+    val context = LocalContext.current
+    val signupState by viewModel.signupState.collectAsState()
+    var toastMessage by remember { mutableStateOf<String?>(null) }
+    var toastTrigger by remember { mutableStateOf(0) }
+    var triggerSignup by rememberSaveable { mutableStateOf(false) }
 
-        Spacer(modifier = Modifier.height(valueVertical))
-
-        // Stepper (1/3) with clickable bubbles
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val currentStep = 2 // This can be dynamic based on the current route
-            repeat(3) { index ->
-                val stepNumber = index + 1
-                val isActive = stepNumber == currentStep
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            color = if (isActive) Color.Black else Color.LightGray,
-                            shape = RoundedCornerShape(32.dp)
-                        )
-                        .clickable {
-                            // Navigate to the corresponding step
-                            when (stepNumber) {
-                                1 -> navController.navigate("step1") { popUpTo(navController.graph.startDestinationId) }
-                                2 -> navController.navigate("step2") { popUpTo(navController.graph.startDestinationId) }
-                                3 -> navController.navigate("step3") { popUpTo(navController.graph.startDestinationId) }
-                            }
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "$stepNumber",
-                        color = Color.White,
-                        fontSize = 12.sp
-                    )
-                }
-                if (index < 2) { // Draw line between steps
-                    Box(
-                        modifier = Modifier
-                            .width(24.dp)
-                            .height(2.dp)
-                            .background(Color.LightGray)
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        CountrySelectionScreen()
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Next Button
-        Button(
-            onClick = {
-                navController.navigate("step3")
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Black
-            ),
-            shape = RoundedCornerShape(24.dp)
-        ) {
-            Text(
-                text = "Next",
-                color = Color.White,
-                fontSize = 16.sp
-            )
+    LaunchedEffect(toastMessage, toastTrigger) {
+        toastMessage?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            toastMessage = null
         }
     }
-}
 
-@Composable
-fun Step3Screen(navController: NavController, tabletScreen: Boolean) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        val valueVertical: Dp = if (tabletScreen) 50.dp else 100.dp
-
-        Spacer(modifier = Modifier.height(valueVertical))
-        // Header: Title and Stepper
-        Text(
-            text = "Thanks for joining us",
-            style = TextStyle(
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            ),
-            modifier = Modifier.padding(top = 16.dp)
-        )
-
-        Text(
-            text = "register to get loving trip package",
-            style = TextStyle(
-                fontSize = 16.sp,
-                color = Color.Gray
-            ),
-            modifier = Modifier.padding(top = 4.dp)
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Stepper (1/3) with clickable bubbles
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val currentStep = 3 // This can be dynamic based on the current route
-            repeat(3) { index ->
-                val stepNumber = index + 1
-                val isActive = stepNumber == currentStep
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            color = if (isActive) Color.Black else Color.LightGray,
-                            shape = RoundedCornerShape(32.dp)
-                        )
-                        .clickable {
-                            // Navigate to the corresponding step
-                            when (stepNumber) {
-                                1 -> navController.navigate("step1") { popUpTo(navController.graph.startDestinationId) }
-                                2 -> navController.navigate("step2") { popUpTo(navController.graph.startDestinationId) }
-                                3 -> navController.navigate("step3") { popUpTo(navController.graph.startDestinationId) }
-                            }
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "$stepNumber",
-                        color = Color.White,
-                        fontSize = 12.sp
-                    )
-                }
-                if (index < 2) { // Draw line between steps
-                    Box(
-                        modifier = Modifier
-                            .width(24.dp)
-                            .height(2.dp)
-                            .background(Color.LightGray)
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Main Content: Personal Information
-        Text(
-            text = "PERSONAL INFORMATION",
-            style = TextStyle(
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-        )
-
-        Text(
-            text = "Provide the basic information to get you registered with us.",
-            style = TextStyle(
-                fontSize = 14.sp,
-                color = Color.Gray
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 4.dp, bottom = 16.dp)
-        )
-
-
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Next Button
-        Button(
-            onClick = {
+    LaunchedEffect(signupState) {
+        println("Observed signupState: $signupState")
+        when (signupState) {
+            is SignupState.Success -> {
+                println("Navigating to step1")
                 navController.navigate("step1")
-            },
+                viewModel.clearSignUpState()
+                triggerSignup = false
+            }
+            is SignupState.Error -> {
+                toastMessage = (signupState as SignupState.Error).message
+                toastTrigger++
+                viewModel.clearSignUpState()
+                triggerSignup = false
+            }
+            else -> {} // Loading or Idle
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        // Background image
+        Image(
+            painter = painterResource(id = if (tabletScreen) R.drawable.hiking_potrait else R.drawable.hiking_new),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
             modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Black
-            ),
-            shape = RoundedCornerShape(24.dp)
+                .fillMaxSize()
+        )
+
+        // Content over the background image
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = "Next",
-                color = Color.White,
-                fontSize = 16.sp
-            )
+            val valueVertical: Dp = if (tabletScreen) 150.dp else 100.dp
+
+            Spacer(modifier = Modifier.height(valueVertical))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Thanks for joining us",
+                    style = TextStyle(
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    ),
+                    modifier = Modifier.padding(top = 16.dp)
+                )
+
+                Text(
+                    text = "register to get loving trip package",
+                    style = TextStyle(
+                        fontSize = 16.sp,
+                        color = Color.Gray
+                    ),
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Stepper (1/3) with clickable bubbles
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val currentStep = 3
+                    repeat(3) { index ->
+                        val stepNumber = index + 1
+                        val isActive = stepNumber == currentStep
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(
+                                    color = if (isActive) Color.Black else Color.LightGray,
+                                    shape = RoundedCornerShape(32.dp)
+                                )
+                                .then(
+                                    if (stepNumber <= currentStep) {
+                                        Modifier.clickable {
+                                            when (stepNumber) {
+                                                1 -> navController.navigate("step1/${email.encodeToUri()}/${password.encodeToUri()}")
+                                                2 -> navController.navigate("gender/${email.encodeToUri()}/${password.encodeToUri()}/${genderSelected.encodeToUri()}")
+                                                3 -> navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}/${genderSelected.encodeToUri()}")
+                                            }
+                                        }
+                                    } else {
+                                        Modifier
+                                    }
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "$stepNumber",
+                                color = Color.White,
+                                fontSize = 12.sp
+                            )
+                        }
+                        if (index < 2) {
+                            Box(
+                                modifier = Modifier
+                                    .width(24.dp)
+                                    .height(2.dp)
+                                    .background(Color.LightGray)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Button(
+                    onClick = {
+                        triggerSignup = true
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black
+                    ),
+                    shape = RoundedCornerShape(24.dp)
+                ) {
+                    Text(
+                        text = "Next",
+                        color = Color.White,
+                        fontSize = 16.sp
+                    )
+                }
+            }
+
+            if (triggerSignup) {
+                // Temporary implementation to debug
+                if (signupState is SignupState.Loading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.5f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
+                LaunchedEffect(Unit) {
+                    val username = email.substringBefore("@")
+                    try {
+                        val customId = viewModel.signup(email, password)
+                        val user = User(id = customId, name = username, email = email, password = password)
+                        remoteUserViewModel.addUser(customId, user)
+                        remoteUserViewModel.updateUserGender(customId, genderSelected)
+
+
+                    } catch (e: Exception) {
+                        viewModel.setSignupError("Email is already registered: ${e.message}")
+                    }
+                }
+            }
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
@@ -832,3 +825,156 @@ fun EntryPage() {
         }
     }
 }
+
+//@Composable
+//fun GenderSelectionScreen(
+//    remoteUserViewModel: RemoteUserViewModel = hiltViewModel(),
+//    navController: NavController,
+//    userId: String
+//) {
+//    val selectedGender by remoteUserViewModel.selectedGender.collectAsState()
+//    val loading by remoteUserViewModel.loading.collectAsState()
+//    val error by remoteUserViewModel.error.collectAsState()
+//
+//    // Ensure userId is valid
+//    if (userId.isEmpty()) {
+//        LaunchedEffect(Unit) {
+//            remoteUserViewModel.setError("User ID is missing")
+//            navController.popBackStack()
+//        }
+//        return
+//    }
+//
+//    Column(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .padding(16.dp),
+//        horizontalAlignment = Alignment.CenterHorizontally,
+//        verticalArrangement = Arrangement.SpaceBetween
+//    ) {
+//        // Title
+//        Text(
+//            text = "What's your gender?",
+//            style = MaterialTheme.typography.labelLarge,
+//            modifier = Modifier.padding(top = 32.dp)
+//        )
+//
+//        // Gender Options
+//        Column(
+//            modifier = Modifier.weight(1f),
+//            verticalArrangement = Arrangement.Center,
+//            horizontalAlignment = Alignment.CenterHorizontally
+//        ) {
+//            // Male Option
+//            GenderOption(
+//                gender = "Male",
+//                isSelected = selectedGender == "Male",
+//                icon = Icons.Default.Male,
+//                onClick = { remoteUserViewModel.selectGender("Male") }
+//            )
+//
+//            Spacer(modifier = Modifier.height(32.dp))
+//
+//            // Female Option
+//            GenderOption(
+//                gender = "Female",
+//                isSelected = selectedGender == "Female",
+//                icon = Icons.Default.Female,
+//                onClick = { remoteUserViewModel.selectGender("Female") }
+//            )
+//        }
+//
+//        // Error Message
+//        error?.let {
+//            Text(
+//                text = "Error: $it",
+//                color = Color.Red,
+//                modifier = Modifier.padding(bottom = 16.dp)
+//            )
+//        }
+//
+//        val conrotine = rememberCoroutineScope()
+//
+//        // Next Button
+//        Button(
+//            onClick = {
+//                conrotine.launch {
+//                    if (selectedGender != null) {
+//                        remoteUserViewModel.updateUserGender(userId, selectedGender!!)
+//                        navController.navigate("step2")
+//                    } else {
+//                        remoteUserViewModel.setError("Please select a gender")
+//                    }
+//                }
+//            },
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(56.dp),
+//            shape = RoundedCornerShape(28.dp),
+//            colors = ButtonDefaults.buttonColors(
+//                containerColor = Color.Transparent
+//            ),
+//            border = BorderStroke(
+//                width = 2.dp,
+//                brush = Brush.linearGradient(
+//                    colors = listOf(Color(0xFF8B5CF6), Color(0xFFEC4899)),
+//                    start = Offset(0f, 0f),
+//                    end = Offset(1000f, 1000f)
+//                )
+//            ),
+//            enabled = !loading
+//        ) {
+//            Text(
+//                text = "Next",
+//                color = Color.Black,
+//                style = MaterialTheme.typography.labelLarge
+//            )
+//        }
+//    }
+//}
+//
+//@Composable
+//fun GenderOption(
+//    gender: String,
+//    isSelected: Boolean,
+//    icon: ImageVector,
+//    onClick: () -> Unit
+//) {
+//    Box(
+//        modifier = Modifier
+//            .size(120.dp)
+//            .clickable { onClick() }
+//            .background(
+//                color = if (isSelected) Color(0xFFE5E7EB) else Color.Transparent,
+//                shape = CircleShape
+//            ),
+//        contentAlignment = Alignment.Center
+//    ) {
+//        Column(
+//            horizontalAlignment = Alignment.CenterHorizontally
+//        ) {
+//            Icon(
+//                imageVector = icon,
+//                contentDescription = gender,
+//                modifier = Modifier.size(64.dp),
+//                tint = Color.Black
+//            )
+//            Text(
+//                text = gender,
+//                style = MaterialTheme.typography.titleMedium,
+//                modifier = Modifier.padding(top = 8.dp)
+//            )
+//            if (isSelected) {
+//                Icon(
+//                    imageVector = Icons.Default.Check,
+//                    contentDescription = "Selected Nonlinear",
+//                    tint = Color.Green,
+//                    modifier = Modifier
+//                        .size(24.dp)
+//                        .align(Alignment.End)
+//                        .offset(x = 16.dp, y = (-16).dp)
+//                )
+//            }
+//        }
+//    }
+//}

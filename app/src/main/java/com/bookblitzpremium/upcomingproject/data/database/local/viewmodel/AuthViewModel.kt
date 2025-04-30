@@ -14,6 +14,7 @@ import com.bookblitzpremium.upcomingproject.ui.components.NotificationService
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -77,20 +78,41 @@ class AuthViewModel @Inject constructor(
         return auth.currentUser
     }
 
-    fun login(email: String, password: String) {
+    private val _authError = MutableStateFlow<String?>(null)
+    val authError = _authError.asStateFlow()
+
+    fun login(email: String, password: String, onClick: () -> Unit) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
-            auth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        _authState.value = AuthState.Authenticated
-                        _newNavigationCommand.value = true
-                    } else {
-                        _authState.value =
-                            AuthState.Error(task.exception?.message ?: "Something went wrong")
-                    }
-                }
+            _authError.value = null
+            try {
+                val authResult = auth.signInWithEmailAndPassword(email, password).await()
+                val userId = authResult.user?.uid
+                    ?: throw IllegalStateException("Failed to authenticate user")
+                _authState.value = AuthState.Authenticated
+                _newNavigationCommand.value = true
+                _authState.value = AuthState.Triggerable
+                onClick()
+            } catch (e: FirebaseAuthInvalidCredentialsException) {
+                _authError.value = "Invalid email or password"
+                _authState.value = AuthState.Error("Invalid email or password")
+            } catch (e: FirebaseAuthInvalidUserException) {
+                _authError.value = "No account exists for this email"
+                _authState.value = AuthState.Error("No account exists for this email")
+            } catch (e: Exception) {
+                _authError.value = e.localizedMessage ?: "Failed to login"
+                _authState.value = AuthState.Error("Login failed: ${e.localizedMessage}")
+            }
         }
+    }
+
+    fun setPath(){
+        _newNavigationCommand.value = true
+    }
+
+
+    fun setAuthError(message: String?) {
+        _authError.value = message
     }
 
     // Sign up
@@ -99,11 +121,12 @@ class AuthViewModel @Inject constructor(
 
     suspend fun signup(email: String, password: String): String {
         _signupState.value = SignupState.Loading
+        delay(1000L)
         return try {
             auth.createUserWithEmailAndPassword(email, password).await()
             val uid = getUserId()
             _signupState.value = SignupState.Success
-            _newNavigationCommand.value = true
+//            _newNavigationCommand.value = true
             uid
         } catch (e: FirebaseAuthUserCollisionException) {
             _signupState.value = SignupState.Error("Email is already registered")

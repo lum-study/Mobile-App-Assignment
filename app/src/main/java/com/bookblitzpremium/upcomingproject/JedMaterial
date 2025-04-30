@@ -271,6 +271,140 @@ fun ReadLocalDatabase(
 
 
 
+    if (hotel != null) {
+        val hotelData = hotel!!
+        Log.d("HotelHeaderTable", "Hotel ID: ${hotelData.id}, Address: ${hotelData.address}")
+
+        Row(modifier = modifier.fillMaxSize()) {
+            Row(
+                modifier = modifier.fillMaxSize()
+            ) {
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+                        .background(Color.White)
+                ) {
+                    val totalPrice = (roomCount ?: 0).toDouble() * hotelData.price
+                    var copyPaymnetID = ""
+
+                    if(rede){
+                        PaymentDetails(
+                            navController = navController,
+                            totalPrice = totalPrice.toString(),
+                            totalPerson = (adultCount ?: 0).toString(),
+                            roomBooked = (roomCount ?: 0).toString(),
+                            startDate = startDate.toString(),
+                            endDate = endDate.toString(),
+                            hotelID = hotelData.id.toString(),
+                            paymentID = copyPaymnetID,
+                            hotelImageUrl = hotelData.imageUrl,
+                            modifier = Modifier
+                        )
+
+                    }else{
+
+                        val features = "Free Wi-Fi, Free parking, Air-conditioned, Kid-friendly, Restaurant, Free breakfast"
+
+                        HotelAmenitiesSection(features, modifier = Modifier)
+
+                        LazyColumn {
+                            item {
+//                                HotelInfoCard(
+//                                    hotel = hotelData,
+//                                    reviewCount = 0,
+//                                    modifier = Modifier
+//                                )
+                                HotelInfoSection(
+                                    showBackButton = 2,
+                                    modifier = Modifier,
+                                    address = hotelData.address,
+                                    rating = hotelData.rating,
+                                    hotelName = hotelData.name,
+                                    reviewTime = 1
+                                )
+                            }
+
+                            item {
+
+                            }
+                            item { HotelDescriptionSection(showBackButton = 1, modifier = Modifier,generateHotelDescription(hotelData.name,hotelData.rating)) }
+
+                            item{
+                                BookingSummaryTable(
+                                    startDate = startDate.toString(),
+                                    endDate = endDate.toString(),
+                                    roomCount = roomCount.toString(),
+                                    adultCount = adultCount.toString()
+                                )
+                            }
+
+                            item{
+
+                            }
+
+                            item {
+                                var userID = FirebaseAuth.getInstance().currentUser?.uid
+
+                                var coroutineScope = rememberCoroutineScope()
+                                val paymentViewModel: RemotePaymentViewModel = hiltViewModel()
+
+                                val payment = Payment(
+                                    createDate = LocalDate.now().toString(),
+                                    totalAmount = totalPrice,
+                                    paymentMethod = startDate.toString(),
+                                    cardNumber = "",
+                                    currency = "Ringgit Malaysia",
+                                    userID = userID.toString()
+                                )
+
+                                Button(
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color.Black,
+                                        contentColor = Color.White
+                                    ),
+                                    shape = RoundedCornerShape(16.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    enabled = startDate != null && endDate != null && roomCount != null && adultCount !=null,
+                                    onClick = {
+
+                                        coroutineScope.launch {
+                                            try {
+                                                val paymentID = paymentViewModel.addPayment(payment)
+                                                if (paymentID.isNotEmpty()) {
+                                                    copyPaymnetID = paymentID
+                                                    rede = true
+                                                } else {
+                                                    // Handle empty paymentID
+                                                }
+                                            } catch (e: Exception) {
+                                                e.printStackTrace()
+                                            }
+                                        }
+                                    }
+                                ) {
+                                    Text(text = stringResource(R.string.next_button))
+                                }
+                            }
+                            item { Spacer(modifier = Modifier.height(100.dp)) }
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        // Handle loading or error state
+        CircularProgressIndicator(modifier = Modifier)
+    }}
+
+
+
+
+
 
 
 

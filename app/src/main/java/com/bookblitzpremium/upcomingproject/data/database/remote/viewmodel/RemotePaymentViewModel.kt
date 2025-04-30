@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
+import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalPaymentRepository
 import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemotePaymentRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,8 +14,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class RemotePaymentViewModel @Inject constructor(private val remotePaymentRepository: RemotePaymentRepository) :
-    ViewModel() {
+class RemotePaymentViewModel @Inject constructor(
+    private val remotePaymentRepository: RemotePaymentRepository,
+    private val localPaymentRepository: LocalPaymentRepository
+) : ViewModel() {
     private val _payments = MutableStateFlow<List<Payment>>(emptyList())
     val payments: StateFlow<List<Payment>> = _payments.asStateFlow()
 
@@ -103,4 +106,14 @@ class RemotePaymentViewModel @Inject constructor(private val remotePaymentReposi
         }
     }
 
+    fun updatePaymentBoth(localPayment: Payment) {
+        viewModelScope.launch {
+            try {
+                remotePaymentRepository.updatePayment(localPayment)
+                localPaymentRepository.addOrUpdatePayment(localPayment)
+            } catch (e: Exception) {
+                _error.value = "Failed to delete payment: ${e.localizedMessage}"
+            }
+        }
+    }
 }

@@ -14,6 +14,7 @@ import javax.inject.Inject
 @HiltViewModel
 class RemoteRatingViewModel @Inject constructor(private val remoteRatingRepository: RemoteRatingRepository) :
     ViewModel() {
+
     private val _rating = MutableStateFlow<List<Rating>>(emptyList())
     val rating: StateFlow<List<Rating>> = _rating.asStateFlow()
 
@@ -37,6 +38,8 @@ class RemoteRatingViewModel @Inject constructor(private val remoteRatingReposito
         }
     }
 
+
+
     private fun getRatings() {
         viewModelScope.launch {
             _loading.value = true
@@ -51,6 +54,26 @@ class RemoteRatingViewModel @Inject constructor(private val remoteRatingReposito
             }
         }
     }
+
+    private val _ratings = MutableStateFlow<List<Rating>>(emptyList())
+    val ratings: StateFlow<List<Rating>> = _ratings.asStateFlow()
+
+    fun getRatingsByHotelID(hotelId: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+            try {
+                val ratings = remoteRatingRepository.getRatingsByHotelID(hotelId)
+                _ratings.value = ratings
+            } catch (e: Exception) {
+                _error.value = e.localizedMessage ?: "Failed to load ratings"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+
 
     fun addRating(rating: Rating): String {
         var id: String = ""
