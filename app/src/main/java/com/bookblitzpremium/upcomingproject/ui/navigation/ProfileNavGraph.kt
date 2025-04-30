@@ -24,12 +24,8 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
             EditProfileScreen()
         }
 
-        composable(route = AppScreen.OrderScreen.route) {
-            OrderScreen(navController = navController)
-        }
-
         composable(
-            route = "${AppScreen.RatingScreen.route}/{hotelId}",
+            route = "${AppScreen.Ratings.route}/{hotelId}",
             arguments = listOf(navArgument("hotelId") { type = NavType.StringType })
         ) { backStackEntry ->
             val hotelId = backStackEntry.arguments?.getString("hotelId") ?: "dummyHotelId"
@@ -38,14 +34,12 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
                 hotelId = hotelId,
                 onBackPressed = { navController.popBackStack() },
                 onRatingSubmitted = { ratingRecord: RatingRecord ->
-                    navController.navigate(AppScreen.RatingRecordsScreen.route) {
-                        launchSingleTop = true
-                    }
+                    navController.navigate(AppScreen.RatingRecords.route)
                 }
             )
         }
 
-        composable(route = AppScreen.RatingRecordsScreen.route) {
+        composable(route = AppScreen.RatingRecords.route) {
             val sampleRecords = listOf(
                 RatingRecord(
                     id = "1",
@@ -87,13 +81,12 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
                     when (menuItem) {
                         "Edit Profile" -> navController.navigate(AppScreen.EditProfile.route)
                         "Payment Methods" -> navController.navigate(AppScreen.PaymentMethods.route)
-                        "My Orders" -> navController.navigate(AppScreen.OrderScreen.route)
-                        "Ratings" -> navController.navigate("${AppScreen.RatingScreen.route}/$hotelId")
-                        "Rating History" -> navController.navigate(AppScreen.RatingRecordsScreen.route)
+                        "My Orders" -> navController.navigate(AppScreen.MyOrders.route)
+                        "Ratings" -> navController.navigate("${AppScreen.Ratings.route}/$hotelId")
                         "Log out" -> {
                             authViewModel.signOut()
-                            navController.navigate(AppScreen.Login.route) {
-                                popUpTo(AppScreen.Login.route) { inclusive = true }
+                            navController.navigate(AppScreen.AuthGraph.route) {
+                                popUpTo(AppScreen.ProfileGraph.route) { inclusive = true }
                             }
                         }
                         else -> {}

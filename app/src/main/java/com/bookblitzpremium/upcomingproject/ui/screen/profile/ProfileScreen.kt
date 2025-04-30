@@ -182,9 +182,6 @@ fun ProfileMenuItems(onMenuItemClick: (String) -> Unit, hotelId: String, navCont
                 iconRes = iconRes,
                 onClick = {
                     onMenuItemClick(item)
-                    if (item == "Ratings") {
-                        navController.navigate("${AppScreen.Ratings.route}/$hotelId")
-                    }
                 }
             )
             Divider(

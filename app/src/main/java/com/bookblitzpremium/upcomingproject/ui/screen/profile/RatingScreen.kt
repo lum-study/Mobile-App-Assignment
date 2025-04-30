@@ -154,7 +154,6 @@ fun RatingScreen(
                     )
                     viewModel.addOrUpdateRating(newRating.toRatingEntity(hotelId))
                     onRatingSubmitted(newRating)
-                    navController.navigate(AppScreen.RatingRecords.route)
                 }
             },
             modifier = Modifier

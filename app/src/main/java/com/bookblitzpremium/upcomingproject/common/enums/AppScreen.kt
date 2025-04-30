@@ -51,12 +51,6 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object EntryPage : AppScreen("EntryPage", hasTopBar = false, hasBottomBar = false)
     data object EntryPage2 : AppScreen("EntryPage2", hasTopBar = false, hasBottomBar = false)
 
-    // profile-related routes
-    data object ProfileScreen : AppScreen("profile_screen", hasTopBar = false, hasBottomBar = true)
-    data object OrderScreen : AppScreen("order_screen", hasTopBar = true, hasBottomBar = false)
-    data object RatingScreen : AppScreen("rating_screen", hasTopBar = true, hasBottomBar = false)
-    data object RatingRecordsScreen : AppScreen("rating_records_screen", hasTopBar = true, hasBottomBar = false)
-
     fun passData(vararg args: String): String {
         return buildString {
             append(route)
@@ -104,13 +98,6 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
                 EditScreen.route -> EditScreen
                 EntryPage.route -> EntryPage
                 EntryPage2.route -> EntryPage2
-
-                ProfileScreen.route -> ProfileScreen
-                EditProfile.route -> EditProfile
-                OrderScreen.route -> OrderScreen
-                RatingScreen.route -> RatingScreen
-                RatingRecordsScreen.route -> RatingRecordsScreen
-
                 else -> Default
             }
         }
