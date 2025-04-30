@@ -100,49 +100,18 @@ fun ForgetPassword(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-
-        Row(
+        Image(
+            painter = painterResource(id = R.drawable.icon_logo),
+            contentDescription = null,
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Tesla logo (replace R.drawable.logo with your actual logo resource)
-            Image(
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = null,
-//                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(64.dp)
-            )
-
-            // Language selector
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.PlayArrow, // Use a globe icon
-                    contentDescription = "Language",
-                    tint = Color.Black,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "en-MY",
-                    fontSize = 16.sp,
-                    color = Color.Black
-                )
-            }
-        }
-
+                .height(100.dp)
+        )
         Column(
             modifier = Modifier
-                .fillMaxHeight()
                 .fillMaxWidth(maxSizeAvailable) // 40% width for a "column" effect
                 .padding(horizontal = 16.dp, vertical = 40.dp)
                 .offset(x = offsetValueX),
