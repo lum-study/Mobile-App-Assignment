@@ -50,9 +50,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.bookblitzpremium.upcomingproject.R
 
@@ -76,23 +73,9 @@ fun EditProfileScreen() {
     )
 
     if (isTablet) {
-        TabletLayout(
-            fields = fields,
-            onUsernameChange = { newValue -> username = newValue },
-            onEmailChange = { newValue -> email = newValue },
-            onPhoneChange = { newValue -> phone = newValue },
-            onDobChange = { newValue -> dob = newValue },
-            onAddressChange = { newValue -> address = newValue }
-        )
+        TabletLayout(fields, { username = it }, { email = it }, { phone = it }, { dob = it }, { address = it })
     } else {
-        PhoneLayout(
-            fields = fields,
-            onUsernameChange = { newValue -> username = newValue },
-            onEmailChange = { newValue -> email = newValue },
-            onPhoneChange = { newValue -> phone = newValue },
-            onDobChange = { newValue -> dob = newValue },
-            onAddressChange = { newValue -> address = newValue }
-        )
+        PhoneLayout(fields, { username = it }, { email = it }, { phone = it }, { dob = it }, { address = it })
     }
 }
 
@@ -107,86 +90,33 @@ private fun TabletLayout(
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
         Spacer(modifier = Modifier.height(24.dp))
-
-        // Top section - Back button and title
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Back Button",
-                modifier = Modifier
-                    .size(40.dp)
-                    .padding(start = 16.dp)
-            )
-
-            Text(
-                "Profile",
-                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier.padding(start = 32.dp)
-            )
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Image(imageVector = Icons.Default.ArrowBack, contentDescription = "Back", modifier = Modifier.size(40.dp))
+            Text("Profile", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold), modifier = Modifier.padding(start = 32.dp))
         }
-
         Spacer(modifier = Modifier.height(24.dp))
-
         Row(modifier = Modifier.fillMaxWidth()) {
-            // Left side - Navigation options
-            Box(modifier = Modifier.weight(1f)) {
-                NavigationOptions()
-            }
-
-            Divider(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(1.dp)
-                    .padding(vertical = 8.dp),
-                thickness = 1.dp,
-                color = Color.LightGray
-            )
-
-            // Right side - Profile Image and Form Fields
-            Column(
-                modifier = Modifier
-                    .weight(2f)
-                    .padding(start = 32.dp)
-            ) {
+            Box(modifier = Modifier.weight(1f)) { NavigationOptions() }
+            Divider(modifier = Modifier.fillMaxHeight().width(1.dp).padding(vertical = 8.dp), color = Color.LightGray)
+            Column(modifier = Modifier.weight(2f).padding(start = 32.dp)) {
                 ProfileImageSection()
-
                 Spacer(modifier = Modifier.height(24.dp))
-
-                // Form Fields
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                ) {
+                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
                     fields.forEach { (label, value) ->
-                        ProfileField(label, value) { newValue ->
+                        ProfileField(label, value) {
                             when (label) {
-                                "Username" -> onUsernameChange(newValue)
-                                "Email" -> onEmailChange(newValue)
-                                "Phone" -> onPhoneChange(newValue)
-                                "Date of Birth" -> onDobChange(newValue)
-                                "Address" -> onAddressChange(newValue)
+                                "Username" -> onUsernameChange(it)
+                                "Email" -> onEmailChange(it)
+                                "Phone" -> onPhoneChange(it)
+                                "Date of Birth" -> onDobChange(it)
+                                "Address" -> onAddressChange(it)
                             }
                         }
                     }
                 }
-                // Save button for tablet (aligned with form fields width)
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = { /* Handle save */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .height(48.dp),
-                    shape = MaterialTheme.shapes.medium
-                ) {
-                    Text(
-                        text = "Save Changes",
-                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
-                    )
+                Button(onClick = {}, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).height(48.dp)) {
+                    Text("Save Changes", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
                 }
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -203,226 +133,91 @@ private fun PhoneLayout(
     onDobChange: (String) -> Unit,
     onAddressChange: (String) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp)
-    ) {
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
         Spacer(modifier = Modifier.height(12.dp))
-
-        // Profile image centered
-        ProfileImageSection(isPhone = true)
-
+        ProfileImageSection(true)
         Spacer(modifier = Modifier.height(24.dp))
-
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-        ) {
-            // Form Fields
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+        Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
+            Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 fields.forEach { (label, value) ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            label,
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                        BasicTextField(
-                            value = value,
-                            onValueChange = { newValue ->
-                                when (label) {
-                                    "Username" -> onUsernameChange(newValue)
-                                    "Email" -> onEmailChange(newValue)
-                                    "Phone" -> onPhoneChange(newValue)
-                                    "Date of Birth" -> onDobChange(newValue)
-                                    "Address" -> onAddressChange(newValue)
-                                }
-                            },
-                            textStyle = MaterialTheme.typography.bodyMedium.copy(
-                                textAlign = TextAlign.End
-                            ),
-                            modifier = Modifier
-                                .weight(1f) // Takes equal space
-                                .padding(start = 16.dp) // Space between label and field
-                        )
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Text(label, style = MaterialTheme.typography.bodyMedium)
+                        BasicTextField(value, {
+                            when (label) {
+                                "Username" -> onUsernameChange(it)
+                                "Email" -> onEmailChange(it)
+                                "Phone" -> onPhoneChange(it)
+                                "Date of Birth" -> onDobChange(it)
+                                "Address" -> onAddressChange(it)
+                            }
+                        }, textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.End), modifier = Modifier.weight(1f).padding(start = 16.dp))
                     }
-                    HorizontalDivider(
-                        thickness = 1.dp,
-                        color = Color.LightGray,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
+                    HorizontalDivider(thickness = 1.dp, color = Color.LightGray, modifier = Modifier.padding(vertical = 8.dp))
                 }
             }
         }
-        // Save button for phone
-        Button(
-            onClick = { /* Handle save */ },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp, horizontal = 32.dp)
-                .height(48.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF2196F3), // Blue color
-                contentColor = Color.White
-            ),
-            shape = MaterialTheme.shapes.medium
-        ) {
-            Text(
-                text = "Save Changes",
-                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
-            )
+        Button(onClick = {}, modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 32.dp).height(48.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3), contentColor = Color.White)) {
+            Text("Save Changes", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
         }
     }
 }
 
 @Composable
 private fun NavigationOptions() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp)
-    ) {
+    Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp)) {
         Spacer(modifier = Modifier.height(24.dp))
-
         val navOptions = listOf(
             "Your Profile" to Icons.Outlined.Person,
             "Payment Methods" to Icons.Outlined.AddCard,
             "My Orders" to Icons.Outlined.Task,
             "Ratings" to Icons.Default.Star,
-            "Log Out" to Icons.Default.Logout,
+            "Log Out" to Icons.Default.Logout
         )
-
         navOptions.forEach { (option, iconRes) ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(vertical = 12.dp)
-                    .clickable { /* Handle navigation */ }
-            ) {
-                Image(
-                    imageVector = iconRes,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(28.dp)
-                        .padding(end = 8.dp)
-                )
-                Text(
-                    text = option,
-                    style = MaterialTheme.typography.titleMedium
-                )
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 12.dp).clickable {}) {
+                Image(imageVector = iconRes, contentDescription = null, modifier = Modifier.size(28.dp).padding(end = 8.dp))
+                Text(option, style = MaterialTheme.typography.titleMedium)
             }
-            HorizontalDivider(
-                thickness = 1.dp,
-                color = Color.LightGray,
-                modifier = Modifier.padding(vertical = 4.dp)
-            )
+            HorizontalDivider(thickness = 1.dp, color = Color.LightGray, modifier = Modifier.padding(vertical = 4.dp))
         }
     }
 }
 
 @Composable
 private fun ProfileImageSection(isPhone: Boolean = false) {
-    Box(
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center
-    ) {
-        Image(
-            painter = painterResource(R.drawable.beach2),
-            contentDescription = "Profile Image",
-            modifier = Modifier
-                .size(if (isPhone) 120.dp else 200.dp)
-                .clip(RoundedCornerShape(100.dp))
-        )
-        Surface(
-            color = Color.Cyan,
-            shape = CircleShape,
-            modifier = Modifier
-                .size(if (isPhone) 25.dp else 50.dp)
-                .align(Alignment.BottomCenter)
-        ) {
-            Image(
-                imageVector = Icons.Default.CameraAlt,
-                contentDescription = "Camera Image",
-                modifier = Modifier
-                    .size(if (isPhone) 40.dp else 60.dp)
-                    .padding(if (isPhone) 4.dp else 6.dp)
-            )
+    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        Image(painter = painterResource(R.drawable.beach2), contentDescription = "Profile Image", modifier = Modifier.size(if (isPhone) 120.dp else 200.dp).clip(RoundedCornerShape(100.dp)))
+        Surface(color = Color.Cyan, shape = CircleShape, modifier = Modifier.size(if (isPhone) 25.dp else 50.dp).align(Alignment.BottomCenter)) {
+            Image(imageVector = Icons.Default.CameraAlt, contentDescription = "Camera", modifier = Modifier.size(if (isPhone) 40.dp else 60.dp).padding(if (isPhone) 4.dp else 6.dp))
         }
     }
 }
 
 @Composable
 fun ProfileField(label: String, value: String, onValueChange: (String) -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                label,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(start = 32.dp)
-            )
-            BasicTextField(
-                value = value,
-                onValueChange = onValueChange,
-                textStyle = MaterialTheme.typography.bodyMedium.copy(
-                    textAlign = TextAlign.End // This aligns text to right
-                ),
-                modifier = Modifier
-                    .widthIn(min = 200.dp)
-                    .padding(end = 32.dp)
-            )
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 32.dp))
+            BasicTextField(value, onValueChange, textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.End), modifier = Modifier.widthIn(min = 200.dp).padding(end = 32.dp))
         }
-        HorizontalDivider(
-            thickness = 1.dp,
-            color = Color.LightGray,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 32.dp)
-        )
+        HorizontalDivider(thickness = 1.dp, color = Color.LightGray, modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp))
     }
 }
 
 @Preview(showBackground = true, name = "Phone Portrait", device = "spec:width=411dp,height=891dp")
 @Composable
 fun PhonePortraitPreviewEditProfile() {
-    EditProfileScreen(
-    )
+    EditProfileScreen()
 }
 
 @Preview(showBackground = true, name = "Tablet Portrait", device = "spec:width=800dp,height=1280dp")
 @Composable
 fun TabletPortraitPreviewEditProfile() {
-    EditProfileScreen(
-
-    )
+    EditProfileScreen()
 }
 
-@Preview(
-    showBackground = true,
-    name = "Tablet Landscape",
-    device = "spec:width=1280dp,height=800dp"
-)
+@Preview(showBackground = true, name = "Tablet Landscape", device = "spec:width=1280dp,height=800dp")
 @Composable
 fun TabletLandscapePreviewEditProfile() {
-    EditProfileScreen(
-
-    )
+    EditProfileScreen()
 }

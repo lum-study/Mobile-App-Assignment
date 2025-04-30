@@ -16,16 +16,17 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberImagePainter
-import androidx.compose.ui.text.font.FontWeight
-import androidx.window.core.layout.WindowSizeClass
-import androidx.window.core.layout.WindowWidthSizeClass
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import coil.compose.rememberAsyncImagePainter
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalRatingViewModel
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.Rating
+import kotlinx.coroutines.launch
+import androidx.navigation.compose.rememberNavController
 
-// Data model for RatingRecord
 data class RatingRecord(
     val id: String,
     val title: String,
@@ -36,20 +37,38 @@ data class RatingRecord(
     val progress: Float,
 )
 
+fun Rating.toRatingRecord(): RatingRecord {
+    return RatingRecord(
+        id = this.id,
+        title = this.name,
+        rating = this.rating.toFloat(),
+        review = this.description,
+        date = "2023-06-15",
+        imageUrl = if (this.icon.isEmpty()) "https://example.com/default.jpg" else this.icon,
+        progress = this.rating.toFloat() / 5f
+    )
+}
+
+fun RatingRecord.toRatingEntity(hotelId: String): Rating {
+    return Rating(
+        id = this.id,
+        name = this.title,
+        description = this.review,
+        rating = this.rating.toInt(),
+        icon = this.imageUrl,
+        hotelID = hotelId
+    )
+}
+
 @Composable
 fun RatingRecordsScreen(
-    records: List<RatingRecord>,
-    onDeleteRecord: (String) -> Unit,
-    onUpdateRecord: (RatingRecord) -> Unit,
+    hotelId: String,
+    viewModel: LocalRatingViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
-    // Determine the screen size using currentWindowAdaptiveInfo()
-    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
-    val windowWidthSizeClass = windowSizeClass.windowWidthSizeClass
-
-    // Check for tablet or phone sizes
-    val isTablet = windowWidthSizeClass != WindowWidthSizeClass.COMPACT // True if it's a tablet
-    val isPhone = windowWidthSizeClass == WindowWidthSizeClass.COMPACT // True if it's a phone
+    val scope = rememberCoroutineScope()
+    val ratingList by viewModel.getAllRatingsFlow().collectAsState(initial = emptyList())
+    val records = ratingList.map { it.toRatingRecord() }
 
     LazyColumn(
         modifier = modifier
@@ -61,9 +80,16 @@ fun RatingRecordsScreen(
         items(records) { record ->
             RatingRecordItem(
                 record = record,
-                onDelete = { onDeleteRecord(record.id) },
-                onUpdate = onUpdateRecord,
-                isTablet = isTablet
+                onDelete = {
+                    scope.launch {
+                        viewModel.deleteRating(record.toRatingEntity(hotelId))
+                    }
+                },
+                onUpdate = { updated ->
+                    scope.launch {
+                        viewModel.addOrUpdateRating(updated.toRatingEntity(hotelId))
+                    }
+                }
             )
         }
     }
@@ -73,8 +99,7 @@ fun RatingRecordsScreen(
 fun RatingRecordItem(
     record: RatingRecord,
     onDelete: () -> Unit,
-    onUpdate: (RatingRecord) -> Unit,
-    isTablet: Boolean
+    onUpdate: (RatingRecord) -> Unit
 ) {
     var isEditing by remember { mutableStateOf(false) }
     var editedReview by remember { mutableStateOf(record.review) }
@@ -89,18 +114,15 @@ fun RatingRecordItem(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Image on the left
             Image(
-                painter = rememberImagePainter(record.imageUrl),
+                painter = rememberAsyncImagePainter(record.imageUrl),
                 contentDescription = "Rating Image",
                 modifier = Modifier
                     .size(60.dp)
-                    .padding(end = 16.dp) // Space between image and text
+                    .padding(end = 16.dp)
             )
 
-            // Content for the RatingRecord
             Column(modifier = Modifier.weight(1f)) {
-                // First row - Hotel/package name
                 Text(
                     text = record.title,
                     style = MaterialTheme.typography.titleMedium,
@@ -110,16 +132,29 @@ fun RatingRecordItem(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Second row - Review
-                Text(
-                    text = record.review,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                if (isEditing) {
+                    OutlinedTextField(
+                        value = editedReview,
+                        onValueChange = { editedReview = it },
+                        label = { Text("Edit Review") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = editedRating,
+                        onValueChange = { editedRating = it },
+                        label = { Text("Edit Rating") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                } else {
+                    Text(
+                        text = record.review,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Third row - Rating stars and progress bar
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RatingBar(rating = record.rating, modifier = Modifier.height(24.dp))
                     Spacer(modifier = Modifier.width(8.dp))
@@ -134,11 +169,9 @@ fun RatingRecordItem(
                 }
             }
 
-            // Edit and Delete buttons on the right side
             Spacer(modifier = Modifier.width(8.dp))
 
             Column(horizontalAlignment = Alignment.End) {
-                // Status/approval indicator
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = "Status",
@@ -149,41 +182,20 @@ fun RatingRecordItem(
 
                 Row {
                     if (isEditing) {
-                        IconButton(
-                            onClick = {
-                                val newRating = editedRating.toFloatOrNull() ?: record.rating
-                                onUpdate(
-                                    record.copy(
-                                        review = editedReview,
-                                        rating = newRating.coerceIn(1f, 5f)
-                                    )
-                                )
-                                isEditing = false
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Save,
-                                contentDescription = "Save"
-                            )
+                        IconButton(onClick = {
+                            val newRating = editedRating.toFloatOrNull() ?: record.rating
+                            onUpdate(record.copy(review = editedReview, rating = newRating))
+                            isEditing = false
+                        }) {
+                            Icon(Icons.Default.Save, contentDescription = "Save")
                         }
                     } else {
-                        IconButton(
-                            onClick = { isEditing = true }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit"
-                            )
+                        IconButton(onClick = { isEditing = true }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit")
                         }
                     }
-
-                    IconButton(
-                        onClick = onDelete
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete"
-                        )
+                    IconButton(onClick = onDelete) {
+                        Icon(Icons.Default.Delete, contentDescription = "Delete")
                     }
                 }
             }
@@ -192,10 +204,7 @@ fun RatingRecordItem(
 }
 
 @Composable
-fun RatingBar(
-    rating: Float,
-    modifier: Modifier = Modifier
-) {
+fun RatingBar(rating: Float, modifier: Modifier = Modifier) {
     Row(modifier = modifier) {
         for (i in 1..5) {
             Icon(
@@ -209,37 +218,23 @@ fun RatingBar(
     }
 }
 
-@Preview(showBackground = true, name = "Phone Portrait", device = "spec:width=411dp,height=891dp")
+@Preview(showBackground = true, device = "spec:width=411dp,height=891dp")
 @Composable
-fun PhonePortraitRatingPreview() {
-    MaterialTheme {
-        val sampleRecords = listOf(
-            RatingRecord(
-                id = "1",
-                title = "Trip to Paradise Beach",
-                rating = 4.5f,
-                review = "Amazing beach with clear waters and perfect weather for relaxation.",
-                date = "2023-05-15",
-                imageUrl = "https://yourimageurl.com/paradise_beach.jpg",
-                progress = 0.8f
-            ),
-            RatingRecord(
-                id = "2",
-                title = "Hotel Stay at Oceanview",
-                rating = 3.0f,
-                review = "The hotel was decent but could improve in cleanliness and service.",
-                date = "2023-05-10",
-                imageUrl = "https://yourimageurl.com/oceanview_hotel.jpg",
-                progress = 0.5f
-            )
-        )
+fun PhoneRatingRecordsScreenPreview() {
+    val viewModel = hiltViewModel<LocalRatingViewModel>()
+    RatingRecordsScreen(hotelId = "hotel123", viewModel = viewModel)
+}
 
-        var records by remember { mutableStateOf(sampleRecords) }
+@Preview(showBackground = true, device = "spec:width=800dp,height=1280dp")
+@Composable
+fun TabletPortraitRatingRecordsScreenPreview() {
+    val viewModel = hiltViewModel<LocalRatingViewModel>()
+    RatingRecordsScreen(hotelId = "hotel123", viewModel = viewModel)
+}
 
-        RatingRecordsScreen(
-            records = records,
-            onDeleteRecord = { id -> records = records.filter { it.id != id } },
-            onUpdateRecord = { updatedRecord -> records = records.map { if (it.id == updatedRecord.id) updatedRecord else it } }
-        )
-    }
+@Preview(showBackground = true, device = "spec:width=1280dp,height=800dp")
+@Composable
+fun TabletLandscapeRatingRecordsScreenPreview() {
+    val viewModel = hiltViewModel<LocalRatingViewModel>()
+    RatingRecordsScreen(hotelId = "hotel123", viewModel = viewModel)
 }

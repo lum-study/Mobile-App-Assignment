@@ -12,6 +12,7 @@ import androidx.navigation.navArgument
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.ui.screen.profile.EditProfileScreen
+import com.bookblitzpremium.upcomingproject.ui.screen.profile.OrderScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.profile.ProfileScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.profile.RatingRecord
 import com.bookblitzpremium.upcomingproject.ui.screen.profile.RatingRecordsScreen
@@ -24,7 +25,7 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
         }
 
         composable(
-            route = "${AppScreen.Ratings.route}/{hotelId}", // dynamic route for Ratings
+            route = "${AppScreen.Ratings.route}/{hotelId}",
             arguments = listOf(navArgument("hotelId") { type = NavType.StringType })
         ) { backStackEntry ->
             val hotelId = backStackEntry.arguments?.getString("hotelId") ?: "dummyHotelId"
@@ -33,16 +34,12 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
                 hotelId = hotelId,
                 onBackPressed = { navController.popBackStack() },
                 onRatingSubmitted = { ratingRecord: RatingRecord ->
-                    // Test navigation directly without `passData`
-                    navController.navigate(AppScreen.RatingRecords.route) {
-                        launchSingleTop = true // Prevent multiple instances of RatingRecordsScreen
-                    }
+                    navController.navigate(AppScreen.RatingRecords.route)
                 }
             )
         }
 
         composable(route = AppScreen.RatingRecords.route) {
-            // Sample records for RatingRecordsScreen with dummy data
             val sampleRecords = listOf(
                 RatingRecord(
                     id = "1",
@@ -65,11 +62,11 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
             )
 
             RatingRecordsScreen(
-                records = sampleRecords,
-                onDeleteRecord = { id -> /* Handle deletion */ },
-                onUpdateRecord = { updatedRecord -> /* Handle update */ },
+                hotelId = "dummyHotelId",
+                viewModel = hiltViewModel(),
                 modifier = Modifier.fillMaxSize()
             )
+
         }
 
         composable(route = AppScreen.Profile.route) {
@@ -78,22 +75,20 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
 
             ProfileScreen(
                 navController = navController,
-                userName = "John Doe", // Replace with actual user data
+                userName = "John Doe",
                 onBackClick = { navController.popBackStack() },
                 onMenuItemClick = { menuItem ->
                     when (menuItem) {
                         "Edit Profile" -> navController.navigate(AppScreen.EditProfile.route)
                         "Payment Methods" -> navController.navigate(AppScreen.PaymentMethods.route)
                         "My Orders" -> navController.navigate(AppScreen.MyOrders.route)
-                        "Ratings" -> navController.navigate("${AppScreen.Ratings.route}/$hotelId") // Pass dummy hotelId here
-                        "Rating History" -> navController.navigate(AppScreen.RatingRecords.route)
+                        "Ratings" -> navController.navigate("${AppScreen.Ratings.route}/$hotelId")
                         "Log out" -> {
                             authViewModel.signOut()
-                            navController.navigate(AppScreen.Login.route) {
-                                popUpTo(AppScreen.Login.route) { inclusive = true }
+                            navController.navigate(AppScreen.AuthGraph.route) {
+                                popUpTo(AppScreen.ProfileGraph.route) { inclusive = true }
                             }
                         }
-
                         else -> {}
                     }
                 }

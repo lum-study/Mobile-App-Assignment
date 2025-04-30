@@ -71,4 +71,7 @@ class LocalRatingViewModel @Inject constructor(
             .cachedIn(viewModelScope)
     }
 
+    fun getAllRatingsFlow(): Flow<List<Rating>> {
+        return ratingRepository.getAllRatingsFlow()
+    }
 }

@@ -14,12 +14,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.AddCard
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Task
-import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,17 +42,16 @@ fun ProfileScreen(
     onBackClick: () -> Unit = {},
     onMenuItemClick: (String) -> Unit = {}
 ) {
-    val hotelId = "hotel123" // Define your hotelId here (static or dynamic)
-
+    val hotelId = "hotel123"
     val windowSizeClass = LocalConfiguration.current.screenWidthDp
-    val isTablet = windowSizeClass > 600
+    val isTabletPortrait = windowSizeClass in 601..1279
+    val isTabletLandscape = windowSizeClass >= 1280
 
     AppTheme {
-        // Pass hotelId to Tablet and Phone Profile screens
-        if (isTablet) {
-            TabletProfileScreen(navController, userName, onBackClick, onMenuItemClick, hotelId)
-        } else {
-            PhoneProfileScreen(navController, userName, onBackClick, onMenuItemClick, hotelId)
+        when {
+            isTabletLandscape -> TabletProfileScreen(navController, userName, onBackClick, onMenuItemClick, hotelId)
+            isTabletPortrait -> TabletProfileScreen(navController, userName, onBackClick, onMenuItemClick, hotelId)
+            else -> PhoneProfileScreen(navController, userName, onBackClick, onMenuItemClick, hotelId)
         }
     }
 }
@@ -68,21 +62,19 @@ fun TabletProfileScreen(
     userName: String,
     onBackClick: () -> Unit,
     onMenuItemClick: (String) -> Unit,
-    hotelId: String // Accept hotelId as parameter
+    hotelId: String
 ) {
     Row(
         modifier = Modifier
             .fillMaxSize()
             .padding(0.dp)
     ) {
-        // Navigation options
         Box(
             modifier = Modifier
                 .weight(1f)
                 .padding(16.dp)
         ) {
             Column {
-                // Back Arrow at top-left (Tablet only)
                 IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
@@ -93,12 +85,10 @@ fun TabletProfileScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Pass navController to ProfileMenuItems
                 ProfileMenuItems(onMenuItemClick, hotelId, navController)
             }
         }
 
-        // Divider
         Divider(
             modifier = Modifier
                 .fillMaxHeight()
@@ -106,7 +96,6 @@ fun TabletProfileScreen(
             color = Color.LightGray
         )
 
-        // Profile content
         Column(
             modifier = Modifier
                 .weight(2f)
@@ -114,7 +103,6 @@ fun TabletProfileScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             Box(modifier = Modifier.height(50.dp))
-
             ProfileHeader(tabletMode = true, userName = userName, onBackClick = onBackClick)
         }
     }
@@ -126,7 +114,7 @@ fun PhoneProfileScreen(
     userName: String,
     onBackClick: () -> Unit,
     onMenuItemClick: (String) -> Unit,
-    hotelId: String // Accept hotelId as parameter
+    hotelId: String
 ) {
     Column(
         modifier = Modifier
@@ -135,7 +123,6 @@ fun PhoneProfileScreen(
             .verticalScroll(rememberScrollState())
     ) {
         ProfileHeader(userName = userName, onBackClick = onBackClick)
-        // Pass navController to ProfileMenuItems
         ProfileMenuItems(onMenuItemClick, hotelId, navController)
     }
 }
@@ -195,10 +182,6 @@ fun ProfileMenuItems(onMenuItemClick: (String) -> Unit, hotelId: String, navCont
                 iconRes = iconRes,
                 onClick = {
                     onMenuItemClick(item)
-                    if (item == "Ratings") {
-                        // Navigate to Ratings with hotelId
-                        navController.navigate("${AppScreen.Ratings.route}/$hotelId")
-                    }
                 }
             )
             Divider(
@@ -226,8 +209,7 @@ fun ProfileMenuItem(
         Icon(
             imageVector = iconRes,
             contentDescription = null,
-            modifier = Modifier
-                .size(20.dp),
+            modifier = Modifier.size(20.dp),
             tint = Color.Gray
         )
         Spacer(modifier = Modifier.width(16.dp))
@@ -240,8 +222,7 @@ fun ProfileMenuItem(
         Icon(
             imageVector = Icons.Default.KeyboardArrowRight,
             contentDescription = null,
-            modifier = Modifier
-                .size(20.dp),
+            modifier = Modifier.size(20.dp),
             tint = Color.Gray
         )
     }
@@ -250,11 +231,10 @@ fun ProfileMenuItem(
 @Preview(showBackground = true, device = "spec:width=411dp,height=891dp")
 @Composable
 fun PhoneProfilePreview() {
-    // Create a dummy NavHostController for preview
     val navController = rememberNavController()
     ProfileScreen(
         navController = navController,
-        userName = "John Doe", // Provide a dummy username
+        userName = "John Doe",
         onBackClick = {},
         onMenuItemClick = {}
     )

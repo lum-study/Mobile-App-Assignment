@@ -28,7 +28,7 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object Result : AppScreen("Result", hasTopBar = true, hasBottomBar = true)
     data object Filter : AppScreen("Filter", hasTopBar = true, hasBottomBar = false)
 
-    //Order
+    // Order
     data object OrderGraph : AppScreen("OrderGraph", hasTopBar = false, hasBottomBar = true)
     data object MyOrders : AppScreen("MyOrders", hasTopBar = false, hasBottomBar = true)
     data object Ratings : AppScreen("Ratings", hasTopBar = true, hasBottomBar = false)
@@ -40,14 +40,14 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object PaymentMethods : AppScreen("PaymentMethods", hasTopBar = true, hasBottomBar = false)
     data object RatingRecords : AppScreen("RatingRecords", hasTopBar = true, hasBottomBar = false)
 
-    //Booking Date and people
+    // Booking Date and People
     data object BookingDate : AppScreen("BookingDate", hasTopBar = true, hasBottomBar = false)
     data object BookingPeople : AppScreen("BookingPeople", hasTopBar = true, hasBottomBar = false)
     data object BookingReview : AppScreen("BookingReview", hasTopBar = true, hasBottomBar = false)
     data object BookingHistory : AppScreen("BookingHistory", hasTopBar = true, hasBottomBar = false)
     data object EditScreen : AppScreen("EditScreen", hasTopBar = true, hasBottomBar = false)
 
-    //Entry Page
+    // Entry Page
     data object EntryPage : AppScreen("EntryPage", hasTopBar = false, hasBottomBar = false)
     data object EntryPage2 : AppScreen("EntryPage2", hasTopBar = false, hasBottomBar = false)
 
