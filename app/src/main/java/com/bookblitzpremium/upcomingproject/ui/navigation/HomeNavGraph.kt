@@ -23,11 +23,9 @@ import java.net.URLDecoder
 
 fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
     navigation(
-        startDestination = AppScreen.PaymentHotels.route,
+        startDestination = AppScreen.Home.route,
         route = AppScreen.HomeGraph.route
     ) {
-
-
         composable(
             route = "BookingReview/{hotelID}/{startDate}/{endDate}/{totalPerson}/{roomBooked}/{totalPrice}/{paymentMethod}/{cardNumber}/{paymentID}/{tabletPortrait}"
         ) { backStackEntry ->
@@ -41,10 +39,6 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
             val cardNumber = URLDecoder.decode(backStackEntry.arguments?.getString("cardNumber") ?: "", "UTF-8")
             val paymentId = URLDecoder.decode(backStackEntry.arguments?.getString("paymentID") ?: "", "UTF-8")
             val tabletPortrait = backStackEntry.arguments?.getString("tabletPortrait") == "true"
-
-            // Debug: Log the received parameters
-            println("Debug - Received route: BookingReview/$hotelID/$startDate/$endDate/$totalPerson/$roomBooked/$totalPrice/$paymentMethod/$cardNumber/$paymentId/$tabletPortrait")
-            println("Debug - tabletPortrait value: $tabletPortrait")
 
             ReviewFinalPackageSelected(
                 modifier = Modifier,
@@ -60,14 +54,6 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
                 cardNumber = cardNumber,
                 tabletPortrait = tabletPortrait.toString()
             )
-        }
-
-        composable(
-            AppScreen.PaymentHotels.route
-        ){
-            val hotelID = "zxB07ZbvA1DSL9eVPMzX"
-            val navController = rememberNavController()
-//            MobieLayout(3, 500.dp, 800.dp, hotelID= hotelID, navController)
         }
 
         composable(AppScreen.Home.route) {

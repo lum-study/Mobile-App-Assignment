@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Hotel
 import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -57,13 +58,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.bookblitzpremium.upcomingproject.StarRating
 import com.bookblitzpremium.upcomingproject.common.enums.Feature
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalRatingViewModel
 import com.bookblitzpremium.upcomingproject.data.model.Calendar
 import com.bookblitzpremium.upcomingproject.ui.components.HeaderDetails
-import com.bookblitzpremium.upcomingproject.ui.components.TeamMemberDropdown
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
 import com.bookblitzpremium.upcomingproject.ui.screen.booking.CalendarView
 import java.time.LocalDate
@@ -608,6 +607,20 @@ fun DialogDate(
                     modifier = Modifier.size(24.dp)
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun StarRating(rating: Int, maxRating: Int = 5, modifier: Modifier = Modifier) {
+    Row(modifier = modifier) {
+        for (i in 1..maxRating) {
+            Icon(
+                imageVector = if (i <= rating) Icons.Default.Star else Icons.Default.Star,
+                contentDescription = null,
+                tint = if (i <= rating) Color(0xFF4CAF50) else Color.Gray, // Green for filled, gray for empty
+                modifier = Modifier.size(16.dp)
+            )
         }
     }
 }
