@@ -1,7 +1,6 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.travel
 
 import android.graphics.Color.rgb
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +15,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Flight
+import androidx.compose.material.icons.outlined.HomeWork
 import androidx.compose.material.icons.outlined.Task
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -38,94 +38,127 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.bookblitzpremium.upcomingproject.R
+import androidx.navigation.NavHostController
+import com.bookblitzpremium.upcomingproject.data.model.TripPackageInformation
 import com.bookblitzpremium.upcomingproject.model.TripPackageTabs
+import com.bookblitzpremium.upcomingproject.ui.components.Base64Image
+import com.bookblitzpremium.upcomingproject.ui.screen.booking.HotelDetailScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.FlightScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.ScheduleScreen
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 
 
-@Preview(showBackground = true, widthDp = 1440, heightDp = 900)
 @Composable
-fun TravelHeaderTable() {
-    var selectedTabIndex by remember { mutableStateOf(0) }
+fun TravelHeaderTable(
+    navController: NavHostController,
+    selectedTripPackage: TripPackageInformation?,
+) {
+    if (selectedTripPackage != null) {
+        var selectedTabIndex by remember { mutableStateOf(0) }
 
-    // List of tab items
-    val tabs: List<TripPackageTabs> = listOf(
-        TripPackageTabs("Schedule", Icons.Outlined.Task, {ScheduleScreen()}),
-        TripPackageTabs("Flight", Icons.Outlined.Flight, { FlightScreen()}),
-//        TripPackageTabs("Hotel", Icons.Outlined.HomeWork, {  MobieLayout(2, 500.dp, 500.dp) }),
-    )
-
-    Row(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .fillMaxWidth(0.5f)
-                .background(Color.White),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.hotel_images),
-                contentDescription = stringResource(R.string.trip_package_image),
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.7f),
-            )
-            Text(
-                text = "Description",
-                style = AppTheme.typography.largeSemiBold,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp),
-            )
-
-        }
-
-
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .background(Color.White, RoundedCornerShape(32.dp))
-        ) {
-            TabRow(
-                selectedTabIndex = selectedTabIndex,
-                containerColor = Color(rgb(233, 233, 233)), // Background color
-                contentColor = Color.Black, // Text/icon color
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                tabs.forEachIndexed { index, tab ->
-                    Tab(
-                        selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
-                        text = {
-                            Text(
-                                text = tab.title,
-                                style = AppTheme.typography.mediumSemiBold,
-                                color = Color.Black
-                            )
-                        },
-                        icon = {
-                            Icon(
-                                imageVector = tab.icon,
-                                contentDescription = tab.title,
-                            )
-                        },
+        // List of tab items
+        val tabs: List<TripPackageTabs> = listOf(
+            TripPackageTabs(
+                title = "Schedule",
+                icon = Icons.Outlined.Task,
+                screen = {
+                    ScheduleScreen(
+                        tripPackageID = selectedTripPackage.id,
+                        startDate = selectedTripPackage.startDate,
+                        isTablet = true,
                     )
                 }
+            ),
+            TripPackageTabs(
+                title = "Flight",
+                icon = Icons.Outlined.Flight,
+                screen = {
+                    FlightScreen(
+                        flightID = selectedTripPackage.flightID,
+                        bookingID = ""
+                    )
+                }
+            ),
+            TripPackageTabs(
+                title = "Hotel",
+                icon = Icons.Outlined.HomeWork,
+                screen = {
+                    HotelDetailScreen(
+                        navController = navController,
+                        hotelBookingId = selectedTripPackage.hotelID,
+                        tripPackageID = selectedTripPackage.id
+                    )
+                }
+            ),
+        )
+
+        Row(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(0.5f)
+                    .background(Color.White),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Base64Image(
+                    base64String = selectedTripPackage.imageUrl,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.7f),
+                )
+                Text(
+                    text = "Description",
+                    style = AppTheme.typography.largeSemiBold,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp),
+                )
             }
-            Box(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(32.dp)),
-            ){
-                tabs[selectedTabIndex].screen()
+
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .background(Color.White, RoundedCornerShape(32.dp))
+            ) {
+                TabRow(
+                    selectedTabIndex = selectedTabIndex,
+                    containerColor = Color(rgb(233, 233, 233)), // Background color
+                    contentColor = Color.Black, // Text/icon color
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    tabs.forEachIndexed { index, tab ->
+                        Tab(
+                            selected = selectedTabIndex == index,
+                            onClick = { selectedTabIndex = index },
+                            text = {
+                                Text(
+                                    text = tab.title,
+                                    style = AppTheme.typography.mediumSemiBold,
+                                    color = Color.Black
+                                )
+                            },
+                            icon = {
+                                Icon(
+                                    imageVector = tab.icon,
+                                    contentDescription = tab.title,
+                                )
+                            },
+                        )
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .clip(RoundedCornerShape(32.dp)),
+                ) {
+                    tabs[selectedTabIndex].screen()
+                }
             }
         }
     }

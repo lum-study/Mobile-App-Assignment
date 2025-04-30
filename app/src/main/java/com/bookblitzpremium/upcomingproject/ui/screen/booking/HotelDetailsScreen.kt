@@ -70,7 +70,7 @@ fun HotelDetailScreen(
     navController: NavController,
     hotelBookingId: String,
     tripPackageID: String = "",
-    viewModel: LocalHotelViewModel = hiltViewModel()
+    viewModel: LocalHotelViewModel = hiltViewModel(),
 ) {
     LaunchedEffect(hotelBookingId) {
         viewModel.getHotelByID(hotelBookingId)
@@ -113,7 +113,7 @@ private fun HotelDetailContent(
             .verticalScroll(rememberScrollState())
             .background(AppTheme.colorScheme.background)
     ) {
-        HotelImageSection(hotel.imageUrl)
+        HotelImageSection(hotel.imageUrl, tripPackageID)
         Spacer(Modifier.height(16.dp))
         HotelInfoSection(hotel.name, hotel.address, hotel.rating)
         Spacer(Modifier.height(16.dp))
@@ -126,7 +126,7 @@ private fun HotelDetailContent(
 }
 
 @Composable
-private fun HotelImageSection(imageUrl: String) {
+private fun HotelImageSection(imageUrl: String, tripPackageID: String) {
     var showImage by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -134,19 +134,35 @@ private fun HotelImageSection(imageUrl: String) {
         showImage = true
     }
 
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .aspectRatio(3f / 4f)
-            .clip(RoundedCornerShape(16.dp))
-            .background(AppTheme.colorScheme.surfaceVariant)
-    ) {
-        if (showImage) {
+    if (tripPackageID.isEmpty()) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .aspectRatio(3f / 4f)
+                .clip(RoundedCornerShape(16.dp))
+                .background(AppTheme.colorScheme.surfaceVariant)
+        ) {
+            if (showImage) {
+                UrlImage(
+                    imageUrl = imageUrl,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+        }
+    } else {
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
             UrlImage(
                 imageUrl = imageUrl,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .width(200.dp)
+                    .height(200.dp)
             )
         }
     }
@@ -158,9 +174,17 @@ private fun HotelInfoSection(name: String, address: String, rating: Double) {
         Text(name, style = AppTheme.typography.largeBold, color = AppTheme.colorScheme.onBackground)
         Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Default.LocationOn, contentDescription = null, tint = AppTheme.colorScheme.secondary)
+            Icon(
+                Icons.Default.LocationOn,
+                contentDescription = null,
+                tint = AppTheme.colorScheme.secondary
+            )
             Spacer(Modifier.width(4.dp))
-            Text(address, color = AppTheme.colorScheme.secondary, style = AppTheme.typography.labelMedium)
+            Text(
+                address,
+                color = AppTheme.colorScheme.secondary,
+                style = AppTheme.typography.labelMedium
+            )
         }
         Spacer(Modifier.height(12.dp))
         Row(
@@ -177,7 +201,11 @@ private fun HotelInfoSection(name: String, address: String, rating: Double) {
 @Composable
 private fun RatingItem(rating: Double) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFD700)) // Gold color for stars
+        Icon(
+            Icons.Default.Star,
+            contentDescription = null,
+            tint = Color(0xFFFFD700)
+        ) // Gold color for stars
         Spacer(Modifier.width(4.dp))
         Text(rating.toString(), fontSize = 14.sp, color = AppTheme.colorScheme.onBackground)
     }
@@ -365,7 +393,6 @@ fun BookingHotelScreen(
 
                 Button(
                     onClick = {
-                        Log.e("gfgfhfg","Got value")
                         val hotelID = URLEncoder.encode(hotelData.id, "UTF-8")
                         val hotelPrice = URLEncoder.encode(hotelData.price.toString(), "UTF-8")
 

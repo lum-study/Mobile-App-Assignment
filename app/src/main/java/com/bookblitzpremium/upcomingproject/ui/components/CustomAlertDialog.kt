@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -27,9 +28,12 @@ import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 @Preview(widthDp = 350, heightDp = 250)
 @Composable
 fun TripPackageBookingDialog(
+    modifier: Modifier = Modifier,
+    hasError: String = "",
     isLoading: Boolean = true,
     onHomeButtonClick: (Boolean) -> Unit = {},
     onViewOrderButtonClick: (Boolean) -> Unit = {},
+    onDismissButtonClick: () -> Unit = {},
 ) {
     AlertDialog(
         onDismissRequest = {},
@@ -51,37 +55,64 @@ fun TripPackageBookingDialog(
                         }
 
                         false -> {
-                            Icon(
-                                imageVector = Icons.Default.CheckCircle,
-                                contentDescription = "Success",
-                                tint = Color(0xFF00FF0B),
-                                modifier = Modifier.size(100.dp)
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Booking Successful!",
-                                style = AppTheme.typography.mediumBold
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceEvenly
-                            ) {
+                            if (hasError.isNotEmpty()) {
+                                Icon(
+                                    imageVector = Icons.Default.ErrorOutline,
+                                    contentDescription = "Failed",
+                                    tint = Color(0xFFFF0000),
+                                    modifier = Modifier.size(100.dp)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Booking failed!",
+                                    style = AppTheme.typography.mediumBold
+                                )
+                                Text(
+                                    text = hasError,
+                                    style = AppTheme.typography.mediumBold
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
                                 Button(onClick = {
-                                    onHomeButtonClick(false)
+                                    onDismissButtonClick()
                                 }) {
                                     Text(
-                                        text = "Home",
+                                        text = "Try again later",
                                         style = AppTheme.typography.smallSemiBold
                                     )
                                 }
-                                Button(onClick = {
-                                    onViewOrderButtonClick(false)
-                                }) {
-                                    Text(
-                                        text = "View Booking",
-                                        style = AppTheme.typography.smallSemiBold
-                                    )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = "Success",
+                                    tint = Color(0xFF00FF0B),
+                                    modifier = Modifier.size(100.dp)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Booking Successful!",
+                                    style = AppTheme.typography.mediumBold
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceEvenly
+                                ) {
+                                    Button(onClick = {
+                                        onHomeButtonClick(false)
+                                    }) {
+                                        Text(
+                                            text = "Home",
+                                            style = AppTheme.typography.smallSemiBold
+                                        )
+                                    }
+                                    Button(onClick = {
+                                        onViewOrderButtonClick(false)
+                                    }) {
+                                        Text(
+                                            text = "View Booking",
+                                            style = AppTheme.typography.smallSemiBold
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -89,8 +120,6 @@ fun TripPackageBookingDialog(
                 }
             }
         },
-        modifier = Modifier
-            .height(250.dp)
-            .width(300.dp)
+        modifier = modifier
     )
 }
