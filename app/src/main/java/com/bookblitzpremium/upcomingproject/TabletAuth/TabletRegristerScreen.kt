@@ -83,13 +83,7 @@ fun RegristerVertical() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "step1") {
 
-        val hello = GenderField(
-            tabletScreen =  true,
-            selectedGender = "male",
-            email = "",
-            password = ""
-        )
-        composable("step1") { Step1Screen(navController, gender = hello) }
+        composable("step1") { Step1Screen(navController,true) }
 
         composable(route = "step1/{email}/{password}",
             arguments = listOf(
@@ -106,27 +100,27 @@ fun RegristerVertical() {
                 password = password,
             )
 
-            Step1Screen(navController, gender = hello)
+            Step1Screen(
+                navController,
+                tabletScreen = true,
+                email = email,
+                password =password
+            )
         }
 
         composable(
-            route = "gender/{email}/{password}",
+            route = "gender/{email}/{password}/{selectedGender}",
             arguments = listOf(
                 navArgument("email") { type = NavType.StringType },
                 navArgument("password") { type = NavType.StringType },
+                navArgument("selectedGender") { type = NavType.StringType },
             )
         ) { backStackEntry ->
             val email = backStackEntry.arguments?.getString("email").toString()
             val password = backStackEntry.arguments?.getString("password").toString()
+            val selectedGender = backStackEntry.arguments?.getString("password").toString()
 
-            val hello = GenderField(
-                tabletScreen = true,
-                selectedGender = "",
-                email = email,
-                password = password,
-            )
-
-            GenderSelectionScreen(remoteUserViewModel = hiltViewModel(), navController, gender = hello, onClick = { navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}") })
+            GenderSelectionScreen(remoteUserViewModel = hiltViewModel(), navController,true, email,password, onClick = { navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}") })
         }
 
         composable(
@@ -139,16 +133,9 @@ fun RegristerVertical() {
         ) { backStackEntry ->
             val email = backStackEntry.arguments?.getString("email").toString()
             val password = backStackEntry.arguments?.getString("password").toString()
-            val genderSelected = backStackEntry.arguments?.getString("password").toString()
+            val genderSelected = backStackEntry.arguments?.getString("genderSelected").toString()
 
-            val hello = GenderField(
-                tabletScreen = true,
-                selectedGender = genderSelected,
-                email = email,
-                password = password,
-            )
-
-            Step2Screen(navController, gender = hello) // pass it to your screen
+            Step2Screen(navController, true, email ,password ,genderSelected ) // pass it to your screen
         }
 
     }
@@ -160,11 +147,13 @@ fun String.encodeToUris(): String = this.toUri().toString().substringAfterLast("
 @Composable
 fun Step1Screen(
     navController: NavController,
-    gender : GenderField
+    tabletScreen: Boolean,
+    email :String  = "",
+    password :String =""
 ) {
-    val valueVertical: Dp = if (gender.tabletScreen) 280.dp else 100.dp
-    var email by rememberSaveable { mutableStateOf( gender.email) }
-    var password by rememberSaveable { mutableStateOf(gender.password) }
+    val valueVertical: Dp = if (tabletScreen) 280.dp else 100.dp
+    var email by rememberSaveable { mutableStateOf( email) }
+    var password by rememberSaveable { mutableStateOf(password) }
     var confirmPassword by rememberSaveable { mutableStateOf(password) }
 
     val context = LocalContext.current
@@ -226,6 +215,8 @@ fun Step1Screen(
         return true
     }
 
+    val selectedGender = ""
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -281,8 +272,6 @@ fun Step1Screen(
                             // Navigate to the corresponding step
                             when (stepNumber) {
                                 1 -> navController.navigate("step1/${email.encodeToUri()}/${password.encodeToUri()}")
-                                2 -> navController.navigate("gender/${userID.encodeToUris()}/${email.encodeToUri()}/${password.encodeToUri()}")
-                                3 -> navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}")
                             }
                         },
                     contentAlignment = Alignment.Center
@@ -362,14 +351,14 @@ fun Step1Screen(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        if (gender.tabletScreen) {
+        if (tabletScreen) {
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Button(
                     onClick = {
                         if(isFormValid()){
-                            navController.navigate("gender/${userID.encodeToUris()}/${email.encodeToUri()}/${password.encodeToUri()}")
+                            navController.navigate("gender/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}")
                         }
                     },
                     modifier = Modifier
@@ -394,13 +383,13 @@ fun Step1Screen(
                 Button(
                     onClick = {
                         if(isFormValid()){
-                            navController.navigate("gender/${userID.encodeToUris()}/${email.encodeToUri()}/${password.encodeToUri()}")
+                            navController.navigate("gender/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}")
                         }
                     },
                     modifier = Modifier
                         .weight(0.5f)
                         .height(48.dp)
-                        .border( 1.dp, Color.Black, RoundedCornerShape(24.dp)),
+                        .border(1.dp, Color.Black, RoundedCornerShape(24.dp)),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (valueVertical == 20.dp) Color.Black else Color.White
                     ),
@@ -443,7 +432,7 @@ fun Step1Screen(
                 Button(
                     onClick = {
                         if(isFormValid()){
-                            navController.navigate("gender/${userID.encodeToUris()}/${email.encodeToUri()}/${password.encodeToUri()}")
+                            navController.navigate("gender/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}")
                         }
                     },
                     modifier = Modifier
@@ -468,7 +457,10 @@ fun Step1Screen(
 @Composable
 fun Step2Screen(
     navController: NavController,
-    gender: GenderField,
+    tabletScreen: Boolean,
+    email : String,
+    password : String,
+    genderSelected : String,
     viewModel: AuthViewModel = hiltViewModel(),
     remoteUserViewModel: RemoteUserViewModel = hiltViewModel(),
 ) {
@@ -510,7 +502,7 @@ fun Step2Screen(
     ) {
         // Background image
         Image(
-            painter = painterResource(id = if (gender.tabletScreen) R.drawable.hiking_potrait else R.drawable.hiking_new),
+            painter = painterResource(id = if (tabletScreen) R.drawable.hiking_potrait else R.drawable.hiking_new),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -525,7 +517,7 @@ fun Step2Screen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            val valueVertical: Dp = if (gender.tabletScreen) 150.dp else 100.dp
+            val valueVertical: Dp = if (tabletScreen) 150.dp else 100.dp
 
             Spacer(modifier = Modifier.height(valueVertical))
 
@@ -580,9 +572,9 @@ fun Step2Screen(
                                     if (stepNumber <= currentStep) {
                                         Modifier.clickable {
                                             when (stepNumber) {
-                                                1 -> navController.navigate("step1/${gender.email.encodeToUri()}/${gender.password.encodeToUri()}")
-                                                2 -> navController.navigate("gender/${gender.email.encodeToUri()}/${gender.password.encodeToUri()}")
-                                                3 -> navController.navigate("step2/${gender.email.encodeToUri()}/${gender.password.encodeToUri()}")
+                                                1 -> navController.navigate("step1/${email.encodeToUri()}/${password.encodeToUri()}")
+                                                2 -> navController.navigate("gender/${email.encodeToUri()}/${password.encodeToUri()}/${genderSelected.encodeToUri()}")
+                                                3 -> navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}/${genderSelected.encodeToUri()}")
                                             }
                                         }
                                     } else {
@@ -646,12 +638,14 @@ fun Step2Screen(
                 }
 
                 LaunchedEffect(Unit) {
-                    val username = gender.email.substringBefore("@")
+                    val username = email.substringBefore("@")
                     try {
-                        val customId = viewModel.signup(gender.email, gender.password)
-                        val user = User(id = customId, name = username, email = gender.email, password = gender.password)
+                        val customId = viewModel.signup(email, password)
+                        val user = User(id = customId, name = username, email = email, password = password)
                         remoteUserViewModel.addUser(customId, user)
-                        remoteUserViewModel.updateUserGender(customId, gender.selectedGender)
+                        remoteUserViewModel.updateUserGender(customId, genderSelected)
+
+
                     } catch (e: Exception) {
                         viewModel.setSignupError("Email is already registered: ${e.message}")
                     }

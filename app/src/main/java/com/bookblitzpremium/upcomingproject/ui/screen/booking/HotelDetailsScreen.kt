@@ -368,6 +368,7 @@ fun BookingHotelScreen(
                         Log.e("gfgfhfg","Got value")
                         val hotelID = URLEncoder.encode(hotelData.id, "UTF-8")
                         val hotelPrice = URLEncoder.encode(hotelData.price.toString(), "UTF-8")
+
                         navController.navigate(
                             "${AppScreen.BookingDate.route}/$hotelID/$hotelPrice"
                         )

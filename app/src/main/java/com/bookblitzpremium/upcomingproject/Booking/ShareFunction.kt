@@ -1,6 +1,5 @@
 package com.bookblitzpremium.upcomingproject.Booking
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -20,6 +18,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -48,7 +48,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -57,7 +56,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.StarRating
 import com.bookblitzpremium.upcomingproject.common.enums.Feature
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
@@ -68,7 +66,6 @@ import com.bookblitzpremium.upcomingproject.ui.components.TeamMemberDropdown
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
 import com.bookblitzpremium.upcomingproject.ui.screen.booking.CalendarView
 import java.time.LocalDate
-import kotlin.collections.forEach
 
 
 data class hotelDetails(
@@ -385,33 +382,50 @@ fun HotelDescriptionSection(
 }
 
 @Composable
-fun featureDisplay(
+fun FeatureDisplay(
     hotel:Hotel
 ){
     val hotelFeatures = mapFeaturesFromString(hotel.feature)
-    Row(
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3),
         modifier = Modifier
-            .padding(top = 8.dp),
+            .padding(top = 8.dp)
+            .fillMaxWidth(), // Optional for full width
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        hotelFeatures.forEach { feature ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Icon(
-                    imageVector = feature.icon,
-                    contentDescription = feature.title,
-                    tint = Color.Gray,
-                    modifier = Modifier.size(16.dp)
-                )
-                Text(
-                    text = feature.title,
-                    color = Color.Gray,
-                    fontSize = 12.sp
-                )
-            }
+        items(hotelFeatures.size) { feature ->
+            val h0telData = hotelFeatures[feature]
+            ScanOptionCard(option = h0telData)
         }
+    }
+}
+
+@Composable
+fun ScanOptionCard(
+    option: Feature,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFFF5E6CC)) // Light beige background
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Icon(
+            imageVector = option.icon,
+            contentDescription = option.title,
+            modifier = Modifier.size(48.dp),
+            tint = Color.Black
+        )
+        Text(
+            text = option.title,
+            style = MaterialTheme.typography.titleMedium,
+            textAlign = TextAlign.Center
+        )
     }
 }
 

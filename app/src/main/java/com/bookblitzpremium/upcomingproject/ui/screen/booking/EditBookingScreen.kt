@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.TurnedInNot
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -308,6 +309,8 @@ fun ModifyHotelBooking(
                                 endDate = selectedEndDate?.toString() ?: booking.endDate,
                             )
                             bookingViewModel.updateHotelBooking(booking)
+
+                            //whetever to direct to homepage or where
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -321,6 +324,8 @@ fun ModifyHotelBooking(
                     }
                 }
             }
+        }else{
+            CircularProgressIndicator()
         }
     }
 }

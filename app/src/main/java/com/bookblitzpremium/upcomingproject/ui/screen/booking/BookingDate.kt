@@ -1,6 +1,7 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.booking
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -40,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -374,6 +376,9 @@ fun CalendarView(
             modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
         )
 
+
+        val context = LocalContext.current
+
         Spacer(modifier = Modifier.weight(1f))
 
         if(showNext){
@@ -383,14 +388,16 @@ fun CalendarView(
                     val hotelPrice = URLEncoder.encode(hotelPrice, "UTF-8")
                     val startDate = URLEncoder.encode(tempStartDate.toString(), "UTF-8")
                     val endDate = URLEncoder.encode(tempEndDate.toString(), "UTF-8")
-                    navController.navigate(
-                        "${AppScreen.BookingPeople.route}/$hotelID/$hotelPrice/$startDate/$endDate"
-                    )
-//                if (tempStartDate == null && tempEndDate == null) {
-//                    navController.navigate(
-//                        "${AppScreen.BookingPeople.route}/$hotelID/$hotelPrice/$startDate/$endDate"
-//                    )
-//                }
+
+
+                    if(tempStartDate.toString().isNotEmpty() && tempEndDate.toString().isNotEmpty()){
+                        navController.navigate(
+                            "${AppScreen.BookingPeople.route}/$hotelID/$hotelPrice/$startDate/$endDate"
+                        )
+                    }else{
+                        Toast.makeText(context, "Please select both start and end dates", Toast.LENGTH_SHORT).show()
+                    }
+
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = AppTheme.colorScheme.primary, // Use primary for button

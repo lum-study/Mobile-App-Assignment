@@ -19,8 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.TurnedInNot
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -45,11 +43,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -59,10 +54,8 @@ import com.bookblitzpremium.upcomingproject.common.enums.PaymentMethod
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalPaymentViewModel
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemotePaymentViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.TripPackageBookingDialog

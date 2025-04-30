@@ -220,11 +220,16 @@ fun GuestSection(
                         val paymentID = paymentViewModel.addPayment(payment)
                         if (paymentID.isNotEmpty()) {
                             val encodedPaymentID = URLEncoder.encode(paymentID, "UTF-8")
-                            navController.navigate(
-                                "${AppScreen.BookingReview.route}/$hotelID/$startDate/$endDate/$totalPerson/$roomBooked/$totalPrice/$paymentMethod/$cardNumber/$encodedPaymentID"
-                            )
+                            if(encodedPaymentID.isNotEmpty() && cardNumber.isNotEmpty() && paymentMethod.isNotEmpty()){
+                                navController.navigate(
+                                    "${AppScreen.BookingReview.route}/$hotelID/$startDate/$endDate/$totalPerson/$roomBooked/$totalPrice/$paymentMethod/$cardNumber/$encodedPaymentID"
+                                )
+                            }else{
+                                //add the resposen to user
+                            }
                         } else {
                             // Handle empty paymentID
+                            //error appear can make the dialog to redirect the user to the homePage
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
