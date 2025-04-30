@@ -291,7 +291,11 @@ fun DragableToTop(
         )
 
         FeatureDisplay(
-            hotel = hotel
+            hotel = hotel,
+            modifier = Modifier
+                .padding(top = 8.dp)
+                .fillMaxWidth()
+                .padding(16.dp)
         )
 
         BookingSummaryTable(
@@ -380,7 +384,7 @@ fun DragableToTop(
                     }
                 }
             ) {
-                Text(text = "Proceed to Booking Review")
+                Text(text = "Next")
             }
         }
     }

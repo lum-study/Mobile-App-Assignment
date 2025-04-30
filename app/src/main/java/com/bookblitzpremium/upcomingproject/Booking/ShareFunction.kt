@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Hotel
 import androidx.compose.material.icons.filled.People
@@ -383,20 +384,19 @@ fun HotelDescriptionSection(
 
 @Composable
 fun FeatureDisplay(
-    hotel:Hotel
+    hotel:Hotel,
+    modifier: Modifier = Modifier
 ){
     val hotelFeatures = mapFeaturesFromString(hotel.feature)
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
-        modifier = Modifier
-            .padding(top = 8.dp)
-            .fillMaxWidth(), // Optional for full width
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(hotelFeatures.size) { feature ->
-            val h0telData = hotelFeatures[feature]
-            ScanOptionCard(option = h0telData)
+            val hotelData = hotelFeatures[feature]
+            ScanOptionCard(option = hotelData)
         }
     }
 }
@@ -410,7 +410,7 @@ fun ScanOptionCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFFF5E6CC)) // Light beige background
+            .background(Color.LightGray) // Light beige background
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -443,12 +443,10 @@ fun mapFeaturesFromString(input: String): List<Feature> {
 fun SelectFigure(
     onDateSelected: (Int?, Int?) -> Unit,
     modifier: Modifier = Modifier
-){
+) {
     var selected by rememberSaveable { mutableStateOf<String?>(null) }
-    var selectedAdult by rememberSaveable { mutableStateOf(1) }
-    var selectedRoom by rememberSaveable { mutableStateOf(1) }
 
-    val names = listOf(
+    val options = listOf(
         "4 Person - 1 Room",
         "8 Person - 2 Room",
         "12 Person - 3 Room",
@@ -457,24 +455,52 @@ fun SelectFigure(
         "24 Person - 6 Room",
     )
 
-    TeamMemberDropdown(
-        options = names,
-        selectedOption = selected,
-        onOptionSelected = {
-            selected = it
-            val personRegex = Regex("(\\d+) Person")
-            val roomRegex = Regex("(\\d+) Room")
+    Column(
+        modifier = modifier.padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        options.forEach { option ->
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(vertical = 4.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (selected == option) Color.DarkGray else Color.Black)
+                    .clickable {
+                        selected = option
 
-            val personMatch = personRegex.find(it)?.groupValues?.getOrNull(1)?.toIntOrNull()
-            val roomMatch = roomRegex.find(it)?.groupValues?.getOrNull(1)?.toIntOrNull()
-
-            selectedAdult = personMatch ?: 1
-            selectedRoom = roomMatch ?: 1
-
-            onDateSelected(selectedAdult, selectedRoom)
-        },
-        modifier = Modifier
-    )
+                        // Optional: Extract numbers to notify parent
+                        val (adult, room) = Regex("(\\d+) Person - (\\d+) Room")
+                            .find(option)
+                            ?.destructured
+                            ?.let { (person, room) -> person.toIntOrNull() to room.toIntOrNull() }
+                            ?: (null to null)
+                        onDateSelected(adult, room)
+                    }
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = option,
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    if (selected == option) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Selected",
+                            tint = Color.White
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -488,12 +514,12 @@ fun DialogFigure(
         Box(
             modifier = Modifier
                 .height(450.dp)
-                .width(500.dp)
+                .width(600.dp)
                 .clip(RoundedCornerShape(24.dp))
                 .background(Color.White)
         ) {
             SelectFigure(
-                modifier = Modifier.padding(12.dp),
+                modifier = Modifier.padding(vertical = 20.dp, horizontal = 24.dp),
                 onDateSelected = onDateSelected  // ✅ pass correctly
             )
 
@@ -501,7 +527,7 @@ fun DialogFigure(
                 onClick = onDismissRequest,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(8.dp)
+                    .padding(16.dp)
                     .size(32.dp)
             ) {
                 Icon(

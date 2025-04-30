@@ -735,30 +735,6 @@ fun PaymentDialog(
 
                         OTP()
 
-//                        Row(
-//                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-//                            modifier = Modifier
-//                                .fillMaxWidth()
-//                                .padding(horizontal = 60.dp, vertical = 24.dp)
-//                        ) {
-//                            state.code.forEachIndexed { index, number ->
-//
-////                                OtpInputField(
-////                                    number = number,
-////                                    focusRequester = focusRequesters[index],
-////                                    onFocusChanged = { if (it) onAction(OtpAction.OnChangeFieldFocused(index)) },
-////                                    onNumberChanged = { newNumber ->
-////                                        onAction(
-////                                            OtpAction.OnEnterNumber(
-////                                                newNumber,
-////                                                index
-////                                            )
-////                                        )
-////                                    },
-////                                    onKeyboardBack = { onAction(OtpAction.OnKeyboardBack) },
-////                                )
-//                            }
-//                        }
                         Text(
                             text = "Resend OTP",
                             style = TextStyle(

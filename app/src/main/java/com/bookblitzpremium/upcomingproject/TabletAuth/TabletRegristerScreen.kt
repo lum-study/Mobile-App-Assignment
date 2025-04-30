@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -67,11 +66,8 @@ import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
 import com.bookblitzpremium.upcomingproject.data.model.SignupState
-import com.bookblitzpremium.upcomingproject.genderField
-import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextFieldPassword
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.delay
 
 // Main entry point for the navigation
 
@@ -83,7 +79,7 @@ fun RegristerVertical() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "step1") {
 
-        composable("step1") { Step1Screen(navController,true) }
+        composable("step1") { Step1Screen(navController,false) }
 
         composable(route = "step1/{email}/{password}",
             arguments = listOf(
@@ -93,16 +89,9 @@ fun RegristerVertical() {
             val email = backStackEntry.arguments?.getString("email").toString()
             val password = backStackEntry.arguments?.getString("password").toString()
 
-            val hello = GenderField(
-                tabletScreen = true,
-                selectedGender = "",
-                email = email,
-                password = password,
-            )
-
             Step1Screen(
                 navController,
-                tabletScreen = true,
+                tabletScreen = false,
                 email = email,
                 password =password
             )
@@ -120,7 +109,7 @@ fun RegristerVertical() {
             val password = backStackEntry.arguments?.getString("password").toString()
             val selectedGender = backStackEntry.arguments?.getString("password").toString()
 
-            GenderSelectionScreen(remoteUserViewModel = hiltViewModel(), navController,true, email,password, onClick = { navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}") })
+            GenderSelectionScreen(remoteUserViewModel = hiltViewModel(), navController,false, email,password, onClick = { navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}") })
         }
 
         composable(
@@ -160,9 +149,6 @@ fun Step1Screen(
 
     var toastMessage by remember { mutableStateOf<String?>(null) } // State for Toast message
     var toastTrigger by remember { mutableStateOf(0) } // Unique trigger for Toast
-    var triggerSignup by rememberSaveable { mutableStateOf(false) }
-    var userID = FirebaseAuth.getInstance().currentUser?.uid.toString()
-
 
     LaunchedEffect(toastMessage, toastTrigger) {
         toastMessage?.let { message ->
@@ -351,7 +337,7 @@ fun Step1Screen(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        if (tabletScreen) {
+        if (tabletScreen == false) {
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
