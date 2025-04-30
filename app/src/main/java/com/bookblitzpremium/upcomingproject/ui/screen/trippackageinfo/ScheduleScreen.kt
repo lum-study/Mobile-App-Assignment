@@ -22,6 +22,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -55,7 +56,7 @@ fun SchedulePreview() {
 }
 
 @Composable
-fun ScheduleScreen(tripPackageID: String = "", startDate: String = "") {
+fun ScheduleScreen(tripPackageID: String = "", startDate: String = "", isTablet: Boolean = false) {
     val localScheduleViewModel: LocalScheduleViewModel = hiltViewModel()
     val scheduleList = remember(tripPackageID) {
         localScheduleViewModel.getScheduleByTripPackage(tripPackageID)
@@ -81,36 +82,72 @@ fun ScheduleScreen(tripPackageID: String = "", startDate: String = "") {
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 if (tabTitles.isNotEmpty()) {
-                    ScrollableTabRow(
-                        selectedTabIndex = selectedTabIndex,
-                    ) {
-                        tabTitles.forEachIndexed { index, day ->
-                            Tab(
-                                selected = selectedTabIndex == index,
-                                onClick = { selectedTabIndex = index },
-                                text = {
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                    ) {
-                                        Text(
-                                            text = stringResource(R.string.day_count, day),
-                                            style = AppTheme.typography.mediumSemiBold,
-                                            color = Color.Black
-                                        )
-                                        Text(
-                                            text = LocalDate.parse(startDate)
-                                                .plusDays(index.toLong()).format(
-                                                    DateTimeFormatter.ofPattern(
-                                                        "d MMM yyyy",
-                                                        Locale.ENGLISH
-                                                    )
-                                                ),
-                                            style = AppTheme.typography.smallRegular,
-                                            color = Color.Gray
-                                        )
+                    if (isTablet){
+                        TabRow(
+                            selectedTabIndex = selectedTabIndex,
+                        ) {
+                            tabTitles.forEachIndexed { index, day ->
+                                Tab(
+                                    selected = selectedTabIndex == index,
+                                    onClick = { selectedTabIndex = index },
+                                    text = {
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                        ) {
+                                            Text(
+                                                text = stringResource(R.string.day_count, day),
+                                                style = AppTheme.typography.mediumSemiBold,
+                                                color = Color.Black
+                                            )
+                                            Text(
+                                                text = LocalDate.parse(startDate)
+                                                    .plusDays(index.toLong()).format(
+                                                        DateTimeFormatter.ofPattern(
+                                                            "d MMM yyyy",
+                                                            Locale.ENGLISH
+                                                        )
+                                                    ),
+                                                style = AppTheme.typography.smallRegular,
+                                                color = Color.Gray
+                                            )
+                                        }
                                     }
-                                }
-                            )
+                                )
+                            }
+                        }
+                    }
+                    else {
+                        ScrollableTabRow(
+                            selectedTabIndex = selectedTabIndex,
+                        ) {
+                            tabTitles.forEachIndexed { index, day ->
+                                Tab(
+                                    selected = selectedTabIndex == index,
+                                    onClick = { selectedTabIndex = index },
+                                    text = {
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                        ) {
+                                            Text(
+                                                text = stringResource(R.string.day_count, day),
+                                                style = AppTheme.typography.mediumSemiBold,
+                                                color = Color.Black
+                                            )
+                                            Text(
+                                                text = LocalDate.parse(startDate)
+                                                    .plusDays(index.toLong()).format(
+                                                        DateTimeFormatter.ofPattern(
+                                                            "d MMM yyyy",
+                                                            Locale.ENGLISH
+                                                        )
+                                                    ),
+                                                style = AppTheme.typography.smallRegular,
+                                                color = Color.Gray
+                                            )
+                                        }
+                                    }
+                                )
+                            }
                         }
                     }
 
@@ -150,7 +187,8 @@ fun ScheduleScreen(tripPackageID: String = "", startDate: String = "") {
                             }
                         }
                     }
-                } else {
+                }
+                else {
                     SkeletonLoader(
                         modifier = Modifier
                             .fillMaxSize()

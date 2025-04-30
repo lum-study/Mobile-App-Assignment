@@ -1,5 +1,6 @@
 package com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
@@ -11,10 +12,12 @@ import com.bookblitzpremium.upcomingproject.data.database.remote.repository.Remo
 import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteTPBookingRepository
 import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteTripPackageRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 
 @HiltViewModel
@@ -118,27 +121,36 @@ class RemoteTPBookingViewModel @Inject constructor(
         }
     }
 
-    fun addPaymentAndBooking(payment: Payment, tpBooking: TPBooking) {
+    fun addPaymentAndBooking(payment: Payment, tpBooking: TPBooking, context: Context) {
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
 
             try {
-                val paymentID = remotePaymentRepository.addPayment(payment)
-                if (paymentID.isNotEmpty()) {
-                    val newTPBooking = tpBooking.copy(paymentID = paymentID)
-                    val bookingID = remoteTPBookingRepository.addTripPackageBooking(newTPBooking)
-                    if (bookingID.isNotEmpty()) {
-                        localPaymentRepository.addOrUpdatePayment(payment.copy(id = paymentID))
-                        localTPBookingRepository.addOrUpdateTPBooking(newTPBooking.copy(id = bookingID))
-                        val tripPackage =
-                            remoteTripPackageRepository.getTripPackageByID(tpBooking.tripPackageID)
-                        if (tripPackage != null) {
-                            remoteTripPackageRepository.updateTripPackage(tripPackage.copy(slots = tripPackage.slots - tpBooking.purchaseCount))
-                            localTripPackageRepository.addOrUpdateTripPackage(tripPackage.copy(slots = tripPackage.slots - tpBooking.purchaseCount))
+                withTimeout(5000L) { // 5 seconds timeout (in milliseconds)
+                    val paymentID = remotePaymentRepository.addPayment(payment)
+                    if (paymentID.isNotEmpty()) {
+                        val newTPBooking = tpBooking.copy(paymentID = paymentID)
+                        val bookingID =
+                            remoteTPBookingRepository.addTripPackageBooking(newTPBooking)
+                        if (bookingID.isNotEmpty()) {
+                            localPaymentRepository.addOrUpdatePayment(payment.copy(id = paymentID))
+                            localTPBookingRepository.addOrUpdateTPBooking(newTPBooking.copy(id = bookingID))
+                            val tripPackage =
+                                remoteTripPackageRepository.getTripPackageByID(tpBooking.tripPackageID)
+                            if (tripPackage != null) {
+                                remoteTripPackageRepository.updateTripPackage(tripPackage.copy(slots = tripPackage.slots - tpBooking.purchaseCount))
+                                localTripPackageRepository.addOrUpdateTripPackage(
+                                    tripPackage.copy(
+                                        slots = tripPackage.slots - tpBooking.purchaseCount
+                                    )
+                                )
+                            }
                         }
                     }
                 }
+            } catch (e: TimeoutCancellationException) {
+                _error.value = "Request timed out."
             } catch (e: Exception) {
                 _error.value = "Failed to insert tpBooking: ${e.localizedMessage}"
             } finally {
