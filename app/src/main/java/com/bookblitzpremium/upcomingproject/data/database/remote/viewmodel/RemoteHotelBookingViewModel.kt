@@ -4,11 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalHotelBookingRepo
-import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalPaymentRepository
-import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalPaymentRepository_Factory
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteHotelBookingRepository
-import com.google.firebase.database.Exclude
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -48,7 +44,7 @@ class RemoteHotelBookingViewModel @Inject constructor(
         }
     }
 
-    suspend fun addNewIntegratedRecord(hotelBooking: HotelBooking){
+    suspend fun addNewIntegratedRecord(hotelBooking: HotelBooking) {
         _loading.value = true
         _error.value = null
         try {
@@ -96,5 +92,16 @@ class RemoteHotelBookingViewModel @Inject constructor(
         }
     }
 
-
+    suspend fun getHotelBookingIfNotLoaded(userID: String): List<HotelBooking> {
+        return try {
+            _loading.value = true
+            _error.value = null
+            remoteHotelBookingRepository.getAllHotelBookingByUserID(userID)
+        } catch (e: Exception) {
+            _error.value = e.localizedMessage ?: "Failed to load trip package booking"
+            emptyList()
+        } finally {
+            _loading.value = false
+        }
+    }
 }

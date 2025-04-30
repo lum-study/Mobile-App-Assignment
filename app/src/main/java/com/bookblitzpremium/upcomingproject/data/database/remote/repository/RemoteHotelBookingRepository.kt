@@ -1,13 +1,12 @@
 package com.bookblitzpremium.upcomingproject.data.database.remote.repository
 
-import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class RemoteHotelBookingRepository @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
 ) {
     private val hotelbookingRef = firestore.collection("booking_hotel")
 
@@ -35,17 +34,10 @@ class RemoteHotelBookingRepository @Inject constructor(
         }
     }
 
-
+    suspend fun getAllHotelBookingByUserID(userID: String): List<HotelBooking> = try {
+        hotelbookingRef.whereEqualTo("userID", userID).get().await()
+            .toObjects(HotelBooking::class.java)
+    } catch (e: Exception) {
+        throw Exception(e)
+    }
 }
-
-//    suspend fun getHotelBookingsByUserId(userId: String): List<HotelBooking> {
-//        return hotelbookingRef
-//            .whereEqualTo("userid", userId)
-//            .get()
-//            .await()
-//            .toObjects(HotelBooking::class.java)
-//            .mapIndexed { index, booking ->
-//                val docId = hotelbookingRef.get().await().documents[index].id
-//                booking.copy(id = docId)
-//            }
-//    }

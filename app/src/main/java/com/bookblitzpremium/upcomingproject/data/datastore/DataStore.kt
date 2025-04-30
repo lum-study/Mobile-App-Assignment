@@ -15,6 +15,7 @@ val Context.dataStore by preferencesDataStore(name = "app_preferences")
 
 object PreferencesKeys {
     val IS_FIRST_LAUNCH = booleanPreferencesKey("is_first_launch")
+    val IS_TRANSACTION_UPDATED = booleanPreferencesKey("is_transaction_updated")
 }
 
 class DataStoreManager(private val context: Context) {
@@ -30,9 +31,27 @@ class DataStoreManager(private val context: Context) {
             preferences[PreferencesKeys.IS_FIRST_LAUNCH] ?: true
         }
 
+    val isTransactionUpdated: Flow<Boolean> = context.dataStore.data
+        .catch {
+            if (it is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw it
+            }
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.IS_TRANSACTION_UPDATED] ?: false
+        }
+
     suspend fun setFirstLaunch(value: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.IS_FIRST_LAUNCH] = value
+        }
+    }
+
+    suspend fun setTransactionUpdated(value: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.IS_TRANSACTION_UPDATED] = value
         }
     }
 }

@@ -158,7 +158,7 @@ fun TitleBar(
         colors = TopAppBarDefaults.mediumTopAppBarColors(
             containerColor = Color.Transparent
         ),
-        modifier = modifier.height(60.dp),
+        modifier = modifier.height(72.dp),
         navigationIcon = {
             if (canNavigateBack) {
                 IconButton(

@@ -58,6 +58,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.bookblitzpremium.upcomingproject.InitializeTransaction
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.common.enums.BookingType
@@ -74,6 +75,7 @@ import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 
 @Composable
 fun HomeScreen(navController: NavHostController) {
+    InitializeTransaction()
     val localHotelViewModel: LocalHotelViewModel = hiltViewModel()
     val hotelList =
         remember { localHotelViewModel.getAllHotelsPagingFlow() }.collectAsLazyPagingItems()
