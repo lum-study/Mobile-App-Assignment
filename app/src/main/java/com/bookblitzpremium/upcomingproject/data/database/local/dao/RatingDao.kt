@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface RatingDao {
-
     @Upsert
     suspend fun upsertRating(rating: Rating)
 
