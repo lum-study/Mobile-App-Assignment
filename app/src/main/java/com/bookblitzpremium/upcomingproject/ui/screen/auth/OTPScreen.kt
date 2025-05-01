@@ -23,23 +23,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,14 +41,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextRange
@@ -75,6 +67,9 @@ import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.model.OtpAction
 import com.bookblitzpremium.upcomingproject.data.model.OtpState
+
+
+
 
 @Composable
 fun PermissionRequestScreen() {
@@ -484,57 +479,3 @@ private fun OtpInputFieldPreview() {
         onNumberChanged = {},
     )
 }
-
-
-//
-//@Composable
-//fun OtpInputField(
-//    number: Int?,
-//    focusRequester: FocusRequester,
-//    onFocusChanged: (Boolean) -> Unit,
-//    onNumberChanged: (Int?) -> Unit,
-//    onKeyboardBack: () -> Unit,
-//    modifier: Modifier = Modifier
-//) {
-//    var isFocused by remember { mutableStateOf(false) }
-//    val text = remember(number) { TextFieldValue(number?.toString() ?: "") }
-//
-//    BasicTextField(
-//        value = text,
-//        onValueChange = { newText ->
-//            val newNumber = newText.text
-//            if (newNumber.length <= 1 && newNumber.isDigitsOnly()) {
-//                onNumberChanged(newNumber.toIntOrNull())
-//            }
-//        },
-//        cursorBrush = SolidColor(Color.Black),
-//        singleLine = true,
-//        textStyle = TextStyle(
-//            textAlign = TextAlign.Center,
-//            fontWeight = FontWeight.Bold,
-//            fontSize = 20.sp,
-//            color = Color.Black
-//        ),
-//        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-//        modifier = modifier
-//            .size(48.dp, 48.dp)
-//            .background(Color(0xFFE0E0E0), RoundedCornerShape(8.dp))
-//            .focusRequester(focusRequester)
-//            .onFocusChanged {
-//                isFocused = it.isFocused
-//                onFocusChanged(it.isFocused)
-//            }
-//            .onKeyEvent { event ->
-//                val didPressDelete = event.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DEL
-//                if (didPressDelete && number == null) {
-//                    onKeyboardBack()
-//                }
-//                false
-//            },
-//        decorationBox = { innerBox ->
-//            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-//                innerBox()
-//            }
-//        }
-//    )
-//}

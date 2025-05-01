@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -31,6 +32,60 @@ import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalH
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import com.bookblitzpremium.upcomingproject.ui.utility.ToastUtils
+
+@Composable
+fun HotelBookingListScreen(navController: NavController, userId: String) {
+    val viewModelHotelBooking: LocalHotelBookingViewModel = hiltViewModel()
+
+    // Fetch data on first load
+    LaunchedEffect(Unit) {
+        viewModelHotelBooking.fetchHotelBookingsByUserId(userId)
+    }
+
+    val bookingData by viewModelHotelBooking.hotelUserID.collectAsState()
+    val hotelMap by viewModelHotelBooking.hotelsMap.collectAsState()
+
+    when {
+        bookingData == null -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+
+        bookingData!!.isEmpty() -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "No Bookings Found")
+            }
+        }
+
+        else -> {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(bookingData!!) { booking ->
+                    val hotel = hotelMap[booking.hotelID]
+                    hotel?.let {
+                        HotelBookingItem(
+                            hotelImageUrl = it.imageUrl,
+                            booking = booking.id.toString(),
+                            navController = navController
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun HotelBookingItem(
@@ -38,6 +93,8 @@ fun HotelBookingItem(
     booking: String,
     navController: NavController
 ) {
+    val context = LocalContext.current
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -57,9 +114,8 @@ fun HotelBookingItem(
                     .clickable(onClick = {
                         if (booking.isNotEmpty()) {
                             navController.navigate("${AppScreen.BookingHistory.route}/$booking")
-                            Log.d("Navigation", "${AppScreen.BookingHistory.route}/$booking")
                         } else {
-                            Log.d("c", "Booking ID is empty")
+                            ToastUtils.showSingleToast(context,"Booking ID is empty" )
                         }
                     }),
                 contentScale = ContentScale.Crop,
@@ -77,66 +133,6 @@ fun HotelBookingItem(
                     color = AppTheme.colorScheme.onSurface, // Text on surface
                     style = AppTheme.typography.mediumBold
                 )
-            }
-        }
-    }
-}
-
-@Composable
-fun HotelBookingListScreen(navController: NavController, userId: String) {
-    val viewModelHotelBooking: LocalHotelBookingViewModel = hiltViewModel()
-    val viewModelHotel: LocalHotelViewModel = hiltViewModel()
-
-    LaunchedEffect(Unit) {
-        viewModelHotelBooking.fetchHotelBookingsByUserId(userId)
-    }
-
-    val bookingData by viewModelHotelBooking.hotelUserID.collectAsState()
-    val hotelData by viewModelHotel.selectedHotel.collectAsState()
-
-    if (bookingData == null) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(AppTheme.colorScheme.background),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator(
-                color = AppTheme.colorScheme.primary
-            )
-        }
-    } else if (bookingData.isEmpty()) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(AppTheme.colorScheme.background),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "No Bookings Found",
-                color = AppTheme.colorScheme.onSurface,
-                style = AppTheme.typography.mediumBold
-            )
-        }
-    } else {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(AppTheme.colorScheme.background)
-                .padding(top = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(bookingData) { booking ->
-                LaunchedEffect(booking) {
-                    viewModelHotel.getHotelByID(booking.hotelID)
-                }
-                hotelData?.let {
-                    HotelBookingItem(
-                        hotelImageUrl = it.imageUrl,
-                        booking = booking.id.toString(),
-                        navController = navController
-                    )
-                }
             }
         }
     }

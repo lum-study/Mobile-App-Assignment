@@ -71,7 +71,7 @@ import java.time.LocalDate
 
 @Composable
 fun HotelBookingHorizontalScreen(
-    onNextButtonClicked: () -> Unit,
+    onNextButtonClicked: () -> Unit = {},
     hotelID: String,
     navController: NavController,
     viewModel: LocalHotelViewModel = hiltViewModel(),
@@ -262,7 +262,6 @@ fun HotelBookingHorizontalScreen(
                                         .padding(16.dp),
                                     enabled = startDate != null && endDate != null && roomCount != null && adultCount !=null,
                                     onClick = {
-
                                         coroutineScope.launch {
                                             try {
                                                 val paymentID = paymentViewModel.addPayment(payment)
@@ -288,7 +287,6 @@ fun HotelBookingHorizontalScreen(
             }
         }
     } else {
-        // Handle loading or error state
         CircularProgressIndicator(modifier = Modifier)
     }
 }

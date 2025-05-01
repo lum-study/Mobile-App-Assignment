@@ -43,7 +43,7 @@ fun TripPackageBookingDialog(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceAround,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.size(200.dp)
                 ) {
                     when (isLoading) {
                         true -> {

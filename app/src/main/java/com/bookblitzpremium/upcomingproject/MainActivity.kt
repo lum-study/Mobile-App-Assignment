@@ -37,6 +37,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -57,11 +58,13 @@ import com.bookblitzpremium.upcomingproject.common.enums.BottomNavigation
 import com.bookblitzpremium.upcomingproject.common.enums.DeviceType
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.ui.navigation.AppNavigation
+import com.bookblitzpremium.upcomingproject.ui.screen.auth.LoginPage
 import com.bookblitzpremium.upcomingproject.ui.screen.home.DrawerLabel
 import com.bookblitzpremium.upcomingproject.ui.screen.home.GreetingProfile
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 import com.google.firebase.FirebaseApp
+
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -78,11 +81,28 @@ class MainActivity : ComponentActivity() {
                 ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
 
+
         FirebaseApp.initializeApp(this)
         setContent {
             AppTheme {
-                InitializeDatabase()
+                val navController = rememberNavController()
+//                GenderSelectionScreen(
+//                    navController = navController,
+//                    tabletScreen = false,
+//                )
+
+                val viewModel: AuthViewModel = hiltViewModel()
+//                LoginPage(
+//                    showToggleToTablet = false,
+//                    navController = navController,
+//                    email = "",
+//                    viewModel  = viewModel
+//                )
+
+//                InitializeDatabase()
                 App()
+                val hotelID = "0HCQgp6kuauoYiRH094D"
+//                HotelBookingScreenLayout(navController = navController, hotelID = hotelID , tripPackageID = "")
             }
         }
     }

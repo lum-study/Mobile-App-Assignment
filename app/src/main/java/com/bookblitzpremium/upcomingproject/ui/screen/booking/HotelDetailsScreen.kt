@@ -256,161 +256,160 @@ private fun BookNowButton(price: String, onBook: (String) -> Unit) {
 
 
 
-@Composable
-fun BookingHotelScreen(
-    navController: NavController,
-    viewModel : LocalHotelViewModel = hiltViewModel(),
-    hotelBooking: String
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        LaunchedEffect(Unit) {
-            viewModel.getHotelByID(hotelBooking)
-        }
-        val hotel by viewModel.selectedHotel.collectAsState()
-        if (hotel != null) {
-            val hotelData = hotel!!
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.64f)
-                    .clip(RoundedCornerShape(bottomEnd = 16.dp, bottomStart = 16.dp))
-            ) {
-
-                UrlImage(
-                    imageUrl = hotelData.imageUrl,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp)
-                        .clip(RoundedCornerShape(16.dp)),
-                    contentScale = ContentScale.Crop,
-                )
-            }
-
-            // Main Content
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(AppTheme.colorScheme.onBackground)
-                    .padding(16.dp)
-            ) {
-                // Title with Heart Icon
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = hotelData.name,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-                }
-                // Location
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.LocationOn,
-                        contentDescription = "Location",
-                        tint = AppTheme.colorScheme.secondary
-                    )
-                    Text(
-                        text = hotelData.address,
-                        color = AppTheme.colorScheme.secondary,
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(start = 4.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                // Rating, Distance, Restaurants
-                Row(
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = "Rating",
-                            tint = Color.Yellow
-                        )
-                        Text(
-                            text = hotelData.rating.toString(),
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(start = 4.dp)
-                        )
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.DirectionsCar,
-                            contentDescription = "Distance",
-                            tint = AppTheme.colorScheme.secondary
-                        )
-                        Text(
-                            text = "3000 km",
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(start = 4.dp)
-                        )
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Restaurant,
-                            contentDescription = "Restaurants",
-                            tint = AppTheme.colorScheme.secondary
-                        )
-                        Text(
-                            text = "108 avail.",
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(start = 4.dp)
-                        )
-                    }
-                }
-
-                // About Destination
-                Text(
-                    text = "About Destination",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    modifier = Modifier
-                        .padding(bottom = 4.dp)
-                )
-
-                val description = generateHotelDescription(hotelData.name, hotelData.rating)
-
-                Text(
-                    text = description,
-                    color = AppTheme.colorScheme.secondary,
-                    fontSize = 14.sp
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                // Book Now Button
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                Button(
-                    onClick = {
-                        val hotelID = URLEncoder.encode(hotelData.id, "UTF-8")
-                        val hotelPrice = URLEncoder.encode(hotelData.price.toString(), "UTF-8")
-
-                        navController.navigate(
-                            "${AppScreen.BookingDate.route}/$hotelID/$hotelPrice"
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
-                ) {
-                    Text(text = "Book Now", color = AppTheme.colorScheme.onBackground)
-                }
-            }
-        } else {
-            CircularProgressIndicator()
-        }
-    }
-}
+//@Composable
+//fun BookingHotelScreen(
+//    navController: NavController,
+//    viewModel : LocalHotelViewModel = hiltViewModel(),
+//    hotelBooking: String
+//) {
+//    Column(
+//        modifier = Modifier
+//            .fillMaxSize()
+//    ) {
+//        LaunchedEffect(Unit) {
+//            viewModel.getHotelByID(hotelBooking)
+//        }
+//        val hotel by viewModel.selectedHotel.collectAsState()
+//        if (hotel != null) {
+//            val hotelData = hotel!!
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .fillMaxHeight(0.64f)
+//                    .clip(RoundedCornerShape(bottomEnd = 16.dp, bottomStart = 16.dp))
+//            ) {
+//
+//                UrlImage(
+//                    imageUrl = hotelData.imageUrl,
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .padding(horizontal = 16.dp)
+//                        .clip(RoundedCornerShape(16.dp)),
+//                    contentScale = ContentScale.Crop,
+//                )
+//            }
+//
+//            // Main Content
+//            Column(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .background(AppTheme.colorScheme.onBackground)
+//                    .padding(16.dp)
+//            ) {
+//                // Title with Heart Icon
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxWidth(),
+//                    horizontalArrangement = Arrangement.SpaceBetween,
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    Text(
+//                        text = hotelData.name,
+//                        fontSize = 24.sp,
+//                        fontWeight = FontWeight.Bold,
+//                        color = Color.Black
+//                    )
+//                }
+//                // Location
+//                Row(verticalAlignment = Alignment.CenterVertically) {
+//                    Icon(
+//                        imageVector = Icons.Default.LocationOn,
+//                        contentDescription = "Location",
+//                        tint = AppTheme.colorScheme.secondary
+//                    )
+//                    Text(
+//                        text = hotelData.address,
+//                        color = AppTheme.colorScheme.secondary,
+//                        fontSize = 14.sp,
+//                        modifier = Modifier.padding(start = 4.dp)
+//                    )
+//                }
+//                Spacer(modifier = Modifier.height(8.dp))
+//                // Rating, Distance, Restaurants
+//                Row(
+//                    modifier = Modifier.fillMaxWidth()
+//                        .padding(8.dp),
+//                    horizontalArrangement = Arrangement.SpaceBetween
+//                ) {
+//                    Row(verticalAlignment = Alignment.CenterVertically) {
+//                        Icon(
+//                            imageVector = Icons.Default.Star,
+//                            contentDescription = "Rating",
+//                            tint = Color.Yellow
+//                        )
+//                        Text(
+//                            text = hotelData.rating.toString(),
+//                            fontSize = 14.sp,
+//                            modifier = Modifier.padding(start = 4.dp)
+//                        )
+//                    }
+//                    Row(verticalAlignment = Alignment.CenterVertically) {
+//                        Icon(
+//                            imageVector = Icons.Default.DirectionsCar,
+//                            contentDescription = "Distance",
+//                            tint = AppTheme.colorScheme.secondary
+//                        )
+//                        Text(
+//                            text = "3000 km",
+//                            fontSize = 14.sp,
+//                            modifier = Modifier.padding(start = 4.dp)
+//                        )
+//                    }
+//                    Row(verticalAlignment = Alignment.CenterVertically) {
+//                        Icon(
+//                            imageVector = Icons.Default.Restaurant,
+//                            contentDescription = "Restaurants",
+//                            tint = AppTheme.colorScheme.secondary
+//                        )
+//                        Text(
+//                            text = "108 avail.",
+//                            fontSize = 14.sp,
+//                            modifier = Modifier.padding(start = 4.dp)
+//                        )
+//                    }
+//                }
+//
+//                // About Destination
+//                Text(
+//                    text = "About Destination",
+//                    fontSize = 18.sp,
+//                    fontWeight = FontWeight.Bold,
+//                    color = Color.Black,
+//                    modifier = Modifier
+//                        .padding(bottom = 4.dp)
+//                )
+//
+//                val description = generateHotelDescription(hotelData.name, hotelData.rating)
+//
+//                Text(
+//                    text = description,
+//                    color = AppTheme.colorScheme.secondary,
+//                    fontSize = 14.sp
+//                )
+//                Spacer(modifier = Modifier.height(16.dp))
+//                // Book Now Button
+//
+//                Spacer(modifier = Modifier.weight(1f))
+//
+//                Button(
+//                    onClick = {
+//                        val hotelID = hotelData.id
+//                        val hotelPrice = hotelData.price.toString()
+//                        navController.navigate(
+//                            "${AppScreen.BookingDate.route}/$hotelID/$hotelPrice"
+//                        )
+//                    },
+//                    modifier = Modifier.fillMaxWidth(),
+//                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+//                ) {
+//                    Text(text = "Book Now", color = AppTheme.colorScheme.onBackground)
+//                }
+//            }
+//        } else {
+//            CircularProgressIndicator()
+//        }
+//    }
+//}
 
 fun generateHotelDescription(hotelName: String, rating: Double): String {
     val templates = listOf(

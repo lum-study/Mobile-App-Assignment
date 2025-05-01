@@ -1,36 +1,30 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.booking
 
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.TurnedInNot
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -49,14 +43,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.media3.common.util.Log
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
-import com.google.firebase.auth.FirebaseAuth
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -72,7 +65,7 @@ fun PreviewIt(){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookingDaySelector(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     startDate: String,
     maxRange: Int, // Maximum number of days for booking (e.g., 30 days)
     onBookingRangeSelected: (LocalDate, LocalDate) -> Unit // Callback to return the selected dates
@@ -105,7 +98,7 @@ fun BookingDaySelector(
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier.menuAnchor()
                 .fillMaxWidth(),
-            colors = TextFieldDefaults.textFieldColors(
+            colors = TextFieldDefaults.colors(
                 focusedIndicatorColor = AppTheme.colorScheme.primary,
                 unfocusedIndicatorColor = AppTheme.colorScheme.secondary,
                 focusedLabelColor = AppTheme.colorScheme.primary,
@@ -121,10 +114,10 @@ fun BookingDaySelector(
             options.forEach { (start, end) ->
                 DropdownMenuItem(
                     text = {
-                        Text("From ${start.toString()} to ${end.toString()}")
+                        Text("From $start to $end")
                     },
                     onClick = {
-                        selectedText = "From ${start} to ${end}"
+                        selectedText = "From $start to $end"
                         onBookingRangeSelected(start, end)
                         expanded = false
                     }
@@ -137,9 +130,12 @@ fun BookingDaySelector(
 @Composable
 fun ModifyHotelBooking(
     navController: NavController,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     booking : String
 ) {
+
+    //left the exception for the it is expired
+    //can change to into a function
 
     val bookingViewModel: LocalHotelBookingViewModel = hiltViewModel()
     val hotelViewModel: LocalHotelViewModel = hiltViewModel()
@@ -148,26 +144,23 @@ fun ModifyHotelBooking(
     var selectedEndDate by remember { mutableStateOf<LocalDate?>(null) }
 
     bookingViewModel.fetchHotelBookingsById(booking)
+
     val bookingData by bookingViewModel.hotelBookingHistory.collectAsState()
     val booking = bookingData.firstOrNull()
 
     hotelViewModel.getHotelByID(booking?.hotelID.toString())
+
     val hotelData by hotelViewModel.selectedHotel.collectAsState()
 
     booking?.let {
         if (hotelData != null) {
-            // The start date and maximum range
-            val startDate = booking.startDate
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
-            // Parse strings to LocalDate
             val start = LocalDate.parse(booking.startDate, formatter)
             val end = LocalDate.parse(booking.endDate, formatter)
 
-            // Calculate days between
             val maxRange = ChronoUnit.DAYS.between(start, end).toInt()
 
-            // Callback to handle the selected booking range
             val onBookingRangeSelected: (LocalDate, LocalDate) -> Unit = { start, end ->
                 selectedStartDate = start
                 selectedEndDate = end
@@ -270,7 +263,12 @@ fun ModifyHotelBooking(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    MapsButton(onClick = {},modifier = Modifier)
+                    val locationName = hotelData!!.name
+                    MapsButton(
+                        onClick = {
+                            navController.navigate("${AppScreen.Maps.route}/$locationName")
+                        }, modifier = Modifier
+                    )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -292,13 +290,6 @@ fun ModifyHotelBooking(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
-                    )
-
-                    val currentUser = FirebaseAuth.getInstance().currentUser
-                    var userID = currentUser?.uid.toString()
-
-                    Text(
-                        text = userID.toString()
                     )
 
                     // — NEXT BUTTON: fixed at bottom, centered horizontally —
@@ -349,7 +340,6 @@ fun MapsButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     }
 }
 
-
 fun extractMalaysianState(address: String): String? {
     val states = listOf(
         "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan",
@@ -365,31 +355,3 @@ fun extractMalaysianState(address: String): String? {
         addressLower.contains(state.lowercase())
     }
 }
-
-
-//                    // — LEGEND ROW: spaced evenly across width —
-//                    Row(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .padding(vertical = 8.dp),
-//                        horizontalArrangement = Arrangement.SpaceBetween,
-//                    ) {
-//                        LegendItem1(
-//                            icon = Icons.Filled.CalendarToday,
-//                            iconDescription = "Check In",
-//                            label = "Check‑In",
-//                            date = selectedStartDate?.toString() ?: booking.startDate
-//                        )
-//                        LegendItem1(
-//                            icon = Icons.Filled.CalendarToday,
-//                            iconDescription = "Check Out",
-//                            label = "Check‑Out",
-//                            date = selectedEndDate?.toString() ?: booking.endDate
-//                        )
-//                        LegendItem1(
-//                            icon = Icons.Filled.TurnedInNot,
-//                            iconDescription = "Ticket",
-//                            label = "Ticket",
-//                            date = ""
-//                        )
-//                    }

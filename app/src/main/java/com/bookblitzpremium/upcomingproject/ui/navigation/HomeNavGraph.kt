@@ -9,13 +9,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.bookblitzpremium.upcomingproject.HotelBookingScreenLayout
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.booking.HotelBookingListScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.booking.ModifyHotelBooking
 import com.bookblitzpremium.upcomingproject.ui.screen.booking.ReviewFinalPackageSelected
 import com.bookblitzpremium.upcomingproject.ui.screen.booking.TripPackageBookingScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.home.HomeScreen
-import com.bookblitzpremium.upcomingproject.ui.screen.hotel.DynamicHotelDetails
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.FlightScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.ScheduleScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.TripPackageScreen
@@ -26,6 +26,28 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
         startDestination = AppScreen.Home.route,
         route = AppScreen.HomeGraph.route
     ) {
+
+
+        composable(
+            "${AppScreen.Hotel.route}/{hotelID}/{tripPackageID}",
+        ){ backStackEntry ->
+            val hotelID = "0HCQgp6kuauoYiRH094D"
+//            val hotelID = backStackEntry.arguments?.getString("hotelID") ?: ""
+            val tripPackageID = backStackEntry.arguments?.getString("tripPackageID") ?: ""
+
+//            HotelDetailScreen(
+//                navController = navController,
+//                hotelBookingId = hotelID,
+//                tripPackageID = tripPackageID
+//            )
+
+            HotelBookingScreenLayout(
+                navController = navController,
+                hotelID = hotelID,
+                tripPackageID = tripPackageID,
+            )
+        }
+
         composable(
             route = "BookingReview/{hotelID}/{startDate}/{endDate}/{totalPerson}/{roomBooked}/{totalPrice}/{paymentMethod}/{cardNumber}/{paymentID}/{tabletPortrait}"
         ) { backStackEntry ->

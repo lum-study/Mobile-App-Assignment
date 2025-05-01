@@ -16,11 +16,15 @@ data class MainDesign(
     val onPrimary: Color,
     val secondary: Color,
     val onSecondary: Color,
-    val surface: Color = Color.White, // Added defaults
-    val onSurface: Color = Color.Black,
-    val surfaceVariant: Color = Color(0xFFEEEEEE),
-    val error: Color = Color(0xFFB00020),
-    val onText: Color
+    val surface: Color,
+    val onSurface: Color,
+    val surfaceVariant: Color,
+    val error: Color,
+    val onText: Color,
+    val starRating: Color,
+    val primaryGradientStart: Color,
+    val primaryGradientEnd: Color,
+    val inRangeBackground: Color
 )
 
 data class AppTypography(
@@ -36,6 +40,7 @@ data class AppTypography(
     val headlineLarge: TextStyle,
     val titleLarge: TextStyle,
     val bodyLarge: TextStyle,
+    val labelLarge: TextStyle,
     val labelMedium: TextStyle,
     val labelSmall: TextStyle,
     val smallSemiBold: TextStyle,
@@ -70,7 +75,15 @@ val LocalAppColorSchema = staticCompositionLocalOf {
         onPrimary = Color.Unspecified,
         secondary = Color.Unspecified,
         onSecondary = Color.Unspecified,
-        onText = Color.Unspecified
+        onText = Color.Unspecified,
+        surface = Color.Unspecified,
+        onSurface = Color.Unspecified,
+        surfaceVariant = Color.Unspecified,
+        error = Color.Unspecified,
+        starRating = Color.Unspecified,
+        primaryGradientStart = Color.Unspecified,
+        primaryGradientEnd = Color.Unspecified,
+        inRangeBackground = Color.Unspecified
     )
 }
 
@@ -93,6 +106,7 @@ val LocalAppTypography = staticCompositionLocalOf {
         smallSemiBold = TextStyle.Default,
         smallBold = TextStyle.Default,
         dateBold = TextStyle.Default,
+        labelLarge = TextStyle.Default
     )
 }
 
@@ -111,6 +125,12 @@ val LocalAppSize = staticCompositionLocalOf {
         small = Dp.Unspecified,
     )
 }
+
+val LocalOnTextColor = staticCompositionLocalOf { Color.Black }
+val LocalStarRatingColor = staticCompositionLocalOf { Color(0xFFFFD700) }
+val LocalPrimaryGradientStart = staticCompositionLocalOf { Color(0xFF8B5CF6) }
+val LocalPrimaryGradientEnd = staticCompositionLocalOf { Color(0xFFEC4899) }
+
 
 val LocalElevation = staticCompositionLocalOf {
     Elevation(

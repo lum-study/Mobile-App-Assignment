@@ -12,6 +12,8 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object VerifyEmailWaiting : AppScreen("VerifyEmailWaiting", hasTopBar = false, hasBottomBar = false)
     data object ChangePassword : AppScreen("ChangePassword", hasTopBar = false, hasBottomBar = false)
     data object GenderScreen: AppScreen("GenderScreen", hasTopBar = false, hasBottomBar = false )
+    data object WelcomeLoginScreen: AppScreen("WelcomeLoginScreen", hasTopBar = false , hasBottomBar = false)
+    data object WelcomeRegristerScreen : AppScreen("WelcomeRegristerScreen", hasTopBar = false , hasBottomBar = false)
 
     // Home Screens
     data object HomeGraph : AppScreen("HomeGraph", hasTopBar = false, hasBottomBar = false)
@@ -48,6 +50,7 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object BookingReview : AppScreen("BookingReview", hasTopBar = true, hasBottomBar = false)
     data object BookingHistory : AppScreen("BookingHistory", hasTopBar = true, hasBottomBar = false)
     data object EditScreen : AppScreen("EditScreen", hasTopBar = true, hasBottomBar = false)
+    data object Maps: AppScreen("Maps", hasTopBar = false, hasBottomBar = false)
 
     // Entry Page
     data object EntryPage : AppScreen("EntryPage", hasTopBar = false, hasBottomBar = false)
@@ -75,12 +78,15 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
                 ForgotPassword.route -> ForgotPassword
                 VerifyEmailWaiting.route -> VerifyEmailWaiting
                 ChangePassword.route -> ChangePassword
+                WelcomeLoginScreen.route -> WelcomeLoginScreen
+                WelcomeRegristerScreen.route -> WelcomeRegristerScreen
                 HomeGraph.route -> HomeGraph
                 Home.route -> Home
                 TripPackage.route -> TripPackage
                 Schedule.route -> Schedule
                 Flight.route -> Flight
                 Hotel.route -> Hotel
+                Maps.route -> Maps
                 TripPackageBooking.route -> TripPackageBooking
                 SearchGraph.route -> SearchGraph
                 Search.route -> Search

@@ -2,12 +2,23 @@ package com.bookblitzpremium.upcomingproject.ui.navigation
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
+import com.bookblitzpremium.upcomingproject.GenderSelectionScreen
+import com.bookblitzpremium.upcomingproject.GenderSizeLayout
+import com.bookblitzpremium.upcomingproject.LoginSizeLayout
+import com.bookblitzpremium.upcomingproject.RegristerSizeLayout
+import com.bookblitzpremium.upcomingproject.TabletAuth.LoginScreen2
+import com.bookblitzpremium.upcomingproject.TabletAuth.Step1Screen
+import com.bookblitzpremium.upcomingproject.TabletAuth.TabletLoginScreen
+import com.bookblitzpremium.upcomingproject.TabletAuth.encodeToUri
+import com.bookblitzpremium.upcomingproject.WelcomeLoginSizeLayout
+import com.bookblitzpremium.upcomingproject.WelcomeRegristerSizeLayout
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.ui.screen.auth.DynamicForgetPasswordPage
@@ -19,7 +30,10 @@ import com.bookblitzpremium.upcomingproject.ui.screen.auth.RegristerPage
 
 
 @SuppressLint("UnrememberedGetBackStackEntry")
-fun NavGraphBuilder.authNavGraph(navController: NavHostController, viewModel: AuthViewModel) {
+fun NavGraphBuilder.authNavGraph(
+    navController: NavHostController,
+    viewModel: AuthViewModel
+) {
 
     Log.e("MyTag", "This is an error log message")
 
@@ -30,6 +44,11 @@ fun NavGraphBuilder.authNavGraph(navController: NavHostController, viewModel: Au
         composable(
             route = AppScreen.Login.route,
         ) {
+
+//            LoginSizeLayout(
+//                navController = navController,
+//                viewModel = viewModel,
+//            )
             LoginPage(
                 showToggleToTablet = false,
                 navController = navController,
@@ -38,37 +57,118 @@ fun NavGraphBuilder.authNavGraph(navController: NavHostController, viewModel: Au
             )
         }
 
-//        composable(
-//            route = "${AppScreen.Login.route}/{email}",
-//            arguments = listOf(navArgument("email") { type = NavType.StringType })
-//        ) { backStackEntry ->
-//            val email = backStackEntry.arguments?.getString("email") ?: ""
-//            LoginPage(
-//                showToggleToTablet = false,
-//                navController = navController,
-//                email = email,
-//                viewModel = viewModel
-//            )
-//        }
 
-//        composable(AppScreen.VerifyEmailWaiting.route){
-//            VerifyEmailWaitingScreen(navController)
-//        }
+        composable(
+            route = "${AppScreen.Login.route}/{email}/{password}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType },
+                navArgument("password") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email").toString()
+            val password = backStackEntry.arguments?.getString("password").toString()
 
-        composable(AppScreen.Register.route) {
-            RegristerPage(navController, viewModel = viewModel)
+            LoginSizeLayout(
+                navController = navController,
+                viewModel = viewModel,
+                email = email,
+                password = password
+            )
         }
 
         composable(
-            route = "${AppScreen.GenderScreen.route}/{userID}",
-            arguments = listOf(navArgument("userID") {
-                type = NavType.StringType
-            })
+            route = "${AppScreen.WelcomeLoginScreen.route}/{email}/{password}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType },
+                navArgument("password") { type = NavType.StringType }
+            )
         ) { backStackEntry ->
-            val userID = backStackEntry.arguments?.getString("userID") ?: ""
-            GenderMobileVersion(navController, userId = userID, onClick = {
-                navController.navigate(AppScreen.Home.route)
-            })
+            val email = backStackEntry.arguments?.getString("email").toString()
+            val password = backStackEntry.arguments?.getString("password").toString()
+            WelcomeLoginSizeLayout(navController,email, password) // pass it to your screen
+        }
+
+        composable(
+            route = "${AppScreen.WelcomeRegristerScreen.route}/{email}/{password}/{selectedGender}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType },
+                navArgument("password") { type = NavType.StringType },
+                navArgument("selectedGender") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email").toString()
+            val password = backStackEntry.arguments?.getString("password").toString()
+            val selectedGender = backStackEntry.arguments?.getString("selectedGender").toString()
+
+            WelcomeRegristerSizeLayout(navController,email, password, selectedGender) // pass it to your screen
+        }
+
+
+
+        composable(AppScreen.Register.route) {
+//            RegristerPage(navController, viewModel = viewModel)
+            RegristerSizeLayout(
+                navController = navController,
+                viewModel = viewModel
+            )
+        }
+
+        composable(route ="${AppScreen.Register.route}/{email}/{password}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType },
+                navArgument("password") { type = NavType.StringType },
+            )) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email").toString()
+            val password = backStackEntry.arguments?.getString("password").toString()
+
+            RegristerSizeLayout(
+                navController = navController,
+                viewModel = viewModel,
+                email = email,
+                password = password
+            )
+        }
+
+
+        composable(
+            route = "${AppScreen.GenderScreen.route}/{email}/{password}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType },
+                navArgument("password") { type = NavType.StringType },
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email").toString()
+            val password = backStackEntry.arguments?.getString("password").toString()
+
+            GenderSizeLayout(
+                navController = navController,
+                email = email,
+                password =password
+            )
+//
+//            GenderMobileVersion(navController, userId = userID, onClick = {
+//                navController.navigate(AppScreen.Home.route)
+//            })
+        }
+
+        composable(
+            route = "${AppScreen.GenderScreen.route}/{email}/{password}/{selectedGender}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType },
+                navArgument("password") { type = NavType.StringType },
+                navArgument("selectedGender") { type = NavType.StringType },
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email").toString()
+            val password = backStackEntry.arguments?.getString("password").toString()
+            val selectedGender = backStackEntry.arguments?.getString("selectedGender").toString()
+
+            GenderSizeLayout(
+                navController = navController,
+                email = email,
+                password =password,
+                selectedGender = selectedGender
+            )
         }
 
         composable(
@@ -94,36 +194,5 @@ fun NavGraphBuilder.authNavGraph(navController: NavHostController, viewModel: Au
                 userModel = viewModel
             )
         }
-
-//        composable(AppScreen.ChangePassword.route) {
-//            val parentEntry = remember(navController) {
-//                navController.getBackStackEntry(AppScreen.AuthGraph.route)
-//            }
-//            val userModel = viewModel<AuthViewModel>(parentEntry)
-//
-//            DynamicChangePassword(
-//                onNextButtonClicked = {
-//                    navController.navigate(AppScreen.Home.route)
-//                },
-//                navController = navController,
-//                userModel = userModel
-//            )
-//        }
-//
-//        composable(AppScreen.EntryPage.route) {
-//            EntryPage(
-//                onGetStartedClick = {
-//                    navController.navigate(AppScreen.EntryPage2.route)
-//                }
-//            )
-//        }
-//
-//        composable(AppScreen.EntryPage2.route) {
-//            OnboardingFlow(
-//                onFinish = {
-//                    navController.navigate(AppScreen.Login.route)
-//                }
-//            )
-//        }
     }
 }

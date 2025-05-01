@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.R
+import com.bookblitzpremium.upcomingproject.TabletAuth.encodeToUri
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
@@ -52,6 +53,7 @@ import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextFieldPassword
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import com.google.firebase.auth.FirebaseAuth
 import java.net.URLEncoder
 
 
@@ -59,33 +61,11 @@ import java.net.URLEncoder
 fun RegristerPage(
     navController: NavController,
     viewModel: AuthViewModel,
-    localViewModel: LocalUserViewModel = hiltViewModel(),
-    remoteUserViewModel : RemoteUserViewModel = hiltViewModel()
 ){
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var confirmPassword by rememberSaveable { mutableStateOf("") }
     val context = LocalContext.current
-    var toastMessage by remember { mutableStateOf<String?>(null) } // State for Toast message
-    var toastTrigger by remember { mutableStateOf(0) } // Unique trigger for Toast
-    val signupState by viewModel.signupState.collectAsState()
-    var triggerSignup by rememberSaveable { mutableStateOf(false) }
-
-    LaunchedEffect(signupState) {
-        if (signupState is SignupState.Error) {
-            toastMessage = (signupState as SignupState.Error).message
-            toastTrigger++
-            viewModel.clearSignUpState()
-            triggerSignup = false
-        }
-    }
-
-    LaunchedEffect(toastMessage, toastTrigger) {
-        toastMessage?.let { message ->
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-            toastMessage = null
-        }
-    }
 
     //validation
     fun getPasswordErrorMessage(password: String): String? {
@@ -201,54 +181,13 @@ fun RegristerPage(
                 valueHorizontal = 16.dp,
                 onClick = {
                     if(isFormValid()){
-                        triggerSignup = true
+                        navController.navigate("${AppScreen.GenderScreen.route}/${email}/${password}")
                     }
                 }
             )
 
-            if(triggerSignup) {
-                CheckStatusLoading(
-                    isLoading = signupState is SignupState.Loading,
-                    backgroundAlpha = 0.5f,
-                    indicatorColor = MaterialTheme.colorScheme.primary,
-                )
-
-                LaunchedEffect(Unit) {
-                    val username = email.substringBefore("@")
-                    try {
-                        val customId = viewModel.signup(email,password)
-                        val user = User(id = customId, name = username, email = email, password = password)
-                        remoteUserViewModel.addUser(customId, user)
-                        // Optionally interact with localUserViewModel if needed
-//                        viewModel.setPath()
-                        val userID = URLEncoder.encode(customId, "UTF-8")
-                        navController.navigate(
-                            "${AppScreen.GenderScreen.route}/$userID"
-                        )
-                    } catch (e: Exception) {
-                        triggerSignup = false
-                    }
-                }
-            }
         }
     }
 }
 
-//                    remoteUserViewModel.addUser(user)
-//                    localViewModel.insertNewUser(user)
 
-//                    val exists = localViewModel.checkUserEmail(email)
-//                    if (!exists) {
-//                        val uid = viewModel.signup(email, password)
-//                        if (uid.isNotEmpty()) {
-//                            val username = email.substringBefore("@")
-//                            val user = User(id = uid, name = username, email = email, password = password)
-//                            remoteUserViewModel.addUser(user)
-//                            localViewModel.insertNewUser(user)
-//                            viewModel.clearSignUpState()
-//                            triggerSignup = false
-//                        }
-//                    } else {
-//                        viewModel.setSignupError("Email is already registered")
-//                        triggerSignup = false
-//                    }

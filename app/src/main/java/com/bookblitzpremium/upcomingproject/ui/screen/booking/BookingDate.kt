@@ -1,6 +1,6 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.booking
 
-import android.util.Log
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,7 +31,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,7 +50,7 @@ import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.model.Calendar
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
-import java.net.URLEncoder
+import com.bookblitzpremium.upcomingproject.ui.utility.ToastUtils
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.TextStyle
@@ -63,7 +62,6 @@ import java.util.Locale
 fun PreviewDate(){
     val navController = rememberNavController()
     BookingDatePage(
-        modifier = Modifier,
         navController = navController,
         hotelID = "",
         hotelPrice = ""
@@ -72,7 +70,6 @@ fun PreviewDate(){
 
 @Composable
 fun BookingDatePage(
-    modifier: Modifier,
     navController: NavController,
     hotelID : String,
     hotelPrice : String,
@@ -226,6 +223,7 @@ fun CalendarView(
     onDateRangeSelected: (LocalDate?, LocalDate?) -> Unit,
     optionalParameter: Calendar,
 ) {
+    val context = LocalContext.current
     val hotelID = optionalParameter.hotelID
     val hotelPrice = optionalParameter.hotelPrice
     var showNext = optionalParameter.showNext
@@ -238,7 +236,6 @@ fun CalendarView(
     val daysInMonth = currentMonth.lengthOfMonth()
     val firstDayOfMonth = LocalDate.of(currentMonth.year, currentMonth.month, 1)
     val firstDayOfWeek = firstDayOfMonth.dayOfWeek.value % 7
-
 
     // Define availability map
     val availability = (1..daysInMonth).associateWith { "Available" }
@@ -377,44 +374,39 @@ fun CalendarView(
         )
 
 
-        val context = LocalContext.current
-
         Spacer(modifier = Modifier.weight(1f))
 
-        if(showNext){
+        if (showNext) {
+            val isDateValid = tempStartDate != null && tempEndDate != null
+            val startDate = tempStartDate
+            val endDate = tempEndDate
             Button(
                 onClick = {
-                    val hotelID = URLEncoder.encode(hotelID, "UTF-8")
-                    val hotelPrice = URLEncoder.encode(hotelPrice, "UTF-8")
-                    val startDate = URLEncoder.encode(tempStartDate.toString(), "UTF-8")
-                    val endDate = URLEncoder.encode(tempEndDate.toString(), "UTF-8")
-
-
-                    if(tempStartDate.toString().isNotEmpty() && tempEndDate.toString().isNotEmpty()){
+                    if (isDateValid) {
                         navController.navigate(
                             "${AppScreen.BookingPeople.route}/$hotelID/$hotelPrice/$startDate/$endDate"
                         )
-                    }else{
-                        Toast.makeText(context, "Please select both start and end dates", Toast.LENGTH_SHORT).show()
+                    } else {
+                        ToastUtils.showSingleToast(context, "Please select both start and end dates")
                     }
-
                 },
+                enabled = isDateValid,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = AppTheme.colorScheme.primary, // Use primary for button
-                    contentColor = AppTheme.colorScheme.onPrimary // Text/icon on primary
+                    containerColor = AppTheme.colorScheme.primary,
+                    contentColor = AppTheme.colorScheme.onPrimary
                 ),
                 contentPadding = PaddingValues(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
                     text = "Next",
-                    color = AppTheme.colorScheme.onPrimary, // Text on primary
-                    modifier = Modifier
+                    color = AppTheme.colorScheme.onPrimary
                 )
             }
         }
     }
 }
+
 
 @Composable
 fun LegendItem(color: Color, label: String) {

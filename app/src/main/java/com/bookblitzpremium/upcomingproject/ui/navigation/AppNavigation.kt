@@ -13,7 +13,7 @@ fun AppNavigation(
     navController: NavHostController,
     startDestination: String,
     modifier: Modifier = Modifier,
-    viewModel: AuthViewModel = viewModel()
+    viewModel: AuthViewModel
 ) {
     NavHost(
         navController = navController,

@@ -1,9 +1,7 @@
 package com.bookblitzpremium.upcomingproject.ui.theme
 
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
@@ -12,46 +10,58 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+
+// Dark theme color scheme
 private val darkColorScheme = MainDesign(
-    background      = Color(0xFF121212), // leave dark gray
-    onBackground    = Color.Black,       // was White
-    primary         = Color.White,       // was Black
-    onPrimary       = Color.White,       // was Black
-    secondary       = Color.Gray,
-    onSecondary     = Color.White,       // was Black
-    surface         = Color(0xFF1E1E1E),
-    onSurface       = Color.Black,       // was White
-    surfaceVariant  = Color(0xFF333333),
-    error           = Color(0xFFCF6679),
-    onText          = Color.Black        // was White
+    background = Color(0xFF121212),      // Dark gray
+    onBackground = Color.White,          // Fixed for readability
+    primary = Color.White,               // White for buttons
+    onPrimary = Color.Black,             // Fixed for contrast
+    secondary = Color.Gray,
+    onSecondary = Color.White,           // White on secondary
+    surface = Color(0xFF1E1E1E),         // Dark surface
+    onSurface = Color.White,             // Fixed for readability
+    surfaceVariant = Color(0xFF333333),  // Darker surface
+    error = Color(0xFFCF6679),
+    onText = Color.White,                // Fixed for readability
+    starRating = Color(0xFFFFD700),      // Gold
+    primaryGradientStart = Color(0xFF8B5CF6), // Purple
+    primaryGradientEnd = Color(0xFFEC4899),    // Pink
+    inRangeBackground = Color.Gray.copy(alpha = 0.5f)
 )
 
+// Light theme color scheme
 private val lightColorScheme = MainDesign(
-    background      = Color.White,      // ← light background
-    onBackground    = Color.Black,      // ← dark text on light
-    primary         = Color(0xFF6750A4),// your accent
-    onPrimary       = Color.White,
-    secondary       = Color(0xFF625B71),
-    onSecondary     = Color.White,
-    surface         = Color(0xFFF5F5F5),
-    onSurface       = Color.Black,
-    surfaceVariant  = Color(0xFFE0E0E0),
-    error           = Color(0xFFB00020),
-    onText          = Color.Black
+    background = Color.White,
+    onBackground = Color.Black,
+    primary = Color(0xFF6750A4),         // Purple accent
+    onPrimary = Color.White,
+    secondary = Color(0xFF625B71),       // Muted purple
+    onSecondary = Color.White,
+    surface = Color(0xFFF5F5F5),         // Light gray
+    onSurface = Color.Black,
+    surfaceVariant = Color(0xFFE0E0E0),  // Slightly darker gray
+    error = Color(0xFFB00020),
+    onText = Color.Black,
+    starRating = Color(0xFFFFD700),      // Gold
+    primaryGradientStart = Color(0xFF8B5CF6), // Purple
+    primaryGradientEnd = Color(0xFFEC4899),    // Pink
+    inRangeBackground = Color(0xFF625B71).copy(alpha = 0.5f)
 )
 
+// Typography instance
 private val typography = AppTypography(
     expandBold = TextStyle(
         fontFamily = poppinsBold,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.Bold,
         fontSize = 33.sp,
         lineHeight = 36.sp,
         letterSpacing = (-0.25).sp,
-        color = Color.Unspecified // To be set by theme
+        color = Color.Unspecified
     ),
     smallSemiBold = TextStyle(
         fontFamily = poppinsSemibold,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.SemiBold,
         fontSize = 12.sp,
         lineHeight = 20.sp,
         letterSpacing = (-0.25).sp,
@@ -59,15 +69,15 @@ private val typography = AppTypography(
     ),
     largeBold = TextStyle(
         fontFamily = poppinsBold,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.Bold,
         fontSize = 24.sp,
         lineHeight = 36.sp,
         letterSpacing = (-0.25).sp,
-        color = Color.Unspecified // To be set by theme
+        color = Color.Unspecified
     ),
     largeSemiBold = TextStyle(
         fontFamily = poppinsSemibold,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.SemiBold,
         fontSize = 24.sp,
         lineHeight = 36.sp,
         letterSpacing = (-0.25).sp,
@@ -75,7 +85,7 @@ private val typography = AppTypography(
     ),
     mediumBold = TextStyle(
         fontFamily = poppinsBold,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.Bold,
         fontSize = 16.sp,
         lineHeight = 28.sp,
         letterSpacing = (-0.25).sp,
@@ -83,7 +93,7 @@ private val typography = AppTypography(
     ),
     mediumSemiBold = TextStyle(
         fontFamily = poppinsSemibold,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.SemiBold,
         fontSize = 16.sp,
         lineHeight = 28.sp,
         letterSpacing = (-0.25).sp,
@@ -101,7 +111,6 @@ private val typography = AppTypography(
         fontFamily = poppinsBold,
         fontWeight = FontWeight.Bold,
         fontSize = 16.sp,
-//        lineHeight = 28.sp,
         letterSpacing = (-0.25).sp,
         color = Color.Unspecified
     ),
@@ -115,7 +124,7 @@ private val typography = AppTypography(
     ),
     smallLight = TextStyle(
         fontFamily = poppinsExtralight,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.ExtraLight,
         fontSize = 12.sp,
         lineHeight = 20.sp,
         letterSpacing = (-0.25).sp,
@@ -153,6 +162,14 @@ private val typography = AppTypography(
         letterSpacing = 0.5.sp,
         color = Color.Unspecified
     ),
+    labelLarge = TextStyle(
+        fontFamily = poppinsMedium,
+        fontWeight = FontWeight.Medium,
+        fontSize = 24.sp,
+        lineHeight = 36.sp,
+        letterSpacing = (-0.25).sp,
+        color = Color.Unspecified
+    ),
     labelMedium = TextStyle(
         fontFamily = poppinsMedium,
         fontWeight = FontWeight.Medium,
@@ -162,57 +179,58 @@ private val typography = AppTypography(
         color = Color.Unspecified
     ),
     labelSmall = TextStyle(
-        fontFamily = poppinsRegular, // Changed from poppinsThin
+        fontFamily = poppinsRegular,
         fontWeight = FontWeight.Normal,
-        fontSize = 12.sp, // Changed from 6.sp to standard caption size
-        lineHeight = 16.sp, // Adjusted for readability
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
         letterSpacing = 0.1.sp,
         color = Color.Unspecified
     ),
     dateBold = TextStyle(
-        fontFamily = poppinsRegular, // Changed from poppinsThin
+        fontFamily = poppinsRegular,
         fontWeight = FontWeight.Normal,
-        fontSize = 20.sp, // Changed from 6.sp to standard caption size
+        fontSize = 20.sp,
         color = Color.Unspecified
     )
 )
 
-private val shape = AppShape(
-    container = RoundedCornerShape(8.dp), // 8.dp
-    button = RoundedCornerShape(16.dp)    // 16.dp
-)
-
+// Size instance
 private val size = AppSize(
-    large = 32.dp,  // 32.dp
-    normal = 16.dp, // 16.dp
-    medium = 8.dp, // 8.dp
-    small = 4.dp   // 4.dp
+    large = 32.dp,
+    normal = 16.dp,
+    medium = 8.dp,
+    small = 4.dp
+)
+
+// Shape instance
+private val shape = AppShape(
+    container = RoundedCornerShape(8.dp),
+    button = RoundedCornerShape(16.dp)
 )
 
 
+// App theme composable
 @Composable
-fun AppTheme( // Fixed typo
+fun AppTheme(
     isDark: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (isDark)  darkColorScheme else  lightColorScheme
-//    val rippleIndication = rememberRipple() // Fixed typo
+    val colorScheme = if (isDark) lightColorScheme else darkColorScheme
     CompositionLocalProvider(
-        LocalAppTypography provides typography, // Fixed typo
-        LocalAppSize provides size,
         LocalAppColorSchema provides colorScheme,
-//        LocalIndication provides rippleIndication,
+        LocalAppTypography provides typography,
         LocalAppShape provides shape,
-        LocalElevation provides Elevation(
-            none = 0.dp,
-            small = 2.dp,
-            medium = 4.dp,
-            large = 8.dp
-        ),
+        LocalAppSize provides size,
+        LocalElevation provides Elevation(none = 0.dp, small = 2.dp, medium = 4.dp, large = 8.dp),
+        LocalOnTextColor provides colorScheme.onText,
+        LocalStarRatingColor provides colorScheme.starRating,
+        LocalPrimaryGradientStart provides colorScheme.primaryGradientStart,
+        LocalPrimaryGradientEnd provides colorScheme.primaryGradientEnd,
         content = content
     )
 }
 
+// App theme object
 object AppTheme {
     val colorScheme: MainDesign
         @Composable get() = LocalAppColorSchema.current
@@ -220,13 +238,12 @@ object AppTheme {
     val typography: AppTypography
         @Composable get() = LocalAppTypography.current
 
-    val size: AppSize
-        @Composable get() = LocalAppSize.current
-
     val shape: AppShape
         @Composable get() = LocalAppShape.current
 
+    val size: AppSize
+        @Composable get() = LocalAppSize.current
+
     val elevation: Elevation
-        @Composable
-        get() = LocalElevation.current
+        @Composable get() = LocalElevation.current
 }
