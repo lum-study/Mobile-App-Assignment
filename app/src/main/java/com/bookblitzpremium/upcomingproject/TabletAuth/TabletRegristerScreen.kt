@@ -31,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -62,73 +63,77 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.bookblitzpremium.upcomingproject.GenderSelectionScreen
 import com.bookblitzpremium.upcomingproject.R
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
 import com.bookblitzpremium.upcomingproject.data.model.SignupState
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextFieldPassword
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.withContext
 
 // Main entry point for the navigation
 
 //vertical = true
 //regrister = false
 
-@Composable
-fun RegristerVertical() {
-    val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "step1") {
-
-        composable("step1") { Step1Screen(navController,false) }
-
-        composable(route = "step1/{email}/{password}",
-            arguments = listOf(
-                navArgument("email") { type = NavType.StringType },
-                navArgument("password") { type = NavType.StringType },
-            )) { backStackEntry ->
-            val email = backStackEntry.arguments?.getString("email").toString()
-            val password = backStackEntry.arguments?.getString("password").toString()
-
-            Step1Screen(
-                navController,
-                tabletScreen = false,
-                email = email,
-                password =password
-            )
-        }
-
-        composable(
-            route = "gender/{email}/{password}/{selectedGender}",
-            arguments = listOf(
-                navArgument("email") { type = NavType.StringType },
-                navArgument("password") { type = NavType.StringType },
-                navArgument("selectedGender") { type = NavType.StringType },
-            )
-        ) { backStackEntry ->
-            val email = backStackEntry.arguments?.getString("email").toString()
-            val password = backStackEntry.arguments?.getString("password").toString()
-            val selectedGender = backStackEntry.arguments?.getString("password").toString()
-
-            GenderSelectionScreen(remoteUserViewModel = hiltViewModel(), navController,false, email,password, onClick = { navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}") })
-        }
-
-        composable(
-            route = "step2/{email}/{password}/{genderSelected}",
-            arguments = listOf(
-                navArgument("email") { type = NavType.StringType },
-                navArgument("password") { type = NavType.StringType },
-                navArgument("genderSelected") { type = NavType.StringType },
-            )
-        ) { backStackEntry ->
-            val email = backStackEntry.arguments?.getString("email").toString()
-            val password = backStackEntry.arguments?.getString("password").toString()
-            val genderSelected = backStackEntry.arguments?.getString("genderSelected").toString()
-
-            Step2Screen(navController, true, email ,password ,genderSelected ) // pass it to your screen
-        }
-
-    }
-}
+//@Composable
+//fun RegristerVertical() {
+//    val navController = rememberNavController()
+//    NavHost(navController = navController, startDestination = "step1") {
+//
+//        composable("step1") { Step1Screen(navController,false) }
+//
+//        composable(route = "step1/{email}/{password}",
+//            arguments = listOf(
+//                navArgument("email") { type = NavType.StringType },
+//                navArgument("password") { type = NavType.StringType },
+//            )) { backStackEntry ->
+//            val email = backStackEntry.arguments?.getString("email").toString()
+//            val password = backStackEntry.arguments?.getString("password").toString()
+//
+//            Step1Screen(
+//                navController,
+//                tabletScreen = false,
+//                email = email,
+//                password =password
+//            )
+//        }
+//
+//        composable(
+//            route = "gender/{email}/{password}/{selectedGender}",
+//            arguments = listOf(
+//                navArgument("email") { type = NavType.StringType },
+//                navArgument("password") { type = NavType.StringType },
+//                navArgument("selectedGender") { type = NavType.StringType },
+//            )
+//        ) { backStackEntry ->
+//            val email = backStackEntry.arguments?.getString("email").toString()
+//            val password = backStackEntry.arguments?.getString("password").toString()
+//            val selectedGender = backStackEntry.arguments?.getString("password").toString()
+//
+//            GenderSelectionScreen(navController,false, email,password)
+//        }
+//
+//        composable(
+//            route = "step2/{email}/{password}/{genderSelected}",
+//            arguments = listOf(
+//                navArgument("email") { type = NavType.StringType },
+//                navArgument("password") { type = NavType.StringType },
+//                navArgument("genderSelected") { type = NavType.StringType },
+//            )
+//        ) { backStackEntry ->
+//            val email = backStackEntry.arguments?.getString("email").toString()
+//            val password = backStackEntry.arguments?.getString("password").toString()
+//            val genderSelected = backStackEntry.arguments?.getString("genderSelected").toString()
+//
+//            Step2Screen(navController, true, email ,password ,genderSelected ) // pass it to your screen
+//        }
+//
+//    }
+//}
 
 
 fun String.encodeToUris(): String = this.toUri().toString().substringAfterLast("/")
@@ -140,13 +145,11 @@ fun Step1Screen(
     email :String  = "",
     password :String =""
 ) {
-    val valueVertical: Dp = if (tabletScreen) 280.dp else 100.dp
+    val valueVertical: Dp = if (tabletScreen) 100.dp else 100.dp
     var email by rememberSaveable { mutableStateOf( email) }
     var password by rememberSaveable { mutableStateOf(password) }
     var confirmPassword by rememberSaveable { mutableStateOf(password) }
-
     val context = LocalContext.current
-
     var toastMessage by remember { mutableStateOf<String?>(null) } // State for Toast message
     var toastTrigger by remember { mutableStateOf(0) } // Unique trigger for Toast
 
@@ -184,12 +187,10 @@ fun Step1Screen(
             Toast.makeText(context, "Please enter a valid email address", Toast.LENGTH_SHORT).show()
             return false
         }
-
         getPasswordErrorMessage(password)?.let { errorMessage ->
             Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
             return false
         }
-
         if (confirmPassword.isBlank()) {
             Toast.makeText(context, "Please confirm your password", Toast.LENGTH_SHORT).show()
             return false
@@ -257,7 +258,7 @@ fun Step1Screen(
                         .clickable {
                             // Navigate to the corresponding step
                             when (stepNumber) {
-                                1 -> navController.navigate("step1/${email.encodeToUri()}/${password.encodeToUri()}")
+                                1 -> navController.navigate("${AppScreen.Register.route}/${email.encodeToUri()}/${password.encodeToUri()}")
                             }
                         },
                     contentAlignment = Alignment.Center
@@ -343,9 +344,7 @@ fun Step1Screen(
             ) {
                 Button(
                     onClick = {
-                        if(isFormValid()){
-                            navController.navigate("gender/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}")
-                        }
+                        navController.navigate(AppScreen.Login.route)
                     },
                     modifier = Modifier
                         .weight(0.5f)
@@ -369,7 +368,7 @@ fun Step1Screen(
                 Button(
                     onClick = {
                         if(isFormValid()){
-                            navController.navigate("gender/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}")
+                            navController.navigate("${AppScreen.GenderScreen.route}/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}")
                         }
                     },
                     modifier = Modifier
@@ -395,7 +394,7 @@ fun Step1Screen(
                 // Content for Column layout
                 Button(
                     onClick = {
-                        navController.navigate("step3")
+                        navController.navigate(AppScreen.Login.route)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -418,7 +417,7 @@ fun Step1Screen(
                 Button(
                     onClick = {
                         if(isFormValid()){
-                            navController.navigate("gender/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}")
+                            navController.navigate("${AppScreen.GenderScreen.route}/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}")
                         }
                     },
                     modifier = Modifier
@@ -444,55 +443,74 @@ fun Step1Screen(
 fun Step2Screen(
     navController: NavController,
     tabletScreen: Boolean,
-    email : String,
-    password : String,
-    genderSelected : String,
+    email: String,
+    password: String,
+    genderSelected: String,
     viewModel: AuthViewModel = hiltViewModel(),
-    remoteUserViewModel: RemoteUserViewModel = hiltViewModel(),
+    remoteUserViewModel: RemoteUserViewModel = hiltViewModel()
 ) {
+    println("hello" + genderSelected)
     val context = LocalContext.current
     val signupState by viewModel.signupState.collectAsState()
     var toastMessage by remember { mutableStateOf<String?>(null) }
     var toastTrigger by remember { mutableStateOf(0) }
     var triggerSignup by rememberSaveable { mutableStateOf(false) }
+    var signupJob by remember { mutableStateOf<Job?>(null) }
 
+    // Show Toast for errors
     LaunchedEffect(toastMessage, toastTrigger) {
         toastMessage?.let { message ->
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            }
             toastMessage = null
         }
     }
 
-    LaunchedEffect(signupState) {
-        println("Observed signupState: $signupState")
+    // Trigger signup and handle state changes
+    LaunchedEffect(triggerSignup, signupState) {
+        if (triggerSignup) {
+            println(genderSelected)
+            triggerSignup = false // Reset immediately
+            signupJob = viewModel.performSignup(email, password,genderSelected)
+        }
+
         when (signupState) {
             is SignupState.Success -> {
-                println("Navigating to step1")
-                navController.navigate("step1")
+                withContext(Dispatchers.Main) {
+                    navController.navigate(AppScreen.Home.route) {
+                        popUpTo(AppScreen.Register.route) { inclusive = true }
+                    }
+                }
                 viewModel.clearSignUpState()
-                triggerSignup = false
             }
             is SignupState.Error -> {
                 toastMessage = (signupState as SignupState.Error).message
                 toastTrigger++
                 viewModel.clearSignUpState()
-                triggerSignup = false
             }
-            else -> {} // Loading or Idle
+            else -> {} // Idle or Loading
+        }
+    }
+
+    // Cancel signup job when composable is disposed
+    DisposableEffect(Unit) {
+        onDispose {
+            signupJob?.cancel()
+            signupJob = null
+            viewModel.clearSignUpState()
         }
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
         // Background image
         Image(
             painter = painterResource(id = if (tabletScreen) R.drawable.hiking_potrait else R.drawable.hiking_new),
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         )
 
         // Content over the background image
@@ -501,15 +519,17 @@ fun Step2Screen(
                 .fillMaxSize()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            val valueVertical: Dp = if (tabletScreen) 150.dp else 100.dp
-
+            val valueVertical: Dp = if (tabletScreen) 100.dp else 60.dp
             Spacer(modifier = Modifier.height(valueVertical))
 
+            // Card-like container
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(24.dp))
                     .padding(16.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -535,7 +555,7 @@ fun Step2Screen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Stepper (1/3) with clickable bubbles
+                // Stepper (1/3)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -558,9 +578,9 @@ fun Step2Screen(
                                     if (stepNumber <= currentStep) {
                                         Modifier.clickable {
                                             when (stepNumber) {
-                                                1 -> navController.navigate("step1/${email.encodeToUri()}/${password.encodeToUri()}")
-                                                2 -> navController.navigate("gender/${email.encodeToUri()}/${password.encodeToUri()}/${genderSelected.encodeToUri()}")
-                                                3 -> navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}/${genderSelected.encodeToUri()}")
+                                                1 -> navController.navigate("${AppScreen.Register.route}/${email.encodeToUri()}/${password.encodeToUri()}")
+                                                2 -> navController.navigate("${AppScreen.GenderScreen.route}/${email.encodeToUri()}/${password.encodeToUri()}/${genderSelected.encodeToUri()}")
+                                                3 -> navController.navigate("${AppScreen.WelcomeRegristerScreen.route}/${email.encodeToUri()}/${password.encodeToUri()}/${genderSelected.encodeToUri()}")
                                             }
                                         }
                                     } else {
@@ -586,8 +606,9 @@ fun Step2Screen(
                     }
                 }
 
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.height(20.dp))
 
+                // Next Button
                 Button(
                     onClick = {
                         triggerSignup = true
@@ -598,7 +619,8 @@ fun Step2Screen(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Black
                     ),
-                    shape = RoundedCornerShape(24.dp)
+                    shape = RoundedCornerShape(24.dp),
+                    enabled = signupState !is SignupState.Loading
                 ) {
                     Text(
                         text = "Next",
@@ -608,38 +630,25 @@ fun Step2Screen(
                 }
             }
 
-            if (triggerSignup) {
-                // Temporary implementation to debug
-                if (signupState is SignupState.Loading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.5f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
+            Spacer(modifier = Modifier.height(valueVertical))
 
-                LaunchedEffect(Unit) {
-                    val username = email.substringBefore("@")
-                    try {
-                        val customId = viewModel.signup(email, password)
-                        val user = User(id = customId, name = username, email = email, password = password)
-                        remoteUserViewModel.addUser(customId, user)
-                        remoteUserViewModel.updateUserGender(customId, genderSelected)
-
-
-                    } catch (e: Exception) {
-                        viewModel.setSignupError("Email is already registered: ${e.message}")
-                    }
+            // Loading overlay
+            if (signupState is SignupState.Loading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
         }
     }
 }
+
 
 
 @Preview(showBackground = true)

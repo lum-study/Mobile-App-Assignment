@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
+import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteUserRepository
+import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
 import com.bookblitzpremium.upcomingproject.data.model.AuthState
 import com.bookblitzpremium.upcomingproject.data.model.OtpAction
 import com.bookblitzpremium.upcomingproject.data.model.OtpState
@@ -18,6 +20,7 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,6 +34,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val auth: FirebaseAuth,
+    private val remoteUserViewModel: RemoteUserRepository
 ) : ViewModel() {
 
     // Authentication state
@@ -55,8 +59,8 @@ class AuthViewModel @Inject constructor(
     }
 
     fun signOut() {
-        clearAuthenticatedState()
         auth.signOut()
+        clearAuthenticatedState()
         clearSignUpState()
         clearNavigationCommand()
         resetPasswordState()
@@ -110,7 +114,6 @@ class AuthViewModel @Inject constructor(
         _newNavigationCommand.value = true
     }
 
-
     fun setAuthError(message: String?) {
         _authError.value = message
     }
@@ -119,25 +122,37 @@ class AuthViewModel @Inject constructor(
     private val _signupState = MutableStateFlow<SignupState>(SignupState.Idle)
     val signupState: StateFlow<SignupState> = _signupState.asStateFlow()
 
-    suspend fun signup(email: String, password: String): String {
-        _signupState.value = SignupState.Loading
-        delay(1000L)
-        return try {
-            auth.createUserWithEmailAndPassword(email, password).await()
-            val uid = getUserId()
-            _signupState.value = SignupState.Success
-//            _newNavigationCommand.value = true
-            uid
-        } catch (e: FirebaseAuthUserCollisionException) {
-            _signupState.value = SignupState.Error("Email is already registered")
-            ""
-        } catch (e: FirebaseAuthInvalidCredentialsException) {
-            _signupState.value = SignupState.Error("Invalid email format")
-            ""
-        } catch (e: Exception) {
-            _signupState.value = SignupState.Error("Signup failed: ${e.message}")
-            ""
+    fun performSignup(email: String, password: String, gender: String): Job {
+        return viewModelScope.launch {
+            _signupState.value = SignupState.Loading
+            try {
+                // First portion: Signup
+                val customId = signup(email, password)
+                if (customId.isEmpty()) {
+                    throw Exception("Signup failed: Empty user ID")
+                }
+
+                // Second portion: Add user and update gender
+                val username = email.substringBefore("@")
+                val user = User(id = customId, name = username, email = email, password = password, gender = gender)
+                remoteUserViewModel.addUserSpecila(customId, user)
+//                remoteUserViewModel.updateUserGender(customId, user.gender)
+
+                _signupState.value = SignupState.Success
+            } catch (e: FirebaseAuthUserCollisionException) {
+                _signupState.value = SignupState.Error("Email is already registered")
+            } catch (e: FirebaseAuthInvalidCredentialsException) {
+                _signupState.value = SignupState.Error("Invalid email format")
+            } catch (e: Exception) {
+                _signupState.value = SignupState.Error("Signup failed: ${e.message ?: "Unknown error"}")
+            }
         }
+    }
+
+    private suspend fun signup(email: String, password: String): String {
+        val result = auth.createUserWithEmailAndPassword(email, password).await()
+        val user = result.user ?: throw Exception("User creation failed: No user returned")
+        return user.uid
     }
 
     fun setSignupError(message: String) {

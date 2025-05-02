@@ -78,6 +78,7 @@ class MainActivity : ComponentActivity() {
                 ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
 
+
         FirebaseApp.initializeApp(this)
         setContent {
             AppTheme {

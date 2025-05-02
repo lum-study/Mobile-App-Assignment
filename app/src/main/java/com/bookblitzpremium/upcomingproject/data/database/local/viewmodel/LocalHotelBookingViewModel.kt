@@ -4,8 +4,10 @@ import android.database.sqlite.SQLiteException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Flight
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalHotelBookingRepo
+import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalHotelRepository
 import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteHotelBookingRepository
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteHotelBookingViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,6 +21,7 @@ import javax.inject.Inject
 class LocalHotelBookingViewModel @Inject constructor(
     private val repo: LocalHotelBookingRepo,
     private val remoteRepo: RemoteHotelBookingRepository,
+    private val localHotel: LocalHotelRepository
 ) : ViewModel() {
 
     private val _loading = MutableStateFlow(false)
@@ -48,7 +51,6 @@ class LocalHotelBookingViewModel @Inject constructor(
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
-
             try {
                 repo.upsertHotelBooking(hotelBooking)
             } catch (e: SQLiteException) {
@@ -61,14 +63,26 @@ class LocalHotelBookingViewModel @Inject constructor(
         }
     }
 
+    private val _hotelsMap = MutableStateFlow<Map<String, Hotel>>(emptyMap())
+    val hotelsMap: StateFlow<Map<String, Hotel>> = _hotelsMap.asStateFlow()
 
-    fun fetchHotelBookingsByUserId(userId: String) {
+    fun fetchHotelBookingsByUserId(userId: String){
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
             try {
                 val bookings = repo.getHotelBookingsByBookingUserId(userId)
-                _hotelUserID.value = bookings // Make sure _hotelBookings is a StateFlow<List<HotelBooking>>
+                _hotelUserID.value = bookings
+
+                val hotelIds = bookings.map { it.hotelID }.distinct()
+                val hotelMap = mutableMapOf<String, Hotel>()
+                hotelIds.forEach { id ->
+                    val hotel = localHotel.getHotelByID(id) // Make sure this is a suspend function
+                    if (hotel != null) {
+                        hotelMap[id] = hotel
+                    }
+                }
+                _hotelsMap.value = hotelMap
             } catch (e: SQLiteException) {
                 _error.value = "Database error: ${e.localizedMessage}"
             } catch (e: Exception) {
@@ -78,6 +92,7 @@ class LocalHotelBookingViewModel @Inject constructor(
             }
         }
     }
+
 
     fun insertHotelBooking(hotelBooking: HotelBooking) {
         viewModelScope.launch {
@@ -114,14 +129,29 @@ class LocalHotelBookingViewModel @Inject constructor(
         }
     }
 
+    fun fetchHotelBookingAndHotelID(){
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+            try {
 
-    fun fetchHotelBookingsById(hotelId: String) {
+            } catch (e: SQLiteException) {
+                _error.value = "Database error: ${e.localizedMessage}"
+            } catch (e: Exception) {
+                _error.value = "Error updating hotel booking: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun fetchHotelBookingsById(hotelId: String){
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
             try {
                 val bookings = repo.getHotelBookingsByHotelId(hotelId)
-                _hotelBookingHistory.value = bookings // Make sure _hotelBookings is a StateFlow<List<HotelBooking>>
+                _hotelBookingHistory.value = bookings
             } catch (e: SQLiteException) {
                 _error.value = "Database error: ${e.localizedMessage}"
             } catch (e: Exception) {

@@ -27,7 +27,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -42,26 +41,18 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.TabletAuth.encodeToUri
-import com.bookblitzpremium.upcomingproject.TabletAuth.encodeToUris
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
-data class genderField(
-    val tabletScreen: Boolean,
-    val userId: String,
-    val email: String = "",
-    val password: String = "",
-)
 
 @Composable
 fun GenderSelectionScreen(
-    remoteUserViewModel: RemoteUserViewModel = hiltViewModel(),
     navController: NavController,
     tabletScreen: Boolean,
     email: String = "",
     password: String = "",
-    onClick: () -> Unit
+    remoteUserViewModel: RemoteUserViewModel = hiltViewModel(),
 ) {
 
     val selectedGender by remoteUserViewModel.selectedGender.collectAsState()
@@ -84,7 +75,6 @@ fun GenderSelectionScreen(
 
         // Stepper (1/3) with clickable bubbles
 
-        var userID = FirebaseAuth.getInstance().currentUser?.uid.toString()
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -107,10 +97,8 @@ fun GenderSelectionScreen(
                             if (stepNumber <= currentStep) {
                                 Modifier.clickable {
                                     when (stepNumber) {
-                                        1 -> navController.navigate("step1/${email.encodeToUri()}/${password.encodeToUri()}")
-                                        2 -> navController.navigate("gender/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender?.encodeToUri()}")
-                                        3 -> navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender?.encodeToUri()}")
-
+                                        1 -> navController.navigate("${AppScreen.Register.route}/${email.encodeToUri()}/${password.encodeToUri()}")
+                                        2 -> navController.navigate("${AppScreen.GenderScreen.route}/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender}")
                                     }
                                 }
                             } else {
@@ -158,7 +146,7 @@ fun GenderSelectionScreen(
                 gender = "Female",
                 isSelected = selectedGender == "Female",
                 icon = Icons.Default.Female,
-                tableScreen = true,
+                tableScreen = tabletScreen,
                 onClick = { remoteUserViewModel.selectGender("Female") }
             )
         }
@@ -172,17 +160,14 @@ fun GenderSelectionScreen(
             )
         }
 
-        val conrotine = rememberCoroutineScope()
+        println("Hello" + selectedGender)
+        val coroutine = rememberCoroutineScope()
 
         // Next Button
         Button(
             onClick = {
-                conrotine.launch {
-                    if (selectedGender != null) {
-                        onClick()
-                    } else {
-                        remoteUserViewModel.setError("Please select a gender")
-                    }
+                coroutine.launch {
+                    selectedGender?.let { navController.navigate("${AppScreen.WelcomeRegristerScreen.route}/${email.encodeToUri()}/${password.encodeToUri()}/${it.encodeToUri()}") }
                 }
             },
             modifier = Modifier

@@ -102,7 +102,7 @@ import kotlin.collections.none
 fun LoginAppVertical() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "step1") {
-        composable("step1") { LoginScreen1(navController,true) }
+        composable("step1") { TabletLoginScreen(navController,true) }
 
         composable(
             route = "step1/{email}/{password}",
@@ -113,7 +113,7 @@ fun LoginAppVertical() {
         ) { backStackEntry ->
             val email = backStackEntry.arguments?.getString("email").toString()
             val password = backStackEntry.arguments?.getString("password").toString()
-            LoginScreen1(navController,true, email, password) // pass it to your screen
+            TabletLoginScreen(navController,true, email, password) // pass it to your screen
         }
 
         composable(
@@ -133,7 +133,7 @@ fun LoginAppVertical() {
 fun String.encodeToUri(): String = this.toUri().toString().substringAfterLast("/")
 
 @Composable
-fun LoginScreen1(
+fun TabletLoginScreen(
     navController: NavController,
     tabletScreen : Boolean,
     email:String = "",
@@ -190,7 +190,7 @@ fun LoginScreen1(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        val valueVertical: Dp = if (tabletScreen) 300.dp else 60.dp
+        val valueVertical: Dp = if (tabletScreen) 500.dp else 120.dp
 
         Spacer(modifier = Modifier.height(valueVertical))
 
@@ -242,8 +242,9 @@ fun LoginScreen1(
                                 Modifier.clickable {
                                     if(authState is AuthState.Authenticated){
                                         when (stepNumber) {
-                                            1 -> navController.navigate("step1/${email.encodeToUri()}/${password.encodeToUri()}")
-                                            2 -> navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}")
+                                            1 -> navController.navigate("${AppScreen.Login.route}/${email.encodeToUri()}/${password.encodeToUri()}")
+                                            2 -> navController.navigate("${AppScreen.WelcomeLoginScreen.route}/${email.encodeToUri()}/${password.encodeToUri()}")
+
                                         }
                                     }
                                 }
@@ -332,7 +333,6 @@ fun LoginScreen1(
             List(4) { FocusRequester() }
         }
 
-
         if (showDialog) {
             PaymentDialog(
                 onDismissRequest = { showDialog = false },
@@ -366,11 +366,7 @@ fun LoginScreen1(
             ) {
                 Button(
                     onClick = {
-                        if(isFormValid()){
-                            viewModel.login(email,password, onClick = {
-                                navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}")
-                            })
-                        }
+                        navController.navigate(AppScreen.Register.route)
                     },
                     modifier = Modifier
                         .weight(0.5f)
@@ -395,7 +391,7 @@ fun LoginScreen1(
                     onClick = {
                         if(isFormValid()){
                             viewModel.login(email,password, onClick = {
-                                navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}")
+                                navController.navigate("${AppScreen.WelcomeLoginScreen.route}/${email.encodeToUri()}/${password.encodeToUri()}")
                             })
                         }
                     },
@@ -422,7 +418,7 @@ fun LoginScreen1(
                 // Content for Column layout
                 Button(
                     onClick = {
-                        navController.navigate("step2")
+                        navController.navigate(AppScreen.Register.route)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -445,7 +441,7 @@ fun LoginScreen1(
                     onClick = {
                         if(isFormValid()){
                             viewModel.login(email,password, onClick = {
-                                navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}")
+                                navController.navigate("${AppScreen.WelcomeLoginScreen.route}/${email.encodeToUri()}/${password.encodeToUri()}")
                             })
                         }
                     },
@@ -475,26 +471,26 @@ fun LoginScreen1(
 }
 
 @Composable
-fun LoginScreen2(navController: NavController, tabletScreen: Boolean, email : String = "", password: String = "") {
-    val viewModel : AuthViewModel = hiltViewModel()
+fun LoginScreen2(
+    navController: NavController,
+    tabletScreen: Boolean,
+    email: String = "",
+    password: String = ""
+) {
+    val viewModel: AuthViewModel = hiltViewModel()
     val authState by viewModel.authState.collectAsState()
-
-    LaunchedEffect(authState) {
-        println("AuthState: $authState")
-    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White) // Optional, can be removed if the image fully covers
+            .background(Color.White)
     ) {
         // Background image
         Image(
-            painter = painterResource(id =  if(tabletScreen) R.drawable.hiking_potrait else R.drawable.hiking_new),
+            painter = painterResource(id = if (tabletScreen) R.drawable.hiking_potrait else R.drawable.hiking_new),
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         )
 
         // Content over the background image
@@ -503,24 +499,24 @@ fun LoginScreen2(navController: NavController, tabletScreen: Boolean, email : St
                 .fillMaxSize()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center // Align elements in the center
+            verticalArrangement = Arrangement.SpaceBetween // Space out content
         ) {
-            val valueVertical: Dp = if (tabletScreen) 60.dp else 60.dp
+
+            val valueVertical = if (tabletScreen) 60.dp else 40.dp
             Spacer(modifier = Modifier.height(valueVertical))
 
-            // Header: Title and Stepper
+            Spacer(modifier = Modifier.weight(1f))
+            // Card with title, subtitle, stepper, and button
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .offset(y = -60.dp),
+                    .padding(horizontal = 16.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.9f)) // Semi-transparent white
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                        .offset(y = -150.dp),
+                        .padding(16.dp),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -545,6 +541,7 @@ fun LoginScreen2(navController: NavController, tabletScreen: Boolean, email : St
 
                     Spacer(modifier = Modifier.height(20.dp))
 
+                    // Stepper
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -552,7 +549,7 @@ fun LoginScreen2(navController: NavController, tabletScreen: Boolean, email : St
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        val currentStep = 2 // This can be dynamic based on the current route
+                        val currentStep = 2
                         repeat(2) { index ->
                             val stepNumber = index + 1
                             val isActive = stepNumber == currentStep
@@ -566,16 +563,15 @@ fun LoginScreen2(navController: NavController, tabletScreen: Boolean, email : St
                                     .then(
                                         if (stepNumber <= currentStep) {
                                             Modifier.clickable {
-                                                if(authState is AuthState.Authenticated){
+                                                if (authState is AuthState.Authenticated) {
                                                     when (stepNumber) {
-                                                        1 -> navController.navigate("step1/${email.encodeToUri()}/${password.encodeToUri()}")
-                                                        //2 -> navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}")
-                                                        2 -> navController.navigate("step2/${email.encodeToUri()}/${password.encodeToUri()}")
+                                                        1 -> navController.navigate("${AppScreen.Login.route}/${email.encodeToUri()}/${password.encodeToUri()}")
+                                                        2 -> navController.navigate("${AppScreen.WelcomeLoginScreen.route}/${email.encodeToUri()}/${password.encodeToUri()}")
                                                     }
                                                 }
                                             }
                                         } else {
-                                            Modifier // no click
+                                            Modifier
                                         }
                                     ),
                                 contentAlignment = Alignment.Center
@@ -586,7 +582,7 @@ fun LoginScreen2(navController: NavController, tabletScreen: Boolean, email : St
                                     fontSize = 12.sp
                                 )
                             }
-                            if (index < 1) { // Draw line between steps
+                            if (index < 1) {
                                 Box(
                                     modifier = Modifier
                                         .width(24.dp)
@@ -596,29 +592,32 @@ fun LoginScreen2(navController: NavController, tabletScreen: Boolean, email : St
                             }
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Next Button
+                    Button(
+                        onClick = {
+                            navController.navigate(AppScreen.Home.route)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Black
+                        ),
+                        shape = RoundedCornerShape(24.dp)
+                    ) {
+                        Text(
+                            text = "Next",
+                            color = Color.White,
+                            fontSize = 16.sp
+                        )
+                    }
                 }
             }
 
-            // Next Button
-            Button(
-                onClick = {
-                    navController.navigate("step1")
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .padding(top = 20.dp), // Adjust the button's padding to ensure it has enough space
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black
-                ),
-                shape = RoundedCornerShape(24.dp)
-            ) {
-                Text(
-                    text = "Next",
-                    color = Color.White,
-                    fontSize = 16.sp
-                )
-            }
+            Spacer(modifier = Modifier.height(valueVertical))
         }
     }
 }
@@ -837,15 +836,12 @@ fun PaymentDialog(
                             try {
                                 val existingId = remoteUser.checkEmails(email)
                                 if (existingId.isNotEmpty()) {
-                                    androidx.media3.common.util.Log.e("Verification", "Email found: Proceeding to OTP")
                                     viewModel.sendPasswordResetEmail(email)
                                     isRecomposed = !isRecomposed
                                 } else {
-                                    androidx.media3.common.util.Log.e("Verification", "Email not found")
                                     Toast.makeText(context, "Email not registered!", Toast.LENGTH_SHORT).show()
                                 }
                             } catch (e: Exception) {
-                                androidx.media3.common.util.Log.e("Verification", "Error verifying email: ${e.localizedMessage}")
                                 Toast.makeText(context, "Something went wrong. Please try again.", Toast.LENGTH_SHORT).show()
                             }
                         }

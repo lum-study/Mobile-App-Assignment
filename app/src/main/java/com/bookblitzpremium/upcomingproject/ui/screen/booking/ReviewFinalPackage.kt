@@ -1,6 +1,5 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.booking
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -42,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -55,13 +55,13 @@ import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalPaymentViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemotePaymentViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.TripPackageBookingDialog
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
 import com.bookblitzpremium.upcomingproject.ui.screen.payment.PaymentOptionScreen
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import com.bookblitzpremium.upcomingproject.ui.utility.ToastUtils
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -124,7 +124,6 @@ fun DialogPaymentMethod(
                         cardNumber = it.filter { it.isDigit() }
                     },
                 )
-
                 onDateSelected(paymentMethod.toString(), cardNumber)
             }
 
@@ -162,6 +161,7 @@ fun ReviewFinalPackageSelected(
     cardNumber: String,
     tabletPortrait: String = "false"
 ) {
+
     Column(
         modifier = modifier
             .padding(16.dp)
@@ -170,21 +170,23 @@ fun ReviewFinalPackageSelected(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
 
-        println("nbye" + tabletPortrait)
         val viewModel: LocalHotelViewModel = hiltViewModel()
         val remoteBookingViewModel: RemoteHotelBookingViewModel = hiltViewModel()
         val remotePaymentViewModel: RemotePaymentViewModel = hiltViewModel()
         val loading = viewModel.loading.collectAsState()
         val hotel by viewModel.selectedHotel.collectAsState()
-        val localPaymentviewModel: LocalPaymentViewModel = hiltViewModel()
         var paymentMethods by remember { mutableStateOf<String?>(null) }
         var cardNumbers by remember { mutableStateOf<String?>(null) }
+        val context = LocalContext.current
 
         //Loading
         val isLoading by remoteBookingViewModel.loading.collectAsState()
 
         //Handle Alert Dialog
         var showDialog by remember { mutableStateOf(false) }
+
+        //Handle the maps
+        var triggerMaps by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
             viewModel.getHotelByID(hotelID)
@@ -225,6 +227,7 @@ fun ReviewFinalPackageSelected(
                         ){
                             HotelInfoContent(hotelData, AppTheme.typography.largeBold)
                         }
+
                         var dialogTrue by remember { mutableStateOf(false) }
 
                         Button(
@@ -251,8 +254,6 @@ fun ReviewFinalPackageSelected(
                                 }
                             )
                         }
-
-
                     }
                 } else {
                     HotelInfoContent(hotelData, AppTheme.typography.largeBold)
@@ -311,8 +312,11 @@ fun ReviewFinalPackageSelected(
                 }
             }
 
+            val locationName = hotelData.name
             MapsButton(
-                onClick = {},
+                onClick = {
+                    navController.navigate("${AppScreen.Maps.route}/$locationName")
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(heightSize)
@@ -328,7 +332,6 @@ fun ReviewFinalPackageSelected(
             )
 
             val coroutineScope = rememberCoroutineScope()
-
             val currentUser = FirebaseAuth.getInstance().currentUser
             var userID = currentUser?.uid.toString()
 
@@ -358,25 +361,13 @@ fun ReviewFinalPackageSelected(
                         userID = userID.toString()
                     )
 
-//                    remotePaymentViewModel.updatePayment(localPayment)
-//                    localPaymentviewModel.addOrUpdatePayment(localPayment)
-
                     remotePaymentViewModel.updatePaymentBoth(localPayment)
                     coroutineScope.launch {
                         try {
                             remoteBookingViewModel.addNewIntegratedRecord(booking)
                             showDialog = true
-                            // Step 1: Save to Firestore and get the ID
-//                            val firestoreId = remoteBookingViewModel.addHotelBooking(booking)
-//                            // Step 2: Update the booking with the Firestore ID
-//                            val updatedBooking = booking.copy(id = firestoreId)
-//                            // Step 3: Save to local database with the Firestore ID
-//                            localBookingViewModel.insertHotelBooking(updatedBooking)
-//                            // Step 4: Navigate after both operations are complete
-//                            navController.navigate(AppScreen.Home.route)
-
                         } catch (e: Exception) {
-                            Log.e("HotelBookingForm", "Failed to save booking: ${e.message}")
+                            ToastUtils.showSingleToast(context,"Failed to save booking")
                         }
                     }
                 },

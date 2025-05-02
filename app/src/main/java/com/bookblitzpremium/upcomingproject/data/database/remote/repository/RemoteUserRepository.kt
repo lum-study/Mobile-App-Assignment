@@ -1,6 +1,7 @@
 package com.bookblitzpremium.upcomingproject.data.database.remote.repository
 
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
+import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalUserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -8,7 +9,8 @@ import javax.inject.Inject
 import kotlin.text.get
 
 class RemoteUserRepository @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val localUserRepo: LocalUserRepository
 ) {
     private val userRef = firestore.collection("user")
 
@@ -22,6 +24,18 @@ class RemoteUserRepository @Inject constructor(
         docRef.set(user).await()
         return docRef.id
     }
+
+    suspend fun addUserSpecila(customID: String, user: User) {
+        try {
+            val docRef = userRef.document(customID)
+            val userWithId = user.copy(id = customID)
+            docRef.set(userWithId).await()
+            localUserRepo.addOrUpdateUser(user.copy(id = customID))
+        } catch (e: Exception) {
+            throw Exception("Failed to add user: ${e.message}")
+        }
+    }
+
 
     suspend fun deleteUser(id: String) {
         require(id.isNotEmpty()) { "User ID cannot be empty" }
@@ -46,8 +60,6 @@ class RemoteUserRepository @Inject constructor(
     }
 
     suspend fun updateUserGender(id: String, gender: String): User? {
-        require(id.isNotEmpty()) { "ID cannot be empty" }
-        require(gender in listOf("Male", "Female")) { "Gender must be Male or Female" }
         try {
             // Retrieve the document by ID
             val documentSnapshot = userRef.document(id).get().await()

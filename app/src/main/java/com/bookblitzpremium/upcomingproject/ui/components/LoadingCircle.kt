@@ -1,6 +1,7 @@
 package com.bookblitzpremium.upcomingproject.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
@@ -22,11 +23,11 @@ fun CheckStatusLoading(
         Box(
             modifier = modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = backgroundAlpha)),
+                .background(Color.Black.copy(alpha = backgroundAlpha))
+                .clickable(enabled = true, onClick = {}), // Absorb touch
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator(color = indicatorColor)
         }
     }
-
 }

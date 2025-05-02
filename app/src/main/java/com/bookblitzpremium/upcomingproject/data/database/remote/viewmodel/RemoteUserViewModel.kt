@@ -116,8 +116,6 @@ class RemoteUserViewModel @Inject constructor(
     }
 
     suspend fun updateUserGender(userId: String, gender: String) {
-        require(userId.isNotEmpty()) { "User ID cannot be empty" }
-        require(gender in listOf("Male", "Female")) { "Gender must be Male or Female" }
         _loading.value = true
         _error.value = null
         try {

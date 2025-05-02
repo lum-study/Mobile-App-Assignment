@@ -1,26 +1,19 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.auth
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,22 +26,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
-import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
-import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
 import com.bookblitzpremium.upcomingproject.data.model.AuthState
 import com.bookblitzpremium.upcomingproject.ui.components.ButtonHeader
 import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
@@ -64,11 +51,8 @@ fun LoginPage(
     viewModel: AuthViewModel,
     email: String = ""
 ) {
-    val valueHorizontal: Dp = if (showToggleToTablet) 46.dp else 16.dp
-    val offsetValueX: Dp = if (showToggleToTablet) 620.dp else 0.dp
-    val maxSizeAvailable: Float = if (showToggleToTablet) 0.4f else 1f
 
-    var email by rememberSaveable { mutableStateOf( if (email.isEmpty()) "" else email) }
+    var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     val authState by viewModel.authState.collectAsState()
     val context = LocalContext.current
@@ -81,9 +65,6 @@ fun LoginPage(
                 val message = (authState as AuthState.Error).message
                 toastMessage= message
                 toastTrigger++
-            }
-            is AuthState.Authenticated -> {
-                toastMessage = "Login succesfully"
             }
             else -> {}
         }
@@ -125,9 +106,8 @@ fun LoginPage(
 
         Column(
             modifier = Modifier
-                .fillMaxWidth(maxSizeAvailable)
-                .padding(horizontal = 28.dp)
-                .offset(x = offsetValueX),
+                .fillMaxWidth()
+                .padding(horizontal = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
@@ -146,7 +126,7 @@ fun LoginPage(
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = valueHorizontal, vertical = 12.dp)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
             CustomTextFieldPassword(
@@ -157,7 +137,7 @@ fun LoginPage(
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = valueHorizontal, vertical = 16.dp)
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
             )
             Text(
                 text = "Forgot Password?",
@@ -165,7 +145,7 @@ fun LoginPage(
                 textDecoration = TextDecoration.Underline,
                 modifier = Modifier
                     .align(Alignment.End)
-                    .padding(start = valueHorizontal, top = 0.dp)
+                    .padding(start = 16.dp, top = 0.dp)
                     .clickable {
                         navController.navigate(AppScreen.ForgotPassword.route) {
                             launchSingleTop = true
@@ -179,10 +159,12 @@ fun LoginPage(
             ) {
                 ButtonHeader(
                     textResId = R.string.login,
-                    valueHorizontal = valueHorizontal,
+                    valueHorizontal = 16.dp,
                     onClick ={
                         if(isFormValid()){
-                            viewModel.login(email,password, onClick = {})
+                            viewModel.login(email,password, onClick = {
+
+                            })
                         }
                     }
                 )
@@ -193,18 +175,20 @@ fun LoginPage(
                     textDecoration = TextDecoration.Underline,
                     modifier = Modifier
                         .align(Alignment.Start)
-                        .padding(start = valueHorizontal, top = 30.dp)
+                        .padding(start = 16.dp, top = 30.dp)
                         .clickable {
                             navController.navigate(AppScreen.Register.route)
                         }
                 )
 
-                CheckStatusLoading(
-                    isLoading = authState is AuthState.Loading,
-                    backgroundAlpha = 0.5f,
-                    indicatorColor = MaterialTheme.colorScheme.primary,
-                )
+
             }
         }
     }
+
+    CheckStatusLoading(
+        isLoading = authState is AuthState.Loading,
+        backgroundAlpha = 0.5f,
+        indicatorColor = MaterialTheme.colorScheme.primary,
+    )
 }
