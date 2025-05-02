@@ -3,14 +3,16 @@ package com.bookblitzpremium.upcomingproject.data.database.local.viewmodel
 import android.database.sqlite.SQLiteException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Flight
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalHotelBookingRepo
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalHotelRepository
 import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteHotelBookingRepository
-import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteHotelBookingViewModel
+import com.bookblitzpremium.upcomingproject.data.model.HotelBookingInformation
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,11 +35,11 @@ class LocalHotelBookingViewModel @Inject constructor(
     private val _hotelBookings = MutableStateFlow<List<HotelBooking>>(emptyList())
     val hotelBookings: StateFlow<List<HotelBooking>> = _hotelBookings.asStateFlow()
 
-    private val _hotelBookingHistory =  MutableStateFlow<List<HotelBooking>>(emptyList())
-    val hotelBookingHistory:  StateFlow<List<HotelBooking>> = _hotelBookingHistory.asStateFlow()
+    private val _hotelBookingHistory = MutableStateFlow<List<HotelBooking>>(emptyList())
+    val hotelBookingHistory: StateFlow<List<HotelBooking>> = _hotelBookingHistory.asStateFlow()
 
-    private val _hotelUserID =  MutableStateFlow<List<HotelBooking>>(emptyList())
-    val hotelUserID:  StateFlow<List<HotelBooking>> = _hotelUserID.asStateFlow()
+    private val _hotelUserID = MutableStateFlow<List<HotelBooking>>(emptyList())
+    val hotelUserID: StateFlow<List<HotelBooking>> = _hotelUserID.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -162,5 +164,7 @@ class LocalHotelBookingViewModel @Inject constructor(
         }
     }
 
-    
+    fun getHotelBookingInformationByUserID(userID: String): Flow<PagingData<HotelBookingInformation>> {
+        return repo.getHotelBookingByUserID(userID)
+    }
 }

@@ -2,9 +2,12 @@ package com.bookblitzpremium.upcomingproject.data.model
 
 data class RatingRecord(
     val id: String = "",
-    val title: String = "",
-    val rating: Float = 0.0f,
-    val review: String = "",
-    val date: String = "",
-    val imageBase64: String? // resource of the image
+    val name: String = "",
+    val description: String = "",
+    val rating: Int = 0,
+    val icon: String = "",
+    val hotelID: String = "",
+    val userID: String = "",
+    val hotelName: String = "",
+    val hotelImageUrl: String = "",
 )

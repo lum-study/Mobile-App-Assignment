@@ -39,6 +39,7 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.common.enums.BookingStatus
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalTPBookingViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.Base64Image
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
@@ -56,6 +57,9 @@ fun OrderScreen(navController: NavHostController) {
 
     val userID = FirebaseAuth.getInstance().currentUser?.uid ?: ""
     val localTPBookingViewModel: LocalTPBookingViewModel = hiltViewModel()
+    val localHotelBookingViewModel: LocalHotelBookingViewModel = hiltViewModel()
+    val hotelBookingList =
+        remember { localHotelBookingViewModel.getHotelBookingInformationByUserID(userID) }.collectAsLazyPagingItems()
     val tripPackageBookingList =
         remember { localTPBookingViewModel.getTPBookingByUserID(userID) }.collectAsLazyPagingItems()
 
@@ -93,7 +97,33 @@ fun OrderScreen(navController: NavHostController) {
                                 )
                             )
                         },
-                        onRatingClick = { navController.navigate(AppScreen.Ratings.route) },
+                        onRatingClick = { navController.navigate(AppScreen.Ratings.passData(booking.tripPackageID)) },
+                        isMobile = isMobile
+                    )
+                }
+            }
+        } else if (hotelBookingList.itemCount > 0) {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(hotelBookingList.itemCount) { index ->
+                    val booking = hotelBookingList[index]
+                    BookingCard(
+                        amount = booking!!.totalAmount.toFloat(),
+                        quantity = booking.numberOfRoom.toString(),
+                        tripPackageName = booking.hotelName,
+                        status = getBookingStatus(booking.endDate, booking.status),
+                        imageUrl = booking.hotelImageUrl,
+                        orderDate = booking.purchaseDate,
+                        onColumnClick = {
+                            navController.navigate(
+                                AppScreen.TripPackage.passData(
+                                    booking.hotelID,
+                                    booking.id
+                                )
+                            )
+                        },
+                        onRatingClick = { navController.navigate(AppScreen.Ratings.passData(booking.hotelID)) },
                         isMobile = isMobile
                     )
                 }

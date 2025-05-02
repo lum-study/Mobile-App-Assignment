@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalPaymentRepository
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalUserRepository
-import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemotePaymentRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +16,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LocalPaymentViewModel @Inject constructor(
     private val localPaymentRepository: LocalPaymentRepository,
-    private val userRepository: LocalUserRepository
+    private val userRepository: LocalUserRepository,
 ) : ViewModel() {
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading.asStateFlow()

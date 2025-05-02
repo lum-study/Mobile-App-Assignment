@@ -25,4 +25,5 @@ data class Rating(
     val rating: Int = 0,
     val icon: String = "",
     val hotelID: String = "",
+    val userID: String = "",
 )

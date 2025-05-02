@@ -5,6 +5,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.bookblitzpremium.upcomingproject.data.database.local.dao.RatingDao
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Rating
+import com.bookblitzpremium.upcomingproject.data.model.RatingRecord
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -21,6 +22,10 @@ class LocalRatingRepository @Inject constructor(private val ratingDao: RatingDao
 
     suspend fun getRatingByHotelId(hotelId: String): List<Rating> {
         return ratingDao.getRatingByHotelId(hotelId)
+    }
+
+    suspend fun getRatingByUserID(userID: String): List<RatingRecord> {
+        return ratingDao.getRatingByUserID(userID)
     }
 
     fun getAllRatingsFlow(): Flow<List<Rating>> = ratingDao.getAllRatingsFlow()
