@@ -1,5 +1,6 @@
 package com.bookblitzpremium.upcomingproject
 
+import android.util.Log
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalConfiguration
@@ -25,6 +26,7 @@ fun LoginSizeLayout(
     val configuration = LocalConfiguration.current
     val deviceType = getDeviceType(windowSizeClass, configuration)
 
+    Log.d("runtime", deviceType.toString())
     when (deviceType){
         DeviceType.MobilePortrait -> {
             LoginPage(

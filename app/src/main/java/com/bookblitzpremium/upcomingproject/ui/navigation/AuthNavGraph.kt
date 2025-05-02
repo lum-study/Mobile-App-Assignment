@@ -44,16 +44,9 @@ fun NavGraphBuilder.authNavGraph(
         composable(
             route = AppScreen.Login.route,
         ) {
-
-//            LoginSizeLayout(
-//                navController = navController,
-//                viewModel = viewModel,
-//            )
-            LoginPage(
-                showToggleToTablet = false,
+            LoginSizeLayout(
                 navController = navController,
-                email = "",
-                viewModel = viewModel
+                viewModel = viewModel,
             )
         }
 
