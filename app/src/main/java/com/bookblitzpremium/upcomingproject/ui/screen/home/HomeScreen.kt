@@ -25,6 +25,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.Female
+import androidx.compose.material.icons.filled.Male
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -37,6 +39,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,7 +52,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -58,20 +60,25 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import coil.compose.rememberAsyncImagePainter
 import com.bookblitzpremium.upcomingproject.InitializeTransaction
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.common.enums.BookingType
 import com.bookblitzpremium.upcomingproject.common.enums.DeviceType
+import com.bookblitzpremium.upcomingproject.common.enums.Gender
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.TripPackage
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalTripPackageViewModel
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.Base64Image
 import com.bookblitzpremium.upcomingproject.ui.components.SkeletonLoader
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun HomeScreen(navController: NavHostController) {
@@ -83,7 +90,6 @@ fun HomeScreen(navController: NavHostController) {
     val tripPackageList =
         remember { localTripPackageViewModel.getAllTripPackagesPagingFlow() }.collectAsLazyPagingItems()
 
-    val username = "Abu Bakar"
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val configuration = LocalConfiguration.current
     val deviceType = getDeviceType(windowSizeClass, configuration)
@@ -96,7 +102,7 @@ fun HomeScreen(navController: NavHostController) {
                     .padding(end = 16.dp, bottom = 8.dp, start = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                GreetingProfile(username)
+                GreetingProfile()
                 HorizontalDivider()
                 TripPackageSection(
                     tripPackageList = tripPackageList,
@@ -154,15 +160,15 @@ fun HomeScreen(navController: NavHostController) {
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(32.dp)
                 ) {
-                    GreetingProfile(username)
+                    GreetingProfile()
                     HorizontalDivider()
-                    Row (
+                    Row(
                         horizontalArrangement = Arrangement.spacedBy(32.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
-                    ){
+                    ) {
                         Spacer(modifier = Modifier.weight(1f))
-                        bookingType.forEachIndexed{ index, tab ->
+                        bookingType.forEachIndexed { index, tab ->
                             OutlinedButton(
                                 onClick = { selectedTabIndex = index },
                                 enabled = index != selectedTabIndex,
@@ -179,7 +185,7 @@ fun HomeScreen(navController: NavHostController) {
                         }
                         Spacer(modifier = Modifier.weight(1f))
                     }
-                    if(selectedTabIndex == 0) {
+                    if (selectedTabIndex == 0) {
                         TripPackageSection(
                             tripPackageList = tripPackageList,
                             modifier = Modifier.weight(1f),
@@ -187,8 +193,7 @@ fun HomeScreen(navController: NavHostController) {
                             isPortrait = true,
                             navController = navController
                         )
-                    }
-                    else {
+                    } else {
                         HotelSection(
                             hotelList = hotelList,
                             modifier = Modifier.weight(1f),
@@ -204,34 +209,55 @@ fun HomeScreen(navController: NavHostController) {
 }
 
 @Composable
-fun GreetingProfile(username: String, textColor: Color = Color.Gray) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(
-                text = stringResource(id = R.string.home_title, username),
-                style = AppTheme.typography.largeBold,
-            )
-            Text(
-                text = stringResource(id = R.string.home_description),
-                style = AppTheme.typography.smallRegular,
-                color = textColor,
-            )
+fun GreetingProfile() {
+    val userID = FirebaseAuth.getInstance().currentUser?.uid
+    val localUserViewModel: LocalUserViewModel = hiltViewModel()
+    var userInfo by remember { mutableStateOf<User?>(null) }
+    LaunchedEffect(userID) {
+        if (userID != null) {
+            userInfo = localUserViewModel.getUserByID(userID)
         }
-        Image(
-            painter = painterResource(id = R.drawable.green_mountain),
-            contentDescription = stringResource(R.string.profile_image),
-            modifier = Modifier
-                .size(80.dp)
-                .clip(CircleShape),
-            contentScale = ContentScale.FillBounds
-        )
+    }
+    if(userInfo != null) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = stringResource(id = R.string.home_title, userInfo?.name ?: ""),
+                    style = AppTheme.typography.largeBold,
+                )
+                Text(
+                    text = stringResource(id = R.string.home_description),
+                    style = AppTheme.typography.smallRegular,
+                    color = Color.Gray,
+                )
+            }
+            if (userInfo!!.iconImage.isNotEmpty()) {
+                Image(
+                    painter = rememberAsyncImagePainter(userInfo?.iconImage ?: ""),
+                    contentDescription = stringResource(R.string.profile_image),
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.FillBounds
+                )
+            } else {
+                Image(
+                    imageVector = if (userInfo!!.gender == Gender.Male.title) Icons.Default.Male else Icons.Default.Female,
+                    contentDescription = stringResource(R.string.profile_image),
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.FillBounds
+                )
+            }
+        }
     }
 }
 
@@ -274,7 +300,7 @@ fun TripPackageSection(
                     }
                 }
             }
-        } else if(!isPortrait){
+        } else if (!isPortrait) {
             LazyHorizontalGrid(
                 rows = GridCells.Fixed(1),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -298,9 +324,8 @@ fun TripPackageSection(
                     )
                 }
             }
-        }
-        else{
-            LazyVerticalGrid (
+        } else {
+            LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(32.dp),
                 verticalArrangement = Arrangement.spacedBy(32.dp),
@@ -416,33 +441,31 @@ fun TripPackageCard(
                         }
                     }
 
-                    if (!isMobile) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(40.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(
-                                    brush = Brush.horizontalGradient(
-                                        colors = listOf(Color(0xFFFFC71E), Color(0xFFFF9800))
-                                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(40.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(Color(0xFFFFC71E), Color(0xFFFF9800))
                                 )
+                            )
+                    ) {
+                        Button(
+                            onClick = {
+                                onClick()
+                            },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(Color.Transparent),
+                            modifier = Modifier.matchParentSize(),
+                            contentPadding = PaddingValues()
                         ) {
-                            Button(
-                                onClick = {
-                                    onClick()
-                                },
-                                shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(Color.Transparent),
-                                modifier = Modifier.matchParentSize(),
-                                contentPadding = PaddingValues()
-                            ) {
-                                Text(
-                                    text = "More Detail",
-                                    style = AppTheme.typography.mediumBold,
-                                    color = Color.Black
-                                )
-                            }
+                            Text(
+                                text = "More Detail",
+                                style = AppTheme.typography.mediumBold,
+                                color = Color.Black
+                            )
                         }
                     }
                 }
@@ -484,7 +507,7 @@ fun HotelSection(
                         })
                 }
             }
-        } else if(!isPortrait){
+        } else if (!isPortrait) {
             LazyHorizontalGrid(
                 rows = GridCells.Fixed(1),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -508,9 +531,8 @@ fun HotelSection(
                         })
                 }
             }
-        }
-        else{
-            LazyVerticalGrid (
+        } else {
+            LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(36.dp),
                 verticalArrangement = Arrangement.spacedBy(36.dp),

@@ -23,7 +23,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Female
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Male
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.AddCard
 import androidx.compose.material.icons.outlined.Person
@@ -37,6 +39,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,24 +48,50 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.window.core.layout.WindowWidthSizeClass
-import com.bookblitzpremium.upcomingproject.R
+import com.bookblitzpremium.upcomingproject.common.enums.Gender
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
+import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
+import com.bookblitzpremium.upcomingproject.ui.components.Base64Image
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun EditProfileScreen() {
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val isTablet = windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.COMPACT
 
-    var username by remember { mutableStateOf("Emul_Ezep") }
-    var email by remember { mutableStateOf("Emul.ezepboy33@gmail.com") }
-    var phone by remember { mutableStateOf("081233334444") }
-    var dob by remember { mutableStateOf("12-12-2012") }
-    var address by remember { mutableStateOf("Canberra ACT 2601, Australia") }
+    val remoteUserViewModel: RemoteUserViewModel = hiltViewModel()
+    val localUserViewModel: LocalUserViewModel = hiltViewModel()
+    val userID = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    var userInfo by remember { mutableStateOf<User?>(null) }
+
+    var username by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var dob by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
+    var iconImage by remember { mutableStateOf("") }
+    var gender by remember { mutableStateOf("") }
+
+    LaunchedEffect(userID) {
+        userInfo = localUserViewModel.getUserByID(userID)
+        if (userInfo != null) {
+            username = userInfo!!.name
+            email = userInfo!!.email
+            phone = userInfo!!.phone
+            dob = userInfo!!.dateOfBirth
+            address = userInfo!!.address
+            iconImage = userInfo!!.iconImage
+            gender = userInfo!!.gender
+        }
+    }
 
     val fields = listOf(
         "Username" to username,
@@ -73,9 +102,43 @@ fun EditProfileScreen() {
     )
 
     if (isTablet) {
-        TabletLayout(fields, { username = it }, { email = it }, { phone = it }, { dob = it }, { address = it })
+        TabletLayout(
+            fields = fields,
+            onUsernameChange = { username = it },
+            onEmailChange = { email = it },
+            onPhoneChange = { phone = it },
+            onDobChange = { dob = it },
+            onAddressChange = { address = it },
+            onImageChange = { iconImage = it },
+            gender = gender,
+        )
     } else {
-        PhoneLayout(fields, { username = it }, { email = it }, { phone = it }, { dob = it }, { address = it })
+        PhoneLayout(
+            fields = fields,
+            onUsernameChange = { username = it },
+            onEmailChange = { email = it },
+            onPhoneChange = { phone = it },
+            onDobChange = { dob = it },
+            onAddressChange = { address = it },
+            onImageChange = { iconImage = it },
+            iconImage = iconImage,
+            gender = gender,
+            onSaveClick = {
+                val user = User(
+                    id = userInfo!!.id,
+                    name = username,
+                    email = email,
+                    phone = phone,
+                    dateOfBirth = dob,
+                    address = address,
+                    password = userInfo!!.password,
+                    gender = userInfo!!.gender,
+                    iconImage = iconImage
+                )
+                localUserViewModel.addOrUpdateUser(user)
+                remoteUserViewModel.updateUser(user)
+            }
+        )
     }
 }
 
@@ -86,22 +149,51 @@ private fun TabletLayout(
     onEmailChange: (String) -> Unit,
     onPhoneChange: (String) -> Unit,
     onDobChange: (String) -> Unit,
-    onAddressChange: (String) -> Unit
+    onAddressChange: (String) -> Unit,
+    onImageChange: (String) -> Unit,
+    gender: String
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
         Spacer(modifier = Modifier.height(24.dp))
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Image(imageVector = Icons.Default.ArrowBack, contentDescription = "Back", modifier = Modifier.size(40.dp))
-            Text("Profile", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold), modifier = Modifier.padding(start = 32.dp))
+            Image(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                modifier = Modifier.size(40.dp)
+            )
+            Text(
+                "Profile",
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.padding(start = 32.dp)
+            )
         }
         Spacer(modifier = Modifier.height(24.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
             Box(modifier = Modifier.weight(1f)) { NavigationOptions() }
-            Divider(modifier = Modifier.fillMaxHeight().width(1.dp).padding(vertical = 8.dp), color = Color.LightGray)
-            Column(modifier = Modifier.weight(2f).padding(start = 32.dp)) {
-                ProfileImageSection()
+            Divider(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(1.dp)
+                    .padding(vertical = 8.dp),
+                color = Color.LightGray
+            )
+            Column(
+                modifier = Modifier
+                    .weight(2f)
+                    .padding(start = 32.dp)
+            ) {
+                ProfileImageSection(
+                    iconImage = fields[0].second,
+                    onImageChange = { onImageChange(it)
+                    },
+                    gender = gender
+                )
                 Spacer(modifier = Modifier.height(24.dp))
-                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
                     fields.forEach { (label, value) ->
                         ProfileField(label, value) {
                             when (label) {
@@ -115,8 +207,17 @@ private fun TabletLayout(
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = {}, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).height(48.dp)) {
-                    Text("Save Changes", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
+                Button(
+                    onClick = {},
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .height(48.dp)
+                ) {
+                    Text(
+                        "Save Changes",
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+                    )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -131,33 +232,80 @@ private fun PhoneLayout(
     onEmailChange: (String) -> Unit,
     onPhoneChange: (String) -> Unit,
     onDobChange: (String) -> Unit,
-    onAddressChange: (String) -> Unit
+    onAddressChange: (String) -> Unit,
+    onImageChange: (String) -> Unit,
+    iconImage: String,
+    gender: String,
+    onSaveClick: () -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp)
+    ) {
         Spacer(modifier = Modifier.height(12.dp))
-        ProfileImageSection(true)
+        ProfileImageSection(
+            isPhone = true,
+            iconImage = iconImage,
+            gender = gender,
+            onImageChange = { onImageChange(it) })
         Spacer(modifier = Modifier.height(24.dp))
-        Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
-            Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 fields.forEach { (label, value) ->
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Text(label, style = MaterialTheme.typography.bodyMedium)
-                        BasicTextField(value, {
-                            when (label) {
-                                "Username" -> onUsernameChange(it)
-                                "Email" -> onEmailChange(it)
-                                "Phone" -> onPhoneChange(it)
-                                "Date of Birth" -> onDobChange(it)
-                                "Address" -> onAddressChange(it)
-                            }
-                        }, textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.End), modifier = Modifier.weight(1f).padding(start = 16.dp))
+                        BasicTextField(
+                            value,
+                            {
+                                when (label) {
+                                    "Username" -> onUsernameChange(it)
+                                    "Email" -> onEmailChange(it)
+                                    "Phone" -> onPhoneChange(it)
+                                    "Date of Birth" -> onDobChange(it)
+                                    "Address" -> onAddressChange(it)
+                                }
+                            },
+                            textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.End),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 16.dp)
+                        )
                     }
-                    HorizontalDivider(thickness = 1.dp, color = Color.LightGray, modifier = Modifier.padding(vertical = 8.dp))
+                    HorizontalDivider(
+                        thickness = 1.dp,
+                        color = Color.LightGray,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
                 }
             }
         }
-        Button(onClick = {}, modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 32.dp).height(48.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3), contentColor = Color.White)) {
-            Text("Save Changes", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
+        Button(
+            onClick = { onSaveClick() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp, horizontal = 32.dp)
+                .height(48.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF2196F3),
+                contentColor = Color.White
+            )
+        ) {
+            Text(
+                "Save Changes",
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+            )
         }
     }
 }
@@ -184,11 +332,44 @@ private fun NavigationOptions() {
 }
 
 @Composable
-private fun ProfileImageSection(isPhone: Boolean = false) {
+private fun ProfileImageSection(
+    isPhone: Boolean = false,
+    iconImage: String,
+    gender: String,
+    onImageChange: (String) -> Unit,
+) {
     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-        Image(painter = painterResource(R.drawable.beach2), contentDescription = "Profile Image", modifier = Modifier.size(if (isPhone) 120.dp else 200.dp).clip(RoundedCornerShape(100.dp)))
-        Surface(color = Color.Cyan, shape = CircleShape, modifier = Modifier.size(if (isPhone) 25.dp else 50.dp).align(Alignment.BottomCenter)) {
-            Image(imageVector = Icons.Default.CameraAlt, contentDescription = "Camera", modifier = Modifier.size(if (isPhone) 40.dp else 60.dp).padding(if (isPhone) 4.dp else 6.dp))
+        if (iconImage.isNotEmpty()) {
+            Base64Image(
+                base64String = iconImage,
+                modifier = Modifier
+                    .size(if (isPhone) 120.dp else 200.dp)
+                    .clip(RoundedCornerShape(100.dp)),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Image(
+                imageVector = if (gender == Gender.Male.title) Icons.Default.Male else Icons.Default.Female,
+                contentDescription = "Profile Image",
+                modifier = Modifier
+                    .size(if (isPhone) 120.dp else 200.dp)
+                    .clip(RoundedCornerShape(100.dp))
+            )
+        }
+        Surface(
+            color = Color.Cyan,
+            shape = CircleShape,
+            modifier = Modifier
+                .size(if (isPhone) 25.dp else 50.dp)
+                .align(Alignment.BottomCenter)
+        ) {
+            Image(
+                imageVector = Icons.Default.CameraAlt,
+                contentDescription = "Camera",
+                modifier = Modifier
+                    .size(if (isPhone) 40.dp else 60.dp)
+                    .padding(if (isPhone) 4.dp else 6.dp)
+            )
         }
     }
 }

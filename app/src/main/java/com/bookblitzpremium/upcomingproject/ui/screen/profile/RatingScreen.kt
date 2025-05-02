@@ -1,56 +1,72 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.rating
 
 import android.app.Activity
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import androidx.compose.ui.tooling.preview.Preview
-import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
-import com.bookblitzpremium.upcomingproject.ui.screen.profile.RatingRecord
-import com.bookblitzpremium.upcomingproject.ui.utility.getWindowSizeClass
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalRatingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Rating
-import androidx.hilt.navigation.compose.hiltViewModel
-import java.util.UUID
-
-fun RatingRecord.toRatingEntity(hotelId: String): Rating {
-    return Rating(
-        id = this.id,
-        name = this.title,
-        description = this.review,
-        rating = this.rating.toInt(),
-        icon = this.imageUrl,
-        hotelID = hotelId
-    )
-}
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalRatingViewModel
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
+import com.bookblitzpremium.upcomingproject.ui.utility.getWindowSizeClass
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun RatingScreen(
     hotelId: String,
     onBackPressed: () -> Unit,
-    onRatingSubmitted: (RatingRecord) -> Unit = {},
-    navController: NavHostController
+    onRatingSubmitted: () -> Unit = {},
+    navController: NavHostController,
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
     val windowSizeClass = activity?.let { getWindowSizeClass(it) }
     val windowWidthSizeClass = windowSizeClass?.widthSizeClass ?: WindowWidthSizeClass.Compact
     val viewModel: LocalRatingViewModel = hiltViewModel()
+
+    val localUserViewModel: LocalUserViewModel = hiltViewModel()
+    val userID = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    var userInfo by remember { mutableStateOf<User?>(null) }
+    LaunchedEffect(userID) {
+        userInfo = localUserViewModel.getUserByID(userID)
+    }
 
     var rating by remember { mutableStateOf(0) }
     var comment by remember { mutableStateOf("") }
@@ -102,7 +118,10 @@ fun RatingScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             listOf("Overall Service", "Customer Support").forEach { label ->
                 Button(
                     onClick = { comment = label },
@@ -113,7 +132,10 @@ fun RatingScreen(
             }
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             listOf("Speed and Efficiency", "Repair Quality").forEach { label ->
                 Button(
                     onClick = { comment = label },
@@ -143,17 +165,16 @@ fun RatingScreen(
         Button(
             onClick = {
                 if (rating > 0) {
-                    val newRating = RatingRecord(
-                        id = UUID.randomUUID().toString(),
-                        title = "New Rating",
-                        rating = rating.toFloat(),
-                        review = comment,
-                        date = "2023-06-15",
-                        imageUrl = "https://example.com/image.jpg",
-                        progress = rating.toFloat() / 5f
+                    val newRating = Rating(
+                        name = userInfo!!.name,
+                        description = comment,
+                        rating = rating,
+                        icon = userInfo!!.iconImage,
+                        hotelID = "BeJsfYromQZcAkgSXwtY",
+                        userID = userID
                     )
-                    viewModel.addOrUpdateRating(newRating.toRatingEntity(hotelId))
-                    onRatingSubmitted(newRating)
+                    viewModel.addOrUpdateRating(newRating)
+                    onRatingSubmitted()
                 }
             },
             modifier = Modifier
@@ -172,19 +193,34 @@ fun RatingScreen(
 @Composable
 fun PhoneRatingScreenPreview() {
     val navController = rememberNavController()
-    RatingScreen(hotelId = "hotel123", onBackPressed = {}, onRatingSubmitted = {}, navController = navController)
+    RatingScreen(
+        hotelId = "hotel123",
+        onBackPressed = {},
+        onRatingSubmitted = {},
+        navController = navController
+    )
 }
 
 @Preview(showBackground = true, device = "spec:width=800dp,height=1280dp")
 @Composable
 fun TabletPortraitRatingScreenPreview() {
     val navController = rememberNavController()
-    RatingScreen(hotelId = "hotel123", onBackPressed = {}, onRatingSubmitted = {}, navController = navController)
+    RatingScreen(
+        hotelId = "hotel123",
+        onBackPressed = {},
+        onRatingSubmitted = {},
+        navController = navController
+    )
 }
 
 @Preview(showBackground = true, device = "spec:width=1280dp,height=800dp")
 @Composable
 fun TabletLandscapeRatingScreenPreview() {
     val navController = rememberNavController()
-    RatingScreen(hotelId = "hotel123", onBackPressed = {}, onRatingSubmitted = {}, navController = navController)
+    RatingScreen(
+        hotelId = "hotel123",
+        onBackPressed = {},
+        onRatingSubmitted = {},
+        navController = navController
+    )
 }

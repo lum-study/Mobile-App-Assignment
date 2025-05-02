@@ -2,18 +2,14 @@ package com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.util.Log
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalUserRepository
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteUserRepository
-import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 
@@ -23,7 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class RemoteUserViewModel @Inject constructor(
     private val remoteUserRepository: RemoteUserRepository,
-    private val localUserRepo : LocalUserRepository
+    private val localUserRepo: LocalUserRepository,
 ) : ViewModel() {
 
     private val _users = MutableStateFlow<User?>(null)
@@ -58,6 +54,21 @@ class RemoteUserViewModel @Inject constructor(
                 _users.value = remoteUserRepository.getUserByID(userID)
             } catch (e: Exception) {
                 _error.value = e.localizedMessage ?: "Failed to load users"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun updateUser(user: User) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+
+            try {
+                remoteUserRepository.updateUser(user)
+            } catch (e: Exception) {
+                _error.value = e.localizedMessage ?: "Failed to update user"
             } finally {
                 _loading.value = false
             }
