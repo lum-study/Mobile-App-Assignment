@@ -2,20 +2,39 @@ package com.bookblitzpremium.upcomingproject.ui.screen.profile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Female
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Male
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.AddCard
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Task
-import androidx.compose.material3.*
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,35 +42,67 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.bookblitzpremium.upcomingproject.R
-import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.common.enums.Gender
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
+import com.bookblitzpremium.upcomingproject.ui.components.Base64Image
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun ProfileScreen(
     navController: NavHostController,
     userName: String,
     onBackClick: () -> Unit = {},
-    onMenuItemClick: (String) -> Unit = {}
+    onMenuItemClick: (String) -> Unit = {},
 ) {
     val hotelId = "hotel123"
     val windowSizeClass = LocalConfiguration.current.screenWidthDp
     val isTabletPortrait = windowSizeClass in 601..1279
     val isTabletLandscape = windowSizeClass >= 1280
 
+    val localUserViewModel: LocalUserViewModel = hiltViewModel()
+    val userID = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    var userInfo by remember { mutableStateOf<User?>(null) }
+    LaunchedEffect(userID) {
+        userInfo = localUserViewModel.getUserByID(userID)
+    }
+
     AppTheme {
         when {
-            isTabletLandscape -> TabletProfileScreen(navController, userName, onBackClick, onMenuItemClick, hotelId)
-            isTabletPortrait -> TabletProfileScreen(navController, userName, onBackClick, onMenuItemClick, hotelId)
-            else -> PhoneProfileScreen(navController, userName, onBackClick, onMenuItemClick, hotelId)
+            isTabletLandscape -> TabletProfileScreen(
+                navController,
+                userName,
+                onBackClick,
+                onMenuItemClick,
+                hotelId,
+                userInfo
+            )
+
+            isTabletPortrait -> TabletProfileScreen(
+                navController,
+                userName,
+                onBackClick,
+                onMenuItemClick,
+                hotelId,
+                userInfo
+            )
+
+            else -> PhoneProfileScreen(
+                navController,
+                userName,
+                onBackClick,
+                onMenuItemClick,
+                hotelId,
+                userInfo
+            )
         }
     }
 }
@@ -62,7 +113,8 @@ fun TabletProfileScreen(
     userName: String,
     onBackClick: () -> Unit,
     onMenuItemClick: (String) -> Unit,
-    hotelId: String
+    hotelId: String,
+    userInfo: User?,
 ) {
     Row(
         modifier = Modifier
@@ -103,7 +155,7 @@ fun TabletProfileScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             Box(modifier = Modifier.height(50.dp))
-            ProfileHeader(tabletMode = true, userName = userName, onBackClick = onBackClick)
+            ProfileHeader(tabletMode = true, userInfo = userInfo, onBackClick = onBackClick)
         }
     }
 }
@@ -114,7 +166,8 @@ fun PhoneProfileScreen(
     userName: String,
     onBackClick: () -> Unit,
     onMenuItemClick: (String) -> Unit,
-    hotelId: String
+    hotelId: String,
+    userInfo: User?,
 ) {
     Column(
         modifier = Modifier
@@ -122,13 +175,15 @@ fun PhoneProfileScreen(
             .padding(0.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        ProfileHeader(userName = userName, onBackClick = onBackClick)
+        ProfileHeader(userInfo = userInfo, onBackClick = onBackClick)
         ProfileMenuItems(onMenuItemClick, hotelId, navController)
     }
 }
 
 @Composable
-fun ProfileHeader(tabletMode: Boolean = false, userName: String, onBackClick: () -> Unit) {
+fun ProfileHeader(tabletMode: Boolean = false, userInfo: User?, onBackClick: () -> Unit) {
+    val iconImage = userInfo?.iconImage ?: ""
+    val gender = userInfo?.gender ?: ""
     Text(
         text = "Profile",
         style = AppTheme.typography.largeBold,
@@ -144,19 +199,29 @@ fun ProfileHeader(tabletMode: Boolean = false, userName: String, onBackClick: ()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(
-            painter = painterResource(R.drawable.beach),
-            contentDescription = "Profile picture",
-            modifier = Modifier
-                .size(if (tabletMode) 150.dp else 100.dp)
-                .clip(RoundedCornerShape(100.dp)),
-            contentScale = ContentScale.Crop
-        )
+        if (iconImage.isNotEmpty()) {
+            Base64Image(
+                base64String = iconImage,
+                modifier = Modifier
+                    .size(if (tabletMode) 150.dp else 100.dp)
+                    .clip(RoundedCornerShape(100.dp)),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Image(
+                imageVector = if (gender == Gender.Male.title) Icons.Default.Male else Icons.Default.Female,
+                contentDescription = "Profile picture",
+                modifier = Modifier
+                    .size(if (tabletMode) 150.dp else 100.dp)
+                    .clip(RoundedCornerShape(100.dp)),
+                contentScale = ContentScale.Crop
+            )
+        }
 
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = userName,
+            text = userInfo?.name ?: "",
             fontSize = if (tabletMode) 28.sp else 24.sp,
             style = AppTheme.typography.mediumBold
         )
@@ -166,10 +231,13 @@ fun ProfileHeader(tabletMode: Boolean = false, userName: String, onBackClick: ()
 }
 
 @Composable
-fun ProfileMenuItems(onMenuItemClick: (String) -> Unit, hotelId: String, navController: NavHostController) {
+fun ProfileMenuItems(
+    onMenuItemClick: (String) -> Unit,
+    hotelId: String,
+    navController: NavHostController,
+) {
     val menuItems = listOf(
         "Edit Profile" to Icons.Outlined.Person,
-        "Payment Methods" to Icons.Outlined.AddCard,
         "My Orders" to Icons.Outlined.Task,
         "Ratings" to Icons.Default.Star,
         "Log out" to Icons.Default.Logout
@@ -197,7 +265,7 @@ fun ProfileMenuItems(onMenuItemClick: (String) -> Unit, hotelId: String, navCont
 fun ProfileMenuItem(
     text: String,
     iconRes: ImageVector,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier

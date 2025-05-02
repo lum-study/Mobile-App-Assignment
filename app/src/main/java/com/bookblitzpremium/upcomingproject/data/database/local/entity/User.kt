@@ -12,6 +12,10 @@ data class User(
     @PrimaryKey val id: String = "",
     val name: String = "",
     val email: String = "",
+    val phone: String = "",
+    val dateOfBirth: String = "",
+    val address: String = "",
     val password: String = "",
-    val gender: String = ""
+    val gender: String = "",
+    val iconImage: String = "",
 )

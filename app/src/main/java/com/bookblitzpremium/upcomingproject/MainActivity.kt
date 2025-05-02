@@ -263,7 +263,7 @@ fun SideBar(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.padding(16.dp)
         ) {
-            GreetingProfile(username, Color.Black)
+            GreetingProfile()
 
             HorizontalDivider()
 

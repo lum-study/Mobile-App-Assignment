@@ -14,5 +14,6 @@ data class HotelBooking(
     val numberOfRoom: Int = 0,
     val hotelID: String = "",
     val userid: String = "",
-    val paymentID: String = ""
+    val paymentID: String = "",
+    val status: String = "",
 )
