@@ -4,7 +4,6 @@ import android.database.sqlite.SQLiteException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
-import com.bookblitzpremium.upcomingproject.data.database.local.entity.Flight
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalHotelBookingRepo
@@ -21,8 +20,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LocalHotelBookingViewModel @Inject constructor(
-    private val repo: LocalHotelBookingRepo,
-    private val remoteRepo: RemoteHotelBookingRepository,
+    private val localHotelBookingRepo: LocalHotelBookingRepo,
+    private val remoteHotelBookingRepository: RemoteHotelBookingRepository,
     private val localHotel: LocalHotelRepository
 ) : ViewModel() {
 
@@ -43,7 +42,7 @@ class LocalHotelBookingViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            repo.getAllHotelBookings().collect { bookings ->
+            localHotelBookingRepo.getAllHotelBookings().collect { bookings ->
                 _hotelBookings.value = bookings
             }
         }
@@ -54,7 +53,7 @@ class LocalHotelBookingViewModel @Inject constructor(
             _loading.value = true
             _error.value = null
             try {
-                repo.upsertHotelBooking(hotelBooking)
+                localHotelBookingRepo.upsertHotelBooking(hotelBooking)
             } catch (e: SQLiteException) {
                 _error.value = "Database error: ${e.localizedMessage}"
             } catch (e: Exception) {
@@ -73,7 +72,7 @@ class LocalHotelBookingViewModel @Inject constructor(
             _loading.value = true
             _error.value = null
             try {
-                val bookings = repo.getHotelBookingsByBookingUserId(userId)
+                val bookings = localHotelBookingRepo.getHotelBookingsByBookingUserId(userId)
                 _hotelUserID.value = bookings
 
                 val hotelIds = bookings.map { it.hotelID }.distinct()
@@ -102,8 +101,8 @@ class LocalHotelBookingViewModel @Inject constructor(
             _error.value = null
 
             try {
-                repo.insertHotelBooking(hotelBooking)
-                remoteRepo.updatePayment(hotelBooking)
+                localHotelBookingRepo.insertHotelBooking(hotelBooking)
+                remoteHotelBookingRepository.updatePayment(hotelBooking)
             } catch (e: SQLiteException) {
                 _error.value = "Database error: ${e.localizedMessage}"
             } catch (e: Exception) {
@@ -120,7 +119,7 @@ class LocalHotelBookingViewModel @Inject constructor(
             _loading.value = true
             _error.value = null
             try {
-                repo.updateHotelBooking(hotelBooking) // Use update instead of insert
+                localHotelBookingRepo.updateHotelBooking(hotelBooking) // Use update instead of insert
             } catch (e: SQLiteException) {
                 _error.value = "Database error: ${e.localizedMessage}"
             } catch (e: Exception) {
@@ -152,7 +151,7 @@ class LocalHotelBookingViewModel @Inject constructor(
             _loading.value = true
             _error.value = null
             try {
-                val bookings = repo.getHotelBookingsByHotelId(hotelId)
+                val bookings = localHotelBookingRepo.getHotelBookingsByHotelId(hotelId)
                 _hotelBookingHistory.value = bookings
             } catch (e: SQLiteException) {
                 _error.value = "Database error: ${e.localizedMessage}"
@@ -165,6 +164,6 @@ class LocalHotelBookingViewModel @Inject constructor(
     }
 
     fun getHotelBookingInformationByUserID(userID: String): Flow<PagingData<HotelBookingInformation>> {
-        return repo.getHotelBookingByUserID(userID)
+        return localHotelBookingRepo.getHotelBookingByUserID(userID)
     }
 }
