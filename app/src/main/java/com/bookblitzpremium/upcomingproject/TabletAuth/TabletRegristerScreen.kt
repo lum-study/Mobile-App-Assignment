@@ -22,6 +22,10 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -44,11 +48,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -68,6 +75,7 @@ import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
 import com.bookblitzpremium.upcomingproject.data.model.SignupState
+import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextFieldPassword
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
@@ -135,6 +143,10 @@ import kotlinx.coroutines.withContext
 //    }
 //}
 
+data class LoginFormState(
+    val email: String,
+    val password: String
+)
 
 fun String.encodeToUris(): String = this.toUri().toString().substringAfterLast("/")
 
@@ -152,6 +164,8 @@ fun Step1Screen(
     val context = LocalContext.current
     var toastMessage by remember { mutableStateOf<String?>(null) } // State for Toast message
     var toastTrigger by remember { mutableStateOf(0) } // Unique trigger for Toast
+
+    val confirm by remember { mutableStateOf(false) }
 
     LaunchedEffect(toastMessage, toastTrigger) {
         toastMessage?.let { message ->
@@ -306,26 +320,66 @@ fun Step1Screen(
                 .padding(top = 4.dp, bottom = 16.dp)
         )
 
-        // Business Name
-        OutlinedTextField(
+        CustomTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Business email") },
+            label = "Enter email",
+            placeholder = "Enter your email",
+            leadingIcon = Icons.Default.Email,
+            trailingIcon = Icons.Default.Clear,
+            shape = RoundedCornerShape(8.dp),
+            isEmailField = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            textStyle = TextStyle(fontSize = 16.sp),
-            singleLine = true
+                .padding(horizontal = 16.dp, vertical = 12.dp)
         )
 
         CustomTextFieldPassword(
             value = password,
             onValueChange = { password = it },
-            label = "Password",
-            placeholder = "Enter your Password",
+            label = "Enter password",
+            placeholder = "Enter your password",
+            leadingIcon = Icons.Default.Lock,
+            shape = RoundedCornerShape(8.dp),
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
         )
+
+        CustomTextFieldPassword(
+            value = confirmPassword,
+            onValueChange = { confirmPassword = it },
+            label = "Enter Confirm Password",
+            placeholder = "Enter your Confirm Password",
+            leadingIcon = Icons.Default.Lock,
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        )
+
+
+//        LoginScreen(
+//
+//        )
+        // Business Name
+//        CustomTextField(
+//            value = email,
+//            onValueChange = { email = it },
+//            label = "Enter email",
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(bottom = 16.dp),
+//        )
+//
+//        CustomTextFieldPassword(
+//            value = password,
+//            onValueChange = { password = it },
+//            label = "Password",
+//            placeholder = "Enter your Password",
+//            modifier = Modifier
+//                .fillMaxWidth()
+//        )
 
         CustomTextFieldPassword(
             value = confirmPassword,
@@ -364,12 +418,14 @@ fun Step1Screen(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
+                if(confirm){
+                    navController.navigate("${AppScreen.GenderScreen.route}/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}")
+                }
                 // Next Button
                 Button(
                     onClick = {
-                        if(isFormValid()){
-                            navController.navigate("${AppScreen.GenderScreen.route}/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}")
-                        }
+//                        if(isFormValid()){
+//                        }
                     },
                     modifier = Modifier
                         .weight(0.5f)

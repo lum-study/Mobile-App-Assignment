@@ -1,7 +1,6 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.booking
 
-import android.content.Context
-import android.widget.Toast
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -68,6 +67,7 @@ fun PreviewDate(){
     )
 }
 
+
 @Composable
 fun BookingDatePage(
     navController: NavController,
@@ -77,11 +77,13 @@ fun BookingDatePage(
     var selectedStartDate by remember { mutableStateOf<LocalDate?>(null) }
     var selectedEndDate by remember { mutableStateOf<LocalDate?>(null) }
 
+
     val calendarParameter = Calendar(
         hotelID = hotelID,
         hotelPrice = hotelPrice,
         showNext = true
     )
+
 
     CalendarView(
         navController = navController,
@@ -94,6 +96,8 @@ fun BookingDatePage(
         optionalParameter = calendarParameter
     )
 }
+
+
 
 
 @Composable
@@ -129,6 +133,7 @@ fun ShowDate(
                     modifier = Modifier.size(28.dp)
                 )
 
+
                 Text(
                     text = if (date.isNotEmpty()) date else "Not Selected",
                     style = AppTheme.typography.mediumBold,
@@ -137,12 +142,14 @@ fun ShowDate(
                 )
             }
 
+
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = "Arrow Forward",
                 tint = AppTheme.colorScheme.secondary, // Use secondary for arrow
                 modifier = Modifier.size(42.dp)
             )
+
 
             Column(
                 modifier = Modifier.weight(1f),
@@ -155,6 +162,7 @@ fun ShowDate(
                     modifier = Modifier.size(28.dp)
                 )
 
+
                 Text(
                     text = if (date2.isNotEmpty()) date2 else "Not Selected",
                     style = AppTheme.typography.mediumBold,
@@ -165,6 +173,7 @@ fun ShowDate(
         }
     }
 }
+
 
 @Composable
 fun RangeBetweenDate(
@@ -190,7 +199,9 @@ fun RangeBetweenDate(
                 }
         )
 
+
         content()
+
 
         Icon(
             imageVector = Icons.Filled.ArrowCircleRight,
@@ -205,6 +216,7 @@ fun RangeBetweenDate(
     }
 }
 
+
 @Composable
 fun DateFormat(currentMonth: YearMonth) {
     Text(
@@ -214,6 +226,7 @@ fun DateFormat(currentMonth: YearMonth) {
         modifier = Modifier.padding(start = 16.dp, end = 16.dp)
     )
 }
+
 
 @Composable
 fun CalendarView(
@@ -228,17 +241,21 @@ fun CalendarView(
     val hotelPrice = optionalParameter.hotelPrice
     var showNext = optionalParameter.showNext
 
+
     var currentMonth by rememberSaveable { mutableStateOf(YearMonth.now()) }
     var tempStartDate by rememberSaveable { mutableStateOf<LocalDate?>(startDate) }
     var tempEndDate by rememberSaveable { mutableStateOf<LocalDate?>(endDate) }
+
 
     val daysOfWeek = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
     val daysInMonth = currentMonth.lengthOfMonth()
     val firstDayOfMonth = LocalDate.of(currentMonth.year, currentMonth.month, 1)
     val firstDayOfWeek = firstDayOfMonth.dayOfWeek.value % 7
 
+
     // Define availability map
     val availability = (1..daysInMonth).associateWith { "Available" }
+
 
     Column(
         modifier = Modifier
@@ -252,7 +269,9 @@ fun CalendarView(
             DateFormat(currentMonth)
         }
 
+
         Spacer(modifier = Modifier.height(20.dp))
+
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -270,22 +289,27 @@ fun CalendarView(
             }
         }
 
+
         LazyVerticalGrid(
             columns = GridCells.Fixed(7),
             modifier = Modifier.fillMaxWidth()
         ) {
+            val today = LocalDate.now()
             items(firstDayOfWeek) { Box(modifier = Modifier.size(40.dp)) }
+
 
             items(daysInMonth) { dayIndex ->
                 val day = dayIndex + 1
                 val date = LocalDate.of(currentMonth.year, currentMonth.month, day)
-                val status = availability[day] ?: "NotAvailable"
+                val status = if (date.isBefore(today)) "NotAvailable" else availability[day] ?: "NotAvailable"
+
 
                 val isStartDate = tempStartDate == date
                 val isEndDate = tempEndDate == date
                 val isInRange = tempStartDate != null && tempEndDate != null &&
                         date in (tempStartDate!!..tempEndDate!!) &&
                         availability[day] == "Available"
+
 
                 Box(
                     modifier = Modifier
@@ -299,25 +323,31 @@ fun CalendarView(
                             }
                         )
                         .clickable(
-                            enabled = status == "Available",
+                            enabled = true,
                             onClick = {
-                                when {
-                                    tempStartDate == null -> tempStartDate = date
-                                    tempEndDate == null && date > tempStartDate -> {
-                                        val allDatesAvailable = (tempStartDate!!.dayOfMonth..day)
-                                            .all { d -> availability[d] == "Available" }
-                                        if (allDatesAvailable) {
-                                            tempEndDate = date
-                                            onDateRangeSelected(tempStartDate, tempEndDate)
-                                        } else {
+
+
+                                if (status == "Available") {
+                                    when {
+                                        tempStartDate == null -> tempStartDate = date
+                                        tempEndDate == null && date > tempStartDate -> {
+                                            val allDatesAvailable = (tempStartDate!!.dayOfMonth..day)
+                                                .all { d -> availability[d] == "Available" }
+                                            if (allDatesAvailable) {
+                                                tempEndDate = date
+                                                onDateRangeSelected(tempStartDate, tempEndDate)
+                                            } else {
+                                                tempStartDate = date
+                                                tempEndDate = null
+                                            }
+                                        }
+                                        else -> {
                                             tempStartDate = date
                                             tempEndDate = null
                                         }
                                     }
-                                    else -> {
-                                        tempStartDate = date
-                                        tempEndDate = null
-                                    }
+                                }else{
+                                    ToastUtils.showSingleToast(context, "Date is not Available")
                                 }
                             }
                         ),
@@ -347,6 +377,7 @@ fun CalendarView(
             }
         }
 
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -357,7 +388,9 @@ fun CalendarView(
             LegendItem(color = AppTheme.colorScheme.primary, label = "Start/End Date")
         }
 
+
         Spacer(modifier = Modifier.height(40.dp))
+
 
         Text(
             text = "Selected Date",
@@ -365,7 +398,9 @@ fun CalendarView(
             color = AppTheme.colorScheme.onSurface // Text on surface
         )
 
+
         Spacer(modifier = Modifier.height(20.dp))
+
 
         ShowDate(
             date = tempStartDate?.toString() ?: "Not selected",
@@ -374,7 +409,10 @@ fun CalendarView(
         )
 
 
+
+
         Spacer(modifier = Modifier.weight(1f))
+
 
         if (showNext) {
             val isDateValid = tempStartDate != null && tempEndDate != null
@@ -408,6 +446,8 @@ fun CalendarView(
 }
 
 
+
+
 @Composable
 fun LegendItem(color: Color, label: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -425,3 +465,4 @@ fun LegendItem(color: Color, label: String) {
         )
     }
 }
+

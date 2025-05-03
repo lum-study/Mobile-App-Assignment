@@ -71,7 +71,6 @@ import java.time.LocalDate
 
 @Composable
 fun HotelBookingHorizontalScreen(
-    onNextButtonClicked: () -> Unit = {},
     hotelID: String,
     navController: NavController,
     viewModel: LocalHotelViewModel = hiltViewModel(),
@@ -204,18 +203,18 @@ fun HotelBookingHorizontalScreen(
                                 HotelInfoSection(
                                     showBackButton = 2,
                                     modifier = Modifier,
-                                    address = hotelData.address,
-                                    rating = hotelData.rating,
-                                    hotelName = hotelData.name,
-                                    reviewTime = 1
+                                    hotel = hotelData
                                 )
                             }
 
-                            item { HotelDescriptionSection(showBackButton = 1, modifier = Modifier,generateHotelDescription(hotelData.name,hotelData.rating)) }
+//                            item { HotelDescriptionSection(showBackButton = 1, modifier = Modifier,generateHotelDescription(hotelData.name,hotelData.rating)) }
 
                             item{
                                 FeatureDisplay(
-                                    hotel = hotelData
+                                    hotel = hotelData.feature,
+                                    rating = hotelData.rating,
+                                    modifier = Modifier
+                                        .padding(16.dp)
                                 )
                             }
 
@@ -416,13 +415,10 @@ fun HotelInfoCard(
 fun HotelInfoSection(
     showBackButton: Int,
     modifier: Modifier,
-    address:String,
-    rating: Double,
-    hotelName:String,
-    reviewTime:Int
+    hotel: Hotel
 ) {
-    val textOffset = if (showBackButton == 1) 24.dp  else if (showBackButton ==2) 24.dp else 24.dp
-    val rangeBetweenLocation = if (showBackButton == 1) 340.dp  else if (showBackButton == 2) 150.dp else 500.dp
+    val textOffset = 24.dp
+    val rangeBetweenLocation = 150.dp
 
     Column(
         modifier = Modifier
@@ -439,40 +435,24 @@ fun HotelInfoSection(
                 modifier = Modifier
             ) {
 
-                if(showBackButton == 2){
-                    Divider(
-                        modifier = Modifier
-                            .offset(x = 100.dp, y = -4.dp)
-                            .fillMaxWidth(0.5f)
-                            .height(4.dp)
-                            .background(Color.Red)
-                            .shadow(
-                                elevation = 0.dp,
-                                shape = RoundedCornerShape(32.dp),
-                                clip = true,
-                                ambientColor = Color.LightGray,
-                            )
-                    )
-                } else if (showBackButton != 2 && showBackButton!= 1){
-                    Divider(
-                        modifier = Modifier
-                            .offset(x = 260.dp, y = -4.dp)
-                            .fillMaxWidth(0.3f)
-                            .height(4.dp)
-                            .background(Color.LightGray)
-                            .shadow(
-                                elevation = 0.dp,
-                                shape = RoundedCornerShape(32.dp),
-                                clip = true,
-                                ambientColor = Color.LightGray,
-                            )
-                    )
-                }
+//                Divider(
+//                    modifier = Modifier
+//                        .offset(x = 200.dp, y = -4.dp)
+//                        .fillMaxWidth(0.5f)
+//                        .height(4.dp)
+//                        .background(Color.Red)
+//                        .shadow(
+//                            elevation = 0.dp,
+//                            shape = RoundedCornerShape(32.dp),
+//                            clip = true,
+//                            ambientColor = Color.LightGray,
+//                        )
+//                )
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    HeaderDetails(hotelName, textOffset, modifier = Modifier)
+                    HeaderDetails(hotel.name, textOffset, modifier = Modifier)
 
                     Spacer(modifier = Modifier.width(8.dp))
 
@@ -500,23 +480,17 @@ fun HotelInfoSection(
                 )
 
                 Text(
-                    text = address,
+                    text = hotel.address,
                     color = Color.Gray,
                     fontSize = 14.sp,
                     modifier = Modifier.offset(x = textOffset)
                 )
 
-                Row(modifier = Modifier.offset(x = textOffset)) {
-                    repeat(rating.toInt()){
-                        Text(text = "⭐", color = Color.Yellow, fontSize = 16.sp)
-                    }
-                    Text(
-                        text = "Review ${reviewTime.toString()}",
-                        color = Color.Gray,
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(start = 4.dp)
-                    )
-                }
+//                Row(modifier = Modifier.offset(x = textOffset)) {
+//                    repeat(hotel.rating.toInt()){
+//                        Text(text = "⭐", color = Color.Yellow, fontSize = 16.sp)
+//                    }
+//                }
             }
         }
     }

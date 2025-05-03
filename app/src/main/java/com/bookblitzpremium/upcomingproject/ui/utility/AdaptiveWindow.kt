@@ -11,7 +11,7 @@ fun getDeviceType(windowSizeClass: WindowSizeClass, configuration: Configuration
         DeviceType.MobilePortrait
     else if (windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT && configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
         DeviceType.MobileLandscape
-    else if (windowSizeClass.windowHeightSizeClass == WindowWidthSizeClass.COMPACT && configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
+    else if (windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.COMPACT && configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
         DeviceType.TabletPortrait
     else DeviceType.TabletLandscape
 }

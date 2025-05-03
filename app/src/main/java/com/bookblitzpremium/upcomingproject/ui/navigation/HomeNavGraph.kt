@@ -1,13 +1,11 @@
 package com.bookblitzpremium.upcomingproject.ui.navigation
 
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.bookblitzpremium.upcomingproject.HotelBookingScreenLayout
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
@@ -27,19 +25,11 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
         route = AppScreen.HomeGraph.route
     ) {
 
-
         composable(
             "${AppScreen.Hotel.route}/{hotelID}/{tripPackageID}",
         ){ backStackEntry ->
-            val hotelID = "0HCQgp6kuauoYiRH094D"
-//            val hotelID = backStackEntry.arguments?.getString("hotelID") ?: ""
+            val hotelID = backStackEntry.arguments?.getString("hotelID") ?: ""
             val tripPackageID = backStackEntry.arguments?.getString("tripPackageID") ?: ""
-
-//            HotelDetailScreen(
-//                navController = navController,
-//                hotelBookingId = hotelID,
-//                tripPackageID = tripPackageID
-//            )
 
             HotelBookingScreenLayout(
                 navController = navController,

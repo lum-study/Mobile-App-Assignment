@@ -30,6 +30,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -72,11 +73,6 @@ import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
@@ -90,47 +86,46 @@ import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextFieldPassword
 import com.bookblitzpremium.upcomingproject.ui.screen.auth.OtpInputField
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
-import kotlin.collections.forEachIndexed
-import kotlin.collections.none
 
 
 //horizontal = false
 //vertical = true
-@Composable
-fun LoginAppVertical() {
-    val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "step1") {
-        composable("step1") { TabletLoginScreen(navController,true) }
-
-        composable(
-            route = "step1/{email}/{password}",
-            arguments = listOf(
-                navArgument("email") { type = NavType.StringType },
-                navArgument("password") { type = NavType.StringType }
-            )
-        ) { backStackEntry ->
-            val email = backStackEntry.arguments?.getString("email").toString()
-            val password = backStackEntry.arguments?.getString("password").toString()
-            TabletLoginScreen(navController,true, email, password) // pass it to your screen
-        }
-
-        composable(
-            route = "step2/{email}/{password}",
-            arguments = listOf(
-                navArgument("email") { type = NavType.StringType },
-                navArgument("password") { type = NavType.StringType }
-            )
-        ) { backStackEntry ->
-            val email = backStackEntry.arguments?.getString("email").toString()
-            val password = backStackEntry.arguments?.getString("password").toString()
-            LoginScreen2(navController,true, email, password) // pass it to your screen
-        }
-    }
-}
+//@Composable
+//fun LoginAppVertical() {
+//    val navController = rememberNavController()
+//    NavHost(navController = navController, startDestination = "step1") {
+//        composable("step1") { TabletLoginScreen(navController,true) }
+//
+//        composable(
+//            route = "step1/{email}/{password}",
+//            arguments = listOf(
+//                navArgument("email") { type = NavType.StringType },
+//                navArgument("password") { type = NavType.StringType }
+//            )
+//        ) { backStackEntry ->
+//            val email = backStackEntry.arguments?.getString("email").toString()
+//            val password = backStackEntry.arguments?.getString("password").toString()
+//            TabletLoginScreen(navController,true, email, password) // pass it to your screen
+//        }
+//
+//        composable(
+//            route = "step2/{email}/{password}",
+//            arguments = listOf(
+//                navArgument("email") { type = NavType.StringType },
+//                navArgument("password") { type = NavType.StringType }
+//            )
+//        ) { backStackEntry ->
+//            val email = backStackEntry.arguments?.getString("email").toString()
+//            val password = backStackEntry.arguments?.getString("password").toString()
+//            LoginScreen2(navController,true, email, password) // pass it to your screen
+//        }
+//    }
+//}
 
 fun String.encodeToUri(): String = this.toUri().toString().substringAfterLast("/")
+
+
 
 @Composable
 fun TabletLoginScreen(
@@ -182,21 +177,27 @@ fun TabletLoginScreen(
 
     var showDialog by remember { mutableStateOf(false) }
 
+    val valueVertical = if (tabletScreen) 800.dp else 120.dp
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
             .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-
-        val valueVertical: Dp = if (tabletScreen) 500.dp else 120.dp
-
-        Spacer(modifier = Modifier.height(valueVertical))
-
         // Header: Title and Stepper
+
+        if(tabletScreen){
+            Spacer(modifier = Modifier.height(800.dp))
+        }else{
+            Spacer(modifier = Modifier.height(120.dp))
+        }
+
         Text(
-            text = "Sign Up for Free",
+            text = "Welcome back",
             style = TextStyle(
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
@@ -206,7 +207,7 @@ fun TabletLoginScreen(
         )
 
         Text(
-            text = "register to get loving trip package",
+            text = "Get yours loving trip package",
             style = TextStyle(
                 fontSize = 16.sp,
                 color = Color.Gray
@@ -300,21 +301,49 @@ fun TabletLoginScreen(
         CustomTextField(
             value = email,
             onValueChange = { email = it },
-            label = "Username",
-            placeholder = "Enter your username",
+            label = "Enter email",
+            placeholder = "Enter your email",
+            leadingIcon = Icons.Default.Email,
+            trailingIcon = Icons.Default.Clear,
+            shape = RoundedCornerShape(8.dp),
+            isEmailField = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 0.dp, vertical = 12.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
         )
 
         CustomTextFieldPassword(
             value = password,
             onValueChange = { password = it },
-            label = "Password",
-            placeholder = "Enter your Password",
+            label = "Enter password",
+            placeholder = "Enter your password",
+            leadingIcon = Icons.Default.Lock,
+            shape = RoundedCornerShape(8.dp),
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
         )
+
+
+//        CustomTextField(
+//            value = email,
+//            onValueChange = { email = it },
+//            label = "Username",
+//            placeholder = "Enter your username",
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(horizontal = 16.dp, vertical = 12.dp)
+//        )
+//
+//        CustomTextFieldPassword(
+//            value = password,
+//            onValueChange = { password = it },
+//            label = "Password",
+//            placeholder = "Enter your Password",
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(horizontal = 16.dp, vertical = 12.dp)
+//        )
 
         Text(
             text = "Forgot Password?",
@@ -361,57 +390,6 @@ fun TabletLoginScreen(
 
 
         if (tabletScreen == false) {
-            Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Button(
-                    onClick = {
-                        navController.navigate(AppScreen.Register.route)
-                    },
-                    modifier = Modifier
-                        .weight(0.5f)
-                        .height(48.dp)
-                       ,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Black
-                    ),
-                    shape = RoundedCornerShape(24.dp)
-                ) {
-                    Text(
-                        text = "Sign up a account",
-                        color = Color.White,
-                        fontSize = 16.sp
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Next Button
-                Button(
-                    onClick = {
-                        if(isFormValid()){
-                            viewModel.login(email,password, onClick = {
-                                navController.navigate("${AppScreen.WelcomeLoginScreen.route}/${email.encodeToUri()}/${password.encodeToUri()}")
-                            })
-                        }
-                    },
-                    modifier = Modifier
-                        .weight(0.5f)
-                        .height(48.dp)
-                        .border(1.dp, Color.Black, RoundedCornerShape(24.dp)),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (valueVertical == 20.dp) Color.Black else Color.White
-                    ),
-                    shape = RoundedCornerShape(24.dp)
-                ) {
-                    Text(
-                        text = "Next",
-                        color = Color.Black,
-                        fontSize = 16.sp
-                    )
-                }
-            }
-        } else {
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -460,14 +438,63 @@ fun TabletLoginScreen(
                     )
                 }
             }
-        }
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Button(
+                    onClick = {
+                        navController.navigate(AppScreen.Register.route)
+                    },
+                    modifier = Modifier
+                        .weight(0.5f)
+                        .height(48.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black
+                    ),
+                    shape = RoundedCornerShape(24.dp)
+                ) {
+                    Text(
+                        text = "Sign up a account",
+                        color = Color.White,
+                        fontSize = 16.sp
+                    )
+                }
 
-        CheckStatusLoading(
-            isLoading = authState is AuthState.Loading,
-            backgroundAlpha = 0.5f,
-            indicatorColor = MaterialTheme.colorScheme.primary,
-        )
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Next Button
+                Button(
+                    onClick = {
+                        if (isFormValid()) {
+                            viewModel.login(email, password, onClick = {
+                                navController.navigate("${AppScreen.WelcomeLoginScreen.route}/${email.encodeToUri()}/${password.encodeToUri()}")
+                            })
+                        }
+                    },
+                    modifier = Modifier
+                        .weight(0.5f)
+                        .height(48.dp)
+                        .border(1.dp, Color.Black, RoundedCornerShape(24.dp)),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (valueVertical == 20.dp) Color.Black else Color.White
+                    ),
+                    shape = RoundedCornerShape(24.dp)
+                ) {
+                    Text(
+                        text = "Next",
+                        color = Color.Black,
+                        fontSize = 16.sp
+                    )
+                }
+            }
+        }
     }
+    CheckStatusLoading(
+        isLoading = authState is AuthState.Loading,
+        backgroundAlpha = 0.5f,
+        indicatorColor = MaterialTheme.colorScheme.primary,
+    )
 }
 
 @Composable

@@ -1,5 +1,6 @@
 package com.bookblitzpremium.upcomingproject.Booking
 
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -7,12 +8,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -29,6 +33,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Hotel
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -53,6 +58,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -68,6 +74,8 @@ import com.bookblitzpremium.upcomingproject.ui.screen.booking.CalendarView
 import java.time.LocalDate
 
 
+
+
 data class hotelDetails(
     val totalPrice : String ,
     val totalPerson : String ,
@@ -76,6 +84,7 @@ data class hotelDetails(
     val endDate : String ,
     val paymentID: String
 )
+
 
 fun generateHotelDescription(hotelName: String, rating: Double): String {
     val templates = listOf(
@@ -88,8 +97,10 @@ fun generateHotelDescription(hotelName: String, rating: Double): String {
         "Stay at $hotelName and enjoy the perfect balance of luxury and affordability, with a guest rating of $rating★."
     )
 
+
     return templates.random()
 }
+
 
 @Composable
 fun BookingSummaryTable(
@@ -147,6 +158,8 @@ fun BookingSummaryTable(
 }
 
 
+
+
 @Composable
 private fun TableCell(
     icon: ImageVector,
@@ -184,6 +197,7 @@ private fun TableCell(
     }
 }
 
+
 @Composable
 private fun VerticalDivider() {
     Box(
@@ -193,6 +207,7 @@ private fun VerticalDivider() {
             .background(Color.LightGray)
     )
 }
+
 
 @Composable
 private fun HorizontalDivider() {
@@ -212,7 +227,7 @@ fun HotelReviewsSection(
     modifier: Modifier = Modifier,
     hotelID: String
 ) {
-    val localRatingViewModel: LocalRatingViewModel = hiltViewModel()
+    val localRatingViewModel : LocalRatingViewModel = hiltViewModel()
     val ratingData by localRatingViewModel.ratings.collectAsState()
     val loading by localRatingViewModel.loading.collectAsState()
     val error by localRatingViewModel.error.collectAsState()
@@ -278,6 +293,7 @@ fun HotelReviewsSection(
     }
 }
 
+
 @Composable
 fun ReviewItem(
     name : String,
@@ -310,7 +326,9 @@ fun ReviewItem(
                 contentScale = ContentScale.Crop
             )
 
+
             Spacer(modifier = Modifier.width(16.dp))
+
 
             // Review details
             Column(
@@ -329,8 +347,10 @@ fun ReviewItem(
                     )
                 }
 
+
                 // Star rating
                 StarRating(rating = rating)
+
 
                 // Review text
                 Text(
@@ -345,6 +365,7 @@ fun ReviewItem(
     }
 }
 
+
 @Composable
 fun HotelDescriptionSection(
     showBackButton: Int,
@@ -353,13 +374,16 @@ fun HotelDescriptionSection(
 ) {
     val textOffset = if (showBackButton == 1) 24.dp else 24.dp
 
+
     var expanded by remember { mutableStateOf(false) }
+
 
     Column(
         verticalArrangement = spacedBy(6.dp),
         modifier = Modifier.padding(top = 16.dp)
     ) {
         HeaderDetails("Description", textOffset, modifier = Modifier)
+
 
         Text(
             text = description,
@@ -369,6 +393,7 @@ fun HotelDescriptionSection(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.offset(x = textOffset)
         )
+
 
         Text(
             text = if (expanded) "Read less" else "Read more",
@@ -381,56 +406,101 @@ fun HotelDescriptionSection(
     }
 }
 
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewCard(){
+    val hotel = "Free Wi-Fi, Free parking, Air-conditioned, Kid-friendly, Restaurant, Free breakfast"
+    val rating = 3.5
+
+
+    FeatureDisplay(
+        hotel = hotel,
+        rating = rating,
+        modifier = Modifier
+    )
+}
+
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FeatureDisplay(
-    hotel:Hotel,
+    hotel: String,
+    rating: Double,
     modifier: Modifier = Modifier
-){
-    val hotelFeatures = mapFeaturesFromString(hotel.feature)
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(3),
+) {
+    val hotelFeatures = mapFeaturesFromString(hotel)
+    // Add rating as a separate feature
+    val ratingFeature = Feature.Rating
+    val allFeatures = listOf(ratingFeature) + hotelFeatures
+
+    FlowRow(
         modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        maxItemsInEachRow = 3
     ) {
-        items(hotelFeatures.size) { feature ->
-            val hotelData = hotelFeatures[feature]
-            ScanOptionCard(option = hotelData)
+        allFeatures.forEach { feature ->
+            Box(
+                modifier = Modifier.weight(1f)
+            ) {
+                ScanOptionCard(option = feature,rating = if (feature == ratingFeature) rating else null)
+            }
         }
     }
+
 }
+
 
 @Composable
 fun ScanOptionCard(
     option: Feature,
+    rating: Double? = null,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    val minHeight = 80.dp // Adjusted to fit icon, title, rating, and padding
+
+    Box(
         modifier = modifier
             .fillMaxWidth()
+            .heightIn(min = minHeight) // Enforce minimum height
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.LightGray) // Light beige background
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+            .background(Color.LightGray),
+        contentAlignment = Alignment.Center // Center the column vertically
     ) {
-        Icon(
-            imageVector = option.icon,
-            contentDescription = option.title,
-            modifier = Modifier.size(48.dp),
-            tint = Color.Black
-        )
-        Text(
-            text = option.title,
-            style = MaterialTheme.typography.titleMedium,
-            textAlign = TextAlign.Center
-        )
+        Column(
+//            modifier = Modifier.padding(8.dp), // Move padding to Column
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center // Center content vertically
+        ) {
+            Icon(
+                imageVector = option.icon,
+                contentDescription = option.title,
+                modifier = Modifier.size(16.dp),
+                tint = Color.Black
+            )
+            Text(
+                text = option.title,
+                style = MaterialTheme.typography.titleSmall,
+                textAlign = TextAlign.Center
+            )
+            // Display rating if this is the rating feature
+            rating?.let {
+                Text(
+                    text = "$it/5",
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
     }
 }
+
 
 fun mapFeaturesFromString(input: String): List<Feature> {
     // Split the input string by ", " and trim whitespace
     val featureTitles = input.split(",").map { it.trim() }
+
 
     // Map each title to the corresponding Feature enum value
     return featureTitles.mapNotNull { title ->
@@ -438,12 +508,14 @@ fun mapFeaturesFromString(input: String): List<Feature> {
     }
 }
 
+
 @Composable
 fun SelectFigure(
     onDateSelected: (Int?, Int?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selected by rememberSaveable { mutableStateOf<String?>(null) }
+
 
     val options = listOf(
         "4 Person - 1 Room",
@@ -453,6 +525,7 @@ fun SelectFigure(
         "20 Person - 5 Room",
         "24 Person - 6 Room",
     )
+
 
     Column(
         modifier = modifier.padding(16.dp),
@@ -468,6 +541,7 @@ fun SelectFigure(
                     .background(if (selected == option) Color.DarkGray else Color.Black)
                     .clickable {
                         selected = option
+
 
                         // Optional: Extract numbers to notify parent
                         val (adult, room) = Regex("(\\d+) Person - (\\d+) Room")
@@ -502,6 +576,7 @@ fun SelectFigure(
     }
 }
 
+
 @Composable
 fun DialogFigure(
     onDismissRequest: () -> Unit,
@@ -522,6 +597,7 @@ fun DialogFigure(
                 onDateSelected = onDateSelected  // ✅ pass correctly
             )
 
+
             IconButton(
                 onClick = onDismissRequest,
                 modifier = Modifier
@@ -541,6 +617,8 @@ fun DialogFigure(
 }
 
 
+
+
 @Composable
 fun SelectDate(
     navController: NavController,
@@ -550,10 +628,12 @@ fun SelectDate(
     var selectedStartDate by remember { mutableStateOf<LocalDate?>(null) }
     var selectedEndDate by remember { mutableStateOf<LocalDate?>(null) }
 
+
     val calendarParameter = Calendar(
         minDate = LocalDate.now(),
         maxDate = LocalDate.now().plusYears(1)
     )
+
 
     CalendarView(
         navController = navController,
@@ -567,6 +647,8 @@ fun SelectDate(
         optionalParameter = calendarParameter,
     )
 }
+
+
 
 
 @Composable
@@ -586,12 +668,14 @@ fun DialogDate(
                 .background(Color.White)
         ) {
 
+
             SelectDate(
                 navController = navController,
                 onDateSelected = { startDate, endDate ->
                     onDateSelected(startDate, endDate)
                 }
             )
+
 
             IconButton(
                 onClick = onDismissRequest,
@@ -611,6 +695,7 @@ fun DialogDate(
     }
 }
 
+
 @Composable
 fun StarRating(rating: Int, maxRating: Int = 5, modifier: Modifier = Modifier) {
     Row(modifier = modifier) {
@@ -624,3 +709,4 @@ fun StarRating(rating: Int, maxRating: Int = 5, modifier: Modifier = Modifier) {
         }
     }
 }
+
