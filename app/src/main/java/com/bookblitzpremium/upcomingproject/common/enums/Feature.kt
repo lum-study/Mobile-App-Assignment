@@ -11,11 +11,16 @@ import androidx.compose.material.icons.filled.LocalParking
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Pool
 import androidx.compose.material.icons.filled.SmokeFree
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.ui.graphics.vector.ImageVector
 
 
 enum class Feature(val title: String, val icon: ImageVector) {
+    Rating(
+        title = "Rating",
+        icon = Icons.Default.Star
+    ),
     FreeWifi(
         title = "Free Wi-Fi",
         icon = Icons.Default.Wifi

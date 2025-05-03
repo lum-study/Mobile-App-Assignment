@@ -28,6 +28,11 @@ fun HotelBookingScreenLayout(
     val configuration = LocalConfiguration.current
     val deviceType = getDeviceType(windowSizeClass, configuration)
 
+    println("I am vertical Now with + $windowSizeClass + $deviceType")
+    println("I am horizontal Now with + $windowSizeClass + $deviceType")
+
+
+
     when (deviceType){
         DeviceType.MobilePortrait -> {
             HotelDetailScreen(
@@ -38,6 +43,7 @@ fun HotelBookingScreenLayout(
         }
 
         DeviceType.TabletLandscape -> {
+            println("I ma landscape")
             HotelBookingHorizontalScreen(
                 hotelID = hotelID,
                 navController = navController,
@@ -46,6 +52,7 @@ fun HotelBookingScreenLayout(
         }
 
         else -> {
+            println("I ma portrait")
             HotelBookingVerticalScreen(
                 showNUmber = 2,
                 defaultSize = 300.dp,

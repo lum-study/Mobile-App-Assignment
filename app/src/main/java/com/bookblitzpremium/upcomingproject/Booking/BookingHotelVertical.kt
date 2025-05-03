@@ -20,7 +20,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
@@ -82,7 +84,6 @@ fun HotelBookingVerticalScreen(
     var roomCount by remember { mutableStateOf(1) }
     var adultCount by remember { mutableStateOf(1) }
 
-    // Use non-nullable strings with default empty values
     var startDate by remember { mutableStateOf("") }
     var endDate by remember { mutableStateOf("") }
 
@@ -92,8 +93,8 @@ fun HotelBookingVerticalScreen(
     val hotel by viewModel.selectedHotel.collectAsState()
     if (hotel != null) {
         val hotelData = hotel!!
-
         Column(modifier = Modifier.fillMaxSize()) {
+            // Top Image Section
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -104,57 +105,55 @@ fun HotelBookingVerticalScreen(
                     imageUrl = hotelData.imageUrl,
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 16.dp)
                         .clip(RoundedCornerShape(16.dp)),
                     contentScale = ContentScale.Crop
                 )
 
-                if (showNUmber == 1 || showNUmber == 3) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color.Transparent)
-                            .align(Alignment.BottomEnd)
-                            .padding(horizontal = 16.dp, vertical = 30.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.Transparent)
+                        .align(Alignment.BottomEnd)
+                        .padding(horizontal = 16.dp, vertical = 30.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Button(
+                        onClick = { showDateDialog = true },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Black,
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Button(
-                            onClick = { showDateDialog = true },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Black,
-                                contentColor = Color.White
-                            ),
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(
-                                text = "Pick Dates",
-                                style = TextStyle(fontSize = 16.sp, color = Color.White)
-                            )
-                        }
-
-                        Button(
-                            onClick = { showFigureDialog = true },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Black,
-                                contentColor = Color.White
-                            ),
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(
-                                text = "Select Guests",
-                                style = TextStyle(fontSize = 16.sp, color = Color.White)
-                            )
-                        }
+                        Text(
+                            text = "Pick Dates",
+                            style = TextStyle(fontSize = 16.sp, color = Color.White)
+                        )
                     }
+
+                    Button(
+                        onClick = { showFigureDialog = true },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Black,
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "Select Guests",
+                            style = TextStyle(fontSize = 16.sp, color = Color.White)
+                        )
+                    }
+                }
 
                     if (showFigureDialog) {
                         DialogFigure(
                             onDismissRequest = { showFigureDialog = false },
                             onDateSelected = { room, figure ->
-                                roomCount = room ?: 1 // Default to 1 if null
-                                adultCount = figure ?: 1 // Default to 1 if null
+                                roomCount = room ?: 1
+                                adultCount = figure ?: 1
                             }
                         )
                     }
@@ -164,32 +163,30 @@ fun HotelBookingVerticalScreen(
                             navController = navController,
                             onDismissRequest = { showDateDialog = false },
                             onDateSelected = { start, end ->
-                                // Ensure start and end are non-null
                                 startDate = start?.toString() ?: ""
                                 endDate = end?.toString() ?: ""
                             }
                         )
                     }
-                }
+
             }
 
-            Column(modifier = Modifier.background(Color.Black)) {
-                DragableToTop(
-                    showBackButton = showNUmber,
-                    topHeight = topHeight,
-                    onDrag = { delta ->
-                        val scaledDelta = delta * dragSpeedFactor
-                        val newHeight = (topHeight.value + scaledDelta).dp
-                        topHeight = newHeight.coerceIn(minHeight, maxHeight)
-                    },
-                    hotel = hotelData,
-                    startDate = startDate,
-                    endDate = endDate,
-                    adultCount = adultCount,
-                    roomBooked = roomCount,
-                    navController = navController
-                )
-            }
+            // Main Content with Draggable Section
+            DragableToTop(
+                showBackButton = showNUmber,
+                topHeight = topHeight,
+                onDrag = { delta ->
+                    val scaledDelta = delta * dragSpeedFactor
+                    val newHeight = (topHeight.value + scaledDelta).dp
+                    topHeight = newHeight.coerceIn(minHeight, maxHeight)
+                },
+                hotel = hotelData,
+                startDate = startDate,
+                endDate = endDate,
+                adultCount = adultCount,
+                roomBooked = roomCount,
+                navController = navController
+            )
         }
     }
 }
@@ -206,16 +203,14 @@ fun DragableToTop(
     adultCount: Int,
     navController: NavController
 ) {
-    val textOffset = if (showBackButton == 1) 24.dp else if (showBackButton == 2) 24.dp else 24.dp
-    val rangeBetweenLocation = if (showBackButton == 1) 340.dp else if (showBackButton == 2) 150.dp else 500.dp
-
+    val textOffset =  24.dp
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
+            .fillMaxSize()
+            .padding(top = 10.dp)
             .background(Color.White, RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
     ) {
         Divider(
@@ -223,7 +218,6 @@ fun DragableToTop(
                 .align(Alignment.CenterHorizontally)
                 .fillMaxWidth(0.5f)
                 .height(6.dp)
-                .offset(y = 4.dp)
                 .clip(RoundedCornerShape(32.dp))
                 .background(Color.LightGray)
                 .draggable(
@@ -238,16 +232,17 @@ fun DragableToTop(
             HeaderDetails(
                 hotel.name,
                 textOffset,
-                modifier = Modifier.padding(top = 12.dp)
+                modifier = Modifier.padding(top = 2.dp)
             )
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(550.dp))
             Box(
                 modifier = Modifier
-                    .offset(x = rangeBetweenLocation)
                     .size(48.dp)
                     .background(Color.LightGray, RoundedCornerShape(16.dp))
-                    .clickable { /* Handle location click */ },
+                    .clickable {
+                        navController.navigate(AppScreen.Maps.route)
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -272,31 +267,32 @@ fun DragableToTop(
             modifier = Modifier.offset(x = textOffset)
         )
 
-        Row(modifier = Modifier.offset(x = textOffset)) {
-            repeat(hotel.rating.toInt()) {
-                Text(text = "⭐", color = Color.Yellow, fontSize = 16.sp)
-            }
-            Text(
-                text = "4.5 - 1231 Reviews",
-                color = Color.Gray,
-                fontSize = 14.sp,
-                modifier = Modifier.padding(start = 4.dp)
-            )
-        }
-
-        HotelDescriptionSection(
-            showBackButton = 2,
-            modifier = Modifier,
-            description = ""
-        )
-
-        FeatureDisplay(
-            hotel = hotel,
-            modifier = Modifier
-                .padding(top = 8.dp)
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
+//        Row(modifier = Modifier.offset(x = textOffset)) {
+//            repeat(hotel.rating.toInt()) {
+//                Text(text = "⭐", color = Color.Yellow, fontSize = 16.sp)
+//            }
+////            Text(
+////                text = "4.5 - 1231 Reviews",
+////                color = Color.Gray,
+////                fontSize = 14.sp,
+////                modifier = Modifier.padding(start = 4.dp)
+////            )
+//        }
+//        HotelDescriptionSection(
+//            showBackButton = 2,
+//            modifier = Modifier,
+//            description = ""
+//        )
+//
+//        FeatureDisplay(
+//            hotel = hotel.feature,
+//            rating = hotel.rating,
+//            tabletScreen = true,
+//            modifier = Modifier
+//                .padding(top = 8.dp)
+//                .fillMaxWidth()
+//                .padding(16.dp)
+//        )
 
         BookingSummaryTable(
             startDate = startDate,
@@ -305,87 +301,72 @@ fun DragableToTop(
             adultCount = adultCount.toString()
         )
 
-        Column(
+        HotelReviewsSection(
+            showBackButton = 1,
+            modifier = Modifier,
+            hotelID = hotel.id
+        )
+
+        val userID = FirebaseAuth.getInstance().currentUser?.uid
+            ?: run {
+                Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
+                return@Column
+            }
+
+        val totalPrices = roomBooked.toDouble() * hotel.price
+
+        val paymentViewModel: RemotePaymentViewModel = hiltViewModel()
+        val payment = Payment(
+            createDate = LocalDate.now().toString(),
+            totalAmount = totalPrices,
+            paymentMethod = "", // Empty
+            cardNumber = "",   // Empty
+            currency = "Ringgit Malaysia",
+            userID = userID
+        )
+
+        val totalPerson = adultCount.toString()
+        val totalPrice = (hotel.price * roomBooked).toString()
+
+        // Encode parameters
+        val hotelID = URLEncoder.encode(hotel.id, "UTF-8")
+        val startDate = URLEncoder.encode(startDate, "UTF-8")
+        val endDate = URLEncoder.encode(endDate, "UTF-8")
+        val paymentMethod =payment.paymentMethod.toString()
+        val cardNumber = payment.cardNumber.toString()
+        val tabletPortrait = "true"
+
+        Button(
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Black,
+                contentColor = Color.White
+            ),
+            shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .wrapContentHeight()
-        ) {
-            HotelReviewsSection(
-                showBackButton = 1,
-                modifier = Modifier,
-                hotelID = hotel.id
-            )
+                .padding(16.dp),
+            onClick = {
+                coroutineScope.launch {
+                    try {
+                        val paymentID = paymentViewModel.addPayment(payment)
+                        if (paymentID.isNotEmpty()) {
+                            val encodedPaymentID = URLEncoder.encode(paymentID, "UTF-8")
 
-            val userID = FirebaseAuth.getInstance().currentUser?.uid
-                ?: run {
-                    Toast.makeText(context, "User not authenticated", Toast.LENGTH_SHORT).show()
-                    return@Column
-                }
+                            val baseRoute = "${AppScreen.BookingReview.route}/$hotelID/$startDate/$endDate/$totalPerson/$roomBooked/$totalPrice/$paymentMethod/$cardNumber/$encodedPaymentID/$tabletPortrait"
 
-            val totalPrices = roomBooked.toDouble() * hotel.price
-            if (roomBooked <= 0) {
-                Toast.makeText(context, "Please select at least one room", Toast.LENGTH_SHORT).show()
-                return@Column
-            }
-
-            if (startDate.isEmpty() || endDate.isEmpty()) {
-                Toast.makeText(context, "Please select check-in and check-out dates", Toast.LENGTH_SHORT).show()
-                return@Column
-            }
-
-            val paymentViewModel: RemotePaymentViewModel = hiltViewModel()
-            val payment = Payment(
-                createDate = LocalDate.now().toString(),
-                totalAmount = totalPrices,
-                paymentMethod = "", // Empty
-                cardNumber = "",   // Empty
-                currency = "Ringgit Malaysia",
-                userID = userID
-            )
-
-            val totalPerson = adultCount.toString()
-            val totalPrice = (hotel.price * roomBooked).toString()
-
-            // Encode parameters
-            val hotelID = URLEncoder.encode(hotel.id, "UTF-8")
-            val startDate = URLEncoder.encode(startDate, "UTF-8")
-            val endDate = URLEncoder.encode(endDate, "UTF-8")
-            val paymentMethod =payment.paymentMethod.toString()
-            val cardNumber = payment.cardNumber.toString()
-            val tabletPortrait = "true"
-
-            Button(
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black,
-                    contentColor = Color.White
-                ),
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                onClick = {
-                    coroutineScope.launch {
-                        try {
-                            val paymentID = paymentViewModel.addPayment(payment)
-                            if (paymentID.isNotEmpty()) {
-                                val encodedPaymentID = URLEncoder.encode(paymentID, "UTF-8")
-
-                                val baseRoute = "${AppScreen.BookingReview.route}/$hotelID/$startDate/$endDate/$totalPerson/$roomBooked/$totalPrice/$paymentMethod/$cardNumber/$encodedPaymentID/$tabletPortrait"
-
-                                navController.navigate(baseRoute)
-                            } else {
-                                Toast.makeText(context, "Failed to create payment", Toast.LENGTH_SHORT).show()
-                            }
-                        } catch (e: Exception) {
-                            println("Debug - Navigation error: ${e.message}")
-                            e.printStackTrace()
-                            Toast.makeText(context, "Navigation error: ${e.message}", Toast.LENGTH_SHORT).show()
+                            navController.navigate(baseRoute)
+                        } else {
+                            Toast.makeText(context, "Failed to create payment", Toast.LENGTH_SHORT).show()
                         }
+                    } catch (e: Exception) {
+                        println("Debug - Navigation error: ${e.message}")
+                        e.printStackTrace()
+                        Toast.makeText(context, "Navigation error: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
-            ) {
-                Text(text = "Next")
             }
+        ) {
+            Text(text = "Next")
         }
     }
 }

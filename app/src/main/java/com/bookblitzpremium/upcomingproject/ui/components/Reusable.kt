@@ -23,7 +23,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -59,6 +62,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.R
+import com.bookblitzpremium.upcomingproject.TabletAuth.LoginFormState
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 
 @Preview(showBackground = true)
@@ -68,8 +72,6 @@ fun PreviewDialog(){
      val navContoller = rememberNavController()
     CustomDialog(onDismissRequest = {}, onNextClick = {})
 }
-
-
 
 @Composable
 fun CustomDialog(
@@ -240,6 +242,11 @@ fun HeaderDetails( textResId: String , offsetX :Dp,modifier: Modifier ){
     )
 }
 
+data class LoginFormState(
+    val email: String,
+    val password: String
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomTextField(
@@ -250,33 +257,59 @@ fun CustomTextField(
     leadingIcon: ImageVector? = null,
     trailingIcon: ImageVector? = null,
     shape: RoundedCornerShape = RoundedCornerShape(0.dp),
-    keyBoardType: KeyboardType = KeyboardType.Text,  // Use `KeyboardType`
-    inputType: VisualTransformation = VisualTransformation.None,  // Use `VisualTransformation`
+    keyBoardType: KeyboardType = KeyboardType.Text,
+    inputType: VisualTransformation = VisualTransformation.None,
+    isEmailField: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    var isError by remember { mutableStateOf(false) }
+
+    fun validateEmail(email: String): Boolean {
+        return email.contains("@") && email.isNotBlank()
+    }
+
     OutlinedTextField(
         value = value,
-        onValueChange = onValueChange,
+        onValueChange = { newValue ->
+            onValueChange(newValue)
+            if (isEmailField) {
+                isError = !validateEmail(newValue)
+            }
+        },
         label = { Text(text = label) },
         placeholder = { Text(text = placeholder) },
         leadingIcon = leadingIcon?.let {
             { Icon(imageVector = it, contentDescription = null, tint = Color.Gray) }
         },
         trailingIcon = trailingIcon?.let {
-            { IconButton(onClick = {
-                onValueChange("")
-            }) {
-                Icon(imageVector = it, contentDescription = null, tint = Color.Gray)
-            } }
+            {
+                IconButton(onClick = {
+                    onValueChange("")
+                    isError = false
+                }) {
+                    Icon(imageVector = it, contentDescription = "Clear", tint = Color.Gray)
+                }
+            }
         },
         textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
-        keyboardOptions = KeyboardOptions(  // ✅ Fixed: Merged both options
-            keyboardType = keyBoardType,
-            imeAction = ImeAction.Done
+        keyboardOptions = KeyboardOptions(
+            keyboardType = if (isEmailField) KeyboardType.Email else keyBoardType,
+            imeAction = ImeAction.Next
         ),
-        visualTransformation = inputType,  // ✅ Correct usage
+        visualTransformation = inputType,
         enabled = true,
-        modifier = modifier.fillMaxWidth()
+        isError = isError,
+        supportingText = {
+            if (isError) {
+                Text(
+                    text = "Invalid email: Must contain '@'",
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
+            }
+        },
+        modifier = modifier
+            .fillMaxWidth()
     )
 }
 
@@ -289,29 +322,39 @@ fun CustomTextFieldPassword(
     placeholder: String = "Type here...",
     leadingIcon: ImageVector? = null,
     shape: RoundedCornerShape = RoundedCornerShape(0.dp),
-    keyBoardType: KeyboardType = KeyboardType.Text,
+    keyBoardType: KeyboardType = KeyboardType.Password,
     modifier: Modifier = Modifier
 ) {
-    // State to track whether the password is visible
     var isPasswordVisible by remember { mutableStateOf(false) }
+    var isError by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Toggle the visual transformation based on the visibility state
     val visualTransformation = if (isPasswordVisible) {
-        VisualTransformation.None // Show password
+        VisualTransformation.None
     } else {
-        PasswordVisualTransformation() // Hide password
+        PasswordVisualTransformation()
     }
 
-    // Toggle the trailing icon based on the visibility state
     val trailingIcon = if (isPasswordVisible) {
-        Icons.Default.VisibilityOff // Eye-off icon (to hide password)
+        Icons.Default.VisibilityOff
     } else {
-        Icons.Default.Visibility // Eye icon (to show password)
+        Icons.Default.Visibility
+    }
+
+    fun getPasswordErrorMessage(password: String): String? {
+        if (password.length < 8) {
+            return "Password must be at least 8 characters long"
+        }
+        return null
     }
 
     OutlinedTextField(
         value = value,
-        onValueChange = onValueChange,
+        onValueChange = { newValue ->
+            onValueChange(newValue)
+            errorMessage = getPasswordErrorMessage(newValue)
+            isError = errorMessage != null
+        },
         label = { Text(text = label) },
         placeholder = { Text(text = placeholder) },
         leadingIcon = leadingIcon?.let {
@@ -319,7 +362,6 @@ fun CustomTextFieldPassword(
         },
         trailingIcon = {
             IconButton(onClick = {
-                // Toggle password visibility
                 isPasswordVisible = !isPasswordVisible
             }) {
                 Icon(
@@ -330,13 +372,24 @@ fun CustomTextFieldPassword(
             }
         },
         textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
-
         keyboardOptions = KeyboardOptions(
             keyboardType = keyBoardType,
             imeAction = ImeAction.Done
         ),
-        visualTransformation = visualTransformation, // Apply the toggled transformation
+        visualTransformation = visualTransformation,
         enabled = true,
-        modifier = modifier.fillMaxWidth()
+        isError = isError,
+        supportingText = {
+            errorMessage?.let {
+                Text(
+                    text = it,
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
+            }
+        },
+        modifier = modifier
+            .fillMaxWidth()
     )
 }
+

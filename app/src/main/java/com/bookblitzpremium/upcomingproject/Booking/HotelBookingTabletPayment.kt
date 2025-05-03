@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.common.enums.BookingStatus
 import com.bookblitzpremium.upcomingproject.common.enums.PaymentMethod
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
@@ -162,7 +163,8 @@ fun PaymentDetails(
                                             numberOfRoom = payment.roomBooked.toIntOrNull() ?: 1,
                                             hotelID = hotel.id,
                                             userid = userID, // Add real user ID if available
-                                            paymentID = payment.paymentID
+                                            paymentID = payment.paymentID,
+                                            status = BookingStatus.Confirmed.title
                                         )
 
                                         val localPayment = Payment(

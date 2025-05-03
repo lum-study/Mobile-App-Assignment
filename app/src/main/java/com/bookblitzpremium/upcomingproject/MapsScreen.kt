@@ -3,8 +3,12 @@ package com.bookblitzpremium.upcomingproject
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.DrawableRes
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -28,10 +32,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.data.model.LineType
 import com.bookblitzpremium.upcomingproject.ui.utility.MapViewModel
+import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.Dash
 import com.google.android.gms.maps.model.Gap
@@ -50,6 +56,7 @@ fun LocationPermissionWrapper(content: @Composable () -> Unit) {
     val context = LocalContext.current
     var hasPermission by remember { mutableStateOf(checkForPermission(context)) }
 
+
     if (!hasPermission) {
         LocationPermissionScreen {
             hasPermission = true
@@ -58,6 +65,7 @@ fun LocationPermissionWrapper(content: @Composable () -> Unit) {
         content()
     }
 }
+
 
 fun checkForPermission(context: Context): Boolean {
     return ActivityCompat.checkSelfPermission(
@@ -69,6 +77,7 @@ fun checkForPermission(context: Context): Boolean {
                 android.Manifest.permission.ACCESS_COARSE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
 }
+
 
 @Composable
 fun LocationPermissionScreen(
@@ -82,6 +91,7 @@ fun LocationPermissionScreen(
             onPermissionGranted()
         }
     }
+
 
     Column(
         modifier = Modifier
@@ -111,6 +121,9 @@ fun LocationPermissionScreen(
 }
 
 
+
+
+@RequiresApi(Build.VERSION_CODES.P)
 @Composable
 fun MapScreen(
     addressInput: String,
@@ -125,6 +138,7 @@ fun MapScreen(
     var changeIcon by remember { mutableStateOf(false) }
     var lineType by remember { mutableStateOf(LineType.SOLID) }
 
+
     // Automatically trigger getLatLngFromAddress when screen is composed
     LaunchedEffect(addressInput) {
         viewModel.getLatLngFromAddress(
@@ -133,6 +147,11 @@ fun MapScreen(
             addressFilter = { addr -> addr.locality ?: addr.getAddressLine(0) }
         )
     }
+
+
+
+
+
 
     LocationPermissionWrapper {
         Column(
@@ -150,6 +169,7 @@ fun MapScreen(
                 Text("Back")
             }
             Spacer(modifier = Modifier.height(16.dp))
+
 
             // Loading state
             if (loading) {
@@ -207,6 +227,7 @@ fun MapScreen(
     }
 }
 
+
 @Composable
 fun MyMap(
     context: Context,
@@ -227,10 +248,14 @@ fun MyMap(
         )
     }
 
+
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        val context = LocalContext.current
+
+
         GoogleMap(
             modifier = Modifier
                 .fillMaxSize()
@@ -238,21 +263,23 @@ fun MyMap(
             cameraPositionState = cameraPositionState,
             properties = mapProperties
         ) {
-            Marker(
-                state = MarkerState(position = currentLatLng),
+
+
+            MapMarker(
+                context = context,
+                position = currentLatLng,
                 title = "Current Location",
-                icon = if (changeIcon) {
-                    BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
-                } else {
-                    BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
-                }
+                iconResourceId =  R.drawable.hotel_location
             )
 
-            Marker(
-                state = MarkerState(position = destLatLng),
+
+            MapMarker(
+                context = context,
+                position = destLatLng,
                 title = "Destination",
-                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
+                iconResourceId = R.drawable.current_location
             )
+
 
             Polyline(
                 points = listOf(currentLatLng, destLatLng),
@@ -266,9 +293,6 @@ fun MyMap(
             )
         }
 
-        Button(onClick = onChangeMarkerIcon) {
-            Text("Toggle Current Marker Icon")
-        }
         Button(onClick = {
             onChangeMapType(if (mapProperties.mapType == MapType.NORMAL) MapType.SATELLITE else MapType.NORMAL)
         }) {
@@ -285,3 +309,45 @@ fun MyMap(
         }
     }
 }
+
+
+@Composable
+fun MapMarker(
+    context: Context,
+    position: LatLng,
+    title: String,
+    @DrawableRes iconResourceId: Int
+) {
+    val icon = bitmapDescriptorFromVector(
+        context, iconResourceId
+    )
+    Marker(
+        state = MarkerState(position = position),
+        title = title,
+        icon = icon,
+    )
+}
+
+
+fun bitmapDescriptorFromVector(
+    context: Context,
+    vectorResId: Int
+): BitmapDescriptor? {
+
+
+    // retrieve the actual drawable
+    val drawable = ContextCompat.getDrawable(context, vectorResId) ?: return null
+    drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
+    val bm = Bitmap.createBitmap(
+        drawable.intrinsicWidth,
+        drawable.intrinsicHeight,
+        Bitmap.Config.ARGB_8888
+    )
+
+
+    // draw it onto the bitmap
+    val canvas = android.graphics.Canvas(bm)
+    drawable.draw(canvas)
+    return BitmapDescriptorFactory.fromBitmap(bm)
+}
+

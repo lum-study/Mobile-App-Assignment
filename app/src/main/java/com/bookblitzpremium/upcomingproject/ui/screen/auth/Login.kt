@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -120,25 +122,53 @@ fun LoginPage(
             CustomTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = "Username",
-                placeholder = "Enter your username",
+                label = "Enter email",
+                placeholder = "Enter your email",
+                leadingIcon = Icons.Default.Email,
                 trailingIcon = Icons.Default.Clear,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(8.dp),
+                isEmailField = true,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             )
-            Spacer(modifier = Modifier.height(16.dp))
+
             CustomTextFieldPassword(
                 value = password,
                 onValueChange = { password = it },
-                label = "Password",
-                placeholder = "Enter your Password",
-                shape = RoundedCornerShape(12.dp),
+                label = "Enter password",
+                placeholder = "Enter your password",
+                leadingIcon = Icons.Default.Lock,
+                shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 16.dp)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
             )
+
+
+
+//            CustomTextField(
+//                value = email,
+//                onValueChange = { email = it },
+//                label = "Username",
+//                placeholder = "Enter your username",
+//                trailingIcon = Icons.Default.Clear,
+//                shape = RoundedCornerShape(12.dp),
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(horizontal = 16.dp, vertical = 12.dp)
+//            )
+//            Spacer(modifier = Modifier.height(16.dp))
+//            CustomTextFieldPassword(
+//                value = password,
+//                onValueChange = { password = it },
+//                label = "Password",
+//                placeholder = "Enter your Password",
+//                shape = RoundedCornerShape(12.dp),
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(horizontal = 16.dp, vertical = 16.dp)
+//            )
             Text(
                 text = "Forgot Password?",
                 style = AppTheme.typography.bodyLarge,

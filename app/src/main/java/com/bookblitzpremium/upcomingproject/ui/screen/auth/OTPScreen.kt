@@ -67,8 +67,7 @@ import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.model.OtpAction
 import com.bookblitzpremium.upcomingproject.data.model.OtpState
-
-
+import com.bookblitzpremium.upcomingproject.ui.utility.PermissionUtils
 
 
 @Composable
@@ -206,57 +205,6 @@ fun OtpScreen2(
 
     val context = LocalContext.current
 
-    // Check if permission is granted (for UI feedback)
-    var permissionGranted by rememberSaveable {
-        mutableStateOf(
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    android.Manifest.permission.POST_NOTIFICATIONS
-                ) == PackageManager.PERMISSION_GRANTED
-            } else {
-                true // Not required for pre-Android 13
-            }
-        )
-    }
-
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-        permissionGranted = isGranted // Update the state
-        if (!isGranted) {
-            // Check if we should show rationale (i.e., user denied but didn't select "Don't ask again")
-            val activity = context as? ComponentActivity
-            val shouldShowRationale = activity?.let {
-                ActivityCompat.shouldShowRequestPermissionRationale(it, android.Manifest.permission.POST_NOTIFICATIONS)
-            } ?: false
-
-            if (!shouldShowRationale && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                // Permission permanently denied ("Don't ask again" selected)
-                Toast.makeText(
-                    context,
-                    "Notification permission was permanently denied. Please enable it in settings.",
-                    Toast.LENGTH_LONG
-                ).show()
-
-                // Optionally, direct the user to app settings
-                val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = android.net.Uri.fromParts("package", context.packageName, null)
-                }
-                context.startActivity(intent)
-            } else {
-                // Permission denied but can ask again
-                Toast.makeText(context, "Please allow notifications", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-
-    // Automatically request permission on Android 13+
-    LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !permissionGranted) {
-            launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
-        }
-    }
-
     Column(
         modifier = modifier
             .fillMaxSize() // Fill the entire screen height
@@ -326,15 +274,7 @@ fun OtpScreen2(
                     )
                     .padding(10.dp)
                     .clickable {
-                        if (permissionGranted) {
-                            viewModel.sendOTP(context)
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "Please allow notifications",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
+                        viewModel.sendOTP(context)
                     }
             )
 

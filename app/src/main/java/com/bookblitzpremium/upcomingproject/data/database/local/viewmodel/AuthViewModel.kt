@@ -2,6 +2,7 @@ package com.bookblitzpremium.upcomingproject.data.database.local.viewmodel
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
@@ -52,6 +53,7 @@ class AuthViewModel @Inject constructor(
     fun getUserId(): String {
         return auth.currentUser?.uid ?: ""
     }
+
 
     init {
 //        auth.signOut()
