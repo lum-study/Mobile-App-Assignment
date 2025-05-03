@@ -21,23 +21,15 @@ import java.net.URLDecoder
 
 fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
     navigation(
-        startDestination = "${AppScreen.Hotel.route}/{0HCQgp6kuauoYiRH094D}/{tripPackageID}",
+        startDestination = AppScreen.Home.route,
         route = AppScreen.HomeGraph.route
     ) {
 
-
         composable(
-            "${AppScreen.Hotel.route}/{0HCQgp6kuauoYiRH094D}/{tripPackageID}",
+            "${AppScreen.Hotel.route}/{hotelID}/{tripPackageID}",
         ){ backStackEntry ->
-            val hotelID = "0HCQgp6kuauoYiRH094D"
-//            val hotelID = backStackEntry.arguments?.getString("hotelID") ?: ""
+            val hotelID = backStackEntry.arguments?.getString("hotelID") ?: ""
             val tripPackageID = backStackEntry.arguments?.getString("tripPackageID") ?: ""
-
-//            HotelDetailScreen(
-//                navController = navController,
-//                hotelBookingId = hotelID,
-//                tripPackageID = tripPackageID
-//            )
 
             HotelBookingScreenLayout(
                 navController = navController,
