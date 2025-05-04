@@ -34,7 +34,6 @@ class LocalFlightViewModel @Inject constructor(private val flightRepository: Loc
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
-
             try {
                 flightRepository.addOrUpdateFlight(flight)
             } catch (e: SQLiteException) {

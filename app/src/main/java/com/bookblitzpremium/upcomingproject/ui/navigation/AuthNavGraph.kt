@@ -2,31 +2,21 @@ package com.bookblitzpremium.upcomingproject.ui.navigation
 
 import android.annotation.SuppressLint
 import android.util.Log
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
-import com.bookblitzpremium.upcomingproject.GenderSelectionScreen
 import com.bookblitzpremium.upcomingproject.GenderSizeLayout
 import com.bookblitzpremium.upcomingproject.LoginSizeLayout
 import com.bookblitzpremium.upcomingproject.RegristerSizeLayout
-import com.bookblitzpremium.upcomingproject.TabletAuth.LoginScreen2
-import com.bookblitzpremium.upcomingproject.TabletAuth.Step1Screen
-import com.bookblitzpremium.upcomingproject.TabletAuth.TabletLoginScreen
-import com.bookblitzpremium.upcomingproject.TabletAuth.encodeToUri
 import com.bookblitzpremium.upcomingproject.WelcomeLoginSizeLayout
 import com.bookblitzpremium.upcomingproject.WelcomeRegristerSizeLayout
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.ui.screen.auth.DynamicForgetPasswordPage
 import com.bookblitzpremium.upcomingproject.ui.screen.auth.DynamicOTPPage
-import com.bookblitzpremium.upcomingproject.ui.screen.auth.GenderMobileVersion
-import com.bookblitzpremium.upcomingproject.ui.screen.auth.LoginPage
-import com.bookblitzpremium.upcomingproject.ui.screen.auth.RegristerPage
-
 
 
 @SuppressLint("UnrememberedGetBackStackEntry")

@@ -30,7 +30,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="bookblitzpremium"
+            android:label="@string/bookblitzpremium"
             android:theme="@style/Theme.UpcomingProject">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

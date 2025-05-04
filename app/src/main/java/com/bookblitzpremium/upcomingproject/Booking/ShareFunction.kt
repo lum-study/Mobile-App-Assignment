@@ -417,6 +417,7 @@ fun PreviewCard(){
     FeatureDisplay(
         hotel = hotel,
         rating = rating,
+        tabletScreen = false,
         modifier = Modifier
     )
 }
@@ -427,6 +428,7 @@ fun PreviewCard(){
 fun FeatureDisplay(
     hotel: String,
     rating: Double,
+    tabletScreen : Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val hotelFeatures = mapFeaturesFromString(hotel)
@@ -444,11 +446,14 @@ fun FeatureDisplay(
             Box(
                 modifier = Modifier.weight(1f)
             ) {
-                ScanOptionCard(option = feature,rating = if (feature == ratingFeature) rating else null)
+                ScanOptionCard(
+                    option = feature,
+                    rating = if (feature == ratingFeature) rating else null,
+                    tabletScreen,
+                )
             }
         }
     }
-
 }
 
 
@@ -456,10 +461,11 @@ fun FeatureDisplay(
 fun ScanOptionCard(
     option: Feature,
     rating: Double? = null,
+    tabletScreen: Boolean,
     modifier: Modifier = Modifier
 ) {
     val minHeight = 80.dp // Adjusted to fit icon, title, rating, and padding
-
+    val size = if(tabletScreen) 24.dp else 16.dp
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -469,14 +475,13 @@ fun ScanOptionCard(
         contentAlignment = Alignment.Center // Center the column vertically
     ) {
         Column(
-//            modifier = Modifier.padding(8.dp), // Move padding to Column
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center // Center content vertically
         ) {
             Icon(
                 imageVector = option.icon,
                 contentDescription = option.title,
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier.size(size),
                 tint = Color.Black
             )
             Text(

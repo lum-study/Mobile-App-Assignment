@@ -60,6 +60,7 @@ import com.bookblitzpremium.upcomingproject.ui.navigation.AppNavigation
 import com.bookblitzpremium.upcomingproject.ui.screen.home.DrawerLabel
 import com.bookblitzpremium.upcomingproject.ui.screen.home.GreetingProfile
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import com.bookblitzpremium.upcomingproject.ui.utility.PermissionUtils
 import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 import com.google.firebase.FirebaseApp
 import dagger.hilt.android.AndroidEntryPoint
@@ -81,7 +82,7 @@ class MainActivity : ComponentActivity() {
         FirebaseApp.initializeApp(this)
         setContent {
             AppTheme {
-                InitializeDatabase()
+//                InitializeDatabase()
                 App()
             }
         }
@@ -128,6 +129,7 @@ fun App(
             if (currentScreen.hasBottomBar && (deviceType == DeviceType.TabletLandscape)) {
                 SideBar(navController = navController, username = "", deviceType = deviceType)
             }
+            PermissionUtils.RequestPermissionDialog()
             AppNavigation(
                 navController,
                 startDestination,

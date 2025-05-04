@@ -22,7 +22,7 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object TripPackage : AppScreen("TripPackage", hasTopBar = true, hasBottomBar = false)
     data object Schedule : AppScreen("Schedule", hasTopBar = true, hasBottomBar = false)
     data object Flight : AppScreen("Flight", hasTopBar = true, hasBottomBar = false)
-    data object Hotel : AppScreen("Hotel", hasTopBar = true, hasBottomBar = false)
+    data object Hotel : AppScreen("Hotel", hasTopBar = false, hasBottomBar = false)
     data object TripPackageBooking : AppScreen("TripPackageBooking", hasTopBar = true, hasBottomBar = false)
 
     // Search Screens

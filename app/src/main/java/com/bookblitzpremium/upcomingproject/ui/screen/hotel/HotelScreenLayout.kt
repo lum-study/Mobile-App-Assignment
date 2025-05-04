@@ -42,7 +42,6 @@ fun HotelBookingScreenLayout(
 
         else -> {
             HotelBookingVerticalScreen(
-                showNUmber = 2,
                 defaultSize = 300.dp,
                 maxSize =  500.dp,
                 hotelID = hotelID,

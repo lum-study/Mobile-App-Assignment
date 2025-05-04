@@ -17,9 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -37,15 +35,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.media3.common.util.Log
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.Booking.FeatureDisplay
@@ -55,7 +49,6 @@ import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalH
 import com.bookblitzpremium.upcomingproject.ui.components.SkeletonLoader
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
-import kotlinx.coroutines.delay
 import java.net.URLEncoder
 
 
@@ -65,7 +58,6 @@ fun PreviewScreen() {
     val navController = rememberNavController()
     HotelDetailScreen(navController, hotelBookingId = "dgdf")
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,9 +71,7 @@ fun HotelDetailScreen(
         viewModel.getHotelByID(hotelBookingId)
     }
 
-
     val hotel by viewModel.selectedHotel.collectAsState()
-
 
     if (hotel == null) {
         Box(
@@ -106,7 +96,6 @@ fun HotelDetailScreen(
     }
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HotelDetailContent(
@@ -123,7 +112,7 @@ private fun HotelDetailContent(
     ) {
         HotelImageSection(hotel.imageUrl, tripPackageID)
         Spacer(Modifier.height(16.dp))
-        HotelInfoSection(hotel.name, hotel.address, hotel.rating,navController,hotel.feature)
+        HotelInfoSection(hotel.name, hotel.address, hotel.rating, navController, hotel.feature)
         Spacer(Modifier.height(16.dp))
         AboutSection(hotel.name, hotel.rating)
         Spacer(Modifier.weight(1f))
@@ -133,17 +122,13 @@ private fun HotelDetailContent(
     }
 }
 
-
 @Composable
 private fun HotelImageSection(imageUrl: String, tripPackageID: String) {
     var showImage by remember { mutableStateOf(false) }
 
-
     LaunchedEffect(Unit) {
-        delay(300)
         showImage = true
     }
-
 
     if (tripPackageID.isEmpty()) {
         Box(
@@ -161,8 +146,6 @@ private fun HotelImageSection(imageUrl: String, tripPackageID: String) {
                     modifier = Modifier.fillMaxSize()
                 )
             }
-
-
         }
     } else {
         Box(
@@ -180,12 +163,15 @@ private fun HotelImageSection(imageUrl: String, tripPackageID: String) {
     }
 }
 
-
 @Composable
-private fun HotelInfoSection(name: String, address: String, rating: Double, navController: NavController,hotel:String) {
+private fun HotelInfoSection(name: String, address: String, rating: Double, navController: NavController, hotel: String) {
     Column(Modifier.padding(horizontal = 16.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically){
-            Text(name, style = AppTheme.typography.largeBold, color = AppTheme.colorScheme.onBackground)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = name,
+                style = AppTheme.typography.largeBold,
+                color = AppTheme.colorScheme.onBackground
+            )
         }
         Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -196,7 +182,7 @@ private fun HotelInfoSection(name: String, address: String, rating: Double, navC
             )
             Spacer(Modifier.width(4.dp))
             Text(
-                address,
+                text = address,
                 color = AppTheme.colorScheme.secondary,
                 style = AppTheme.typography.labelMedium
             )
@@ -215,20 +201,26 @@ private fun HotelInfoSection(name: String, address: String, rating: Double, navC
             )
         }
         Spacer(Modifier.height(12.dp))
-        Row(verticalAlignment = Alignment.CenterVertically){
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Button(
                 onClick = {
                     navController.navigate(AppScreen.Maps.route)
                 },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = AppTheme.colorScheme.primary, // Use primary color
+                    contentColor = AppTheme.colorScheme.onPrimary // Use onPrimary for text
+                )
             ) {
-                Text(text = "Maps", color = AppTheme.colorScheme.onBackground)
+                Text(
+                    text = "Maps",
+                    style = AppTheme.typography.mediumBold, // Add typography
+                    color = AppTheme.colorScheme.onPrimary
+                )
             }
         }
     }
 }
-
 
 @Composable
 private fun RatingItem(rating: Double) {
@@ -236,42 +228,46 @@ private fun RatingItem(rating: Double) {
         Icon(
             Icons.Default.Star,
             contentDescription = null,
-            tint = Color(0xFFFFD700)
-        ) // Gold color for stars
+            tint = AppTheme.colorScheme.starRating // Use defined starRating color
+        )
         Spacer(Modifier.width(4.dp))
-        Text(rating.toString(), fontSize = 14.sp, color = AppTheme.colorScheme.onBackground)
+        Text(
+            text = rating.toString(),
+            style = AppTheme.typography.labelMedium, // Use defined typography
+            color = AppTheme.colorScheme.onBackground
+        )
     }
 }
-
 
 @Composable
 private fun StatItem(icon: ImageVector, text: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(icon, contentDescription = null, tint = AppTheme.colorScheme.secondary)
         Spacer(Modifier.width(4.dp))
-        Text(text, fontSize = 14.sp, color = AppTheme.colorScheme.onBackground)
+        Text(
+            text = text,
+            style = AppTheme.typography.labelMedium, // Use defined typography
+            color = AppTheme.colorScheme.onBackground
+        )
     }
 }
-
 
 @Composable
 private fun AboutSection(name: String, rating: Double) {
     Column(Modifier.padding(horizontal = 16.dp)) {
         Text(
-            "About Destination",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
+            text = "About Destination",
+            style = AppTheme.typography.titleLarge, // Use defined typography
             color = AppTheme.colorScheme.onBackground
         )
         Spacer(Modifier.height(4.dp))
         Text(
-            generateHotelDescription(name, rating),
-            fontSize = 14.sp,
+            text = generateHotelDescription(name, rating),
+            style = AppTheme.typography.labelMedium, // Use defined typography
             color = AppTheme.colorScheme.secondary
         )
     }
 }
-
 
 @Composable
 private fun BookNowButton(price: String, onBook: (String) -> Unit) {
@@ -285,14 +281,17 @@ private fun BookNowButton(price: String, onBook: (String) -> Unit) {
             contentColor = AppTheme.colorScheme.onPrimary
         )
     ) {
-        Text("Book Now")
+        Text(
+            text = "Book Now",
+            style = AppTheme.typography.mediumBold // Add typography
+        )
     }
 }
 
 @Composable
 fun BookingHotelScreen(
     navController: NavController,
-    viewModel : LocalHotelViewModel = hiltViewModel(),
+    viewModel: LocalHotelViewModel = hiltViewModel(),
     hotelBooking: String
 ) {
     Column(
@@ -311,8 +310,6 @@ fun BookingHotelScreen(
                     .fillMaxHeight(0.64f)
                     .clip(RoundedCornerShape(bottomEnd = 16.dp, bottomStart = 16.dp))
             ) {
-
-
                 UrlImage(
                     imageUrl = hotelData.imageUrl,
                     modifier = Modifier
@@ -323,12 +320,11 @@ fun BookingHotelScreen(
                 )
             }
 
-
             // Main Content
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(AppTheme.colorScheme.onBackground)
+                    .background(AppTheme.colorScheme.background) // Use background color
                     .padding(16.dp)
             ) {
                 // Title with Heart Icon
@@ -340,20 +336,25 @@ fun BookingHotelScreen(
                 ) {
                     Text(
                         text = hotelData.name,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
+                        style = AppTheme.typography.largeBold, // Use defined typography
+                        color = AppTheme.colorScheme.onBackground
                     )
-
 
                     Button(
                         onClick = {
                             navController.navigate(AppScreen.Maps.route)
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = AppTheme.colorScheme.primary, // Use primary color
+                            contentColor = AppTheme.colorScheme.onPrimary // Use onPrimary for text
+                        )
                     ) {
-                        Text(text = "Maps", color = AppTheme.colorScheme.onBackground)
+                        Text(
+                            text = "Maps",
+                            style = AppTheme.typography.mediumBold, // Add typography
+                            color = AppTheme.colorScheme.onPrimary
+                        )
                     }
                 }
                 // Location
@@ -365,15 +366,16 @@ fun BookingHotelScreen(
                     )
                     Text(
                         text = hotelData.address,
+                        style = AppTheme.typography.labelMedium, // Use defined typography
                         color = AppTheme.colorScheme.secondary,
-                        fontSize = 14.sp,
                         modifier = Modifier.padding(start = 4.dp)
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 // Rating, Distance, Restaurants
                 Row(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .padding(8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -381,75 +383,36 @@ fun BookingHotelScreen(
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = "Rating",
-                            tint = Color.Yellow
+                            tint = AppTheme.colorScheme.starRating // Use defined starRating color
                         )
                         Text(
                             text = hotelData.rating.toString(),
-                            fontSize = 14.sp,
+                            style = AppTheme.typography.labelMedium, // Use defined typography
+                            color = AppTheme.colorScheme.onBackground,
                             modifier = Modifier.padding(start = 4.dp)
                         )
                     }
-
-
-//                    FeatureDisplay(
-//                        hotel = hotelData,
-//                        modifier = Modifier
-//                            .padding(top = 8.dp)
-//                            .fillMaxWidth()
-//                            .padding(16.dp)
-//                    )
-//                    Row(verticalAlignment = Alignment.CenterVertically) {
-//                        Icon(
-//                            imageVector = Icons.Default.DirectionsCar,
-//                            contentDescription = "Distance",
-//                            tint = AppTheme.colorScheme.secondary
-//                        )
-//                        Text(
-//                            text = "3000 km",
-//                            fontSize = 14.sp,
-//                            modifier = Modifier.padding(start = 4.dp)
-//                        )
-//                    }
-//                    Row(verticalAlignment = Alignment.CenterVertically) {
-//                        Icon(
-//                            imageVector = Icons.Default.Restaurant,
-//                            contentDescription = "Restaurants",
-//                            tint = AppTheme.colorScheme.secondary
-//                        )
-//                        Text(
-//                            text = "108 avail.",
-//                            fontSize = 14.sp,
-//                            modifier = Modifier.padding(start = 4.dp)
-//                        )
-//                    }
                 }
-
 
                 // About Destination
                 Text(
                     text = "About Destination",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    modifier = Modifier
-                        .padding(bottom = 4.dp)
+                    style = AppTheme.typography.titleLarge, // Use defined typography
+                    color = AppTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
-
 
                 val description = generateHotelDescription(hotelData.name, hotelData.rating)
 
-
                 Text(
                     text = description,
-                    color = AppTheme.colorScheme.secondary,
-                    fontSize = 14.sp
+                    style = AppTheme.typography.labelMedium, // Use defined typography
+                    color = AppTheme.colorScheme.secondary
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                // Book Now Button
 
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Spacer(modifier = Modifier.weight(1f))
-
 
                 Button(
                     onClick = {
@@ -460,9 +423,16 @@ fun BookingHotelScreen(
                         )
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = AppTheme.colorScheme.primary, // Use primary color
+                        contentColor = AppTheme.colorScheme.onPrimary // Use onPrimary for text
+                    )
                 ) {
-                    Text(text = "Book Now", color = AppTheme.colorScheme.onBackground)
+                    Text(
+                        text = "Book Now",
+                        style = AppTheme.typography.mediumBold, // Add typography
+                        color = AppTheme.colorScheme.onPrimary
+                    )
                 }
             }
         } else {
@@ -470,7 +440,6 @@ fun BookingHotelScreen(
         }
     }
 }
-
 
 fun generateHotelDescription(hotelName: String, rating: Double): String {
     val templates = listOf(
@@ -483,7 +452,5 @@ fun generateHotelDescription(hotelName: String, rating: Double): String {
         "Stay at $hotelName and enjoy the perfect balance of luxury and affordability, with a guest rating of $rating★."
     )
 
-
     return templates.random()
 }
-

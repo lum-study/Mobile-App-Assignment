@@ -50,10 +50,10 @@ class NotificationService(
         }
     }
 
-    fun showNotification(Title:String, content: String) {
+    fun showNotification(title:String, content: String = "") {
         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle(Title)
+            .setSmallIcon(R.drawable.icon_logo)
+            .setContentTitle(title)
             .setContentText(content)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true) // Dismiss notification when tapped
