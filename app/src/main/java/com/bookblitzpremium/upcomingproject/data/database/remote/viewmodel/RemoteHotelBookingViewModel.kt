@@ -52,7 +52,7 @@ class RemoteHotelBookingViewModel @Inject constructor(
         _loading.value = true
         _error.value = null
         try {
-            withTimeout(5000L){
+            withTimeout(5000L) {
                 val firestoreId = remoteHotelBookingRepository.addHotelBooking(hotelBooking)
                 // Step 2: Update the booking with the Firestore ID
                 val updatedBooking = hotelBooking.copy(id = firestoreId)
@@ -104,9 +104,10 @@ class RemoteHotelBookingViewModel @Inject constructor(
         return try {
             _loading.value = true
             _error.value = null
-            remoteHotelBookingRepository.getAllHotelBookingByUserID(userID)
+            _hotel_booking.value = remoteHotelBookingRepository.getAllHotelBookingByUserID(userID)
+            _hotel_booking.value
         } catch (e: Exception) {
-            _error.value = e.localizedMessage ?: "Failed to load trip package booking"
+            _error.value = e.localizedMessage ?: "Failed to load hotel booking"
             emptyList()
         } finally {
             _loading.value = false

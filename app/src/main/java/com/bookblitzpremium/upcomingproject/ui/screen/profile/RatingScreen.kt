@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -26,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,25 +43,30 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.data.businessviewmodel.BusinessRatingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Rating
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalRatingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
+import com.bookblitzpremium.upcomingproject.ui.components.RatingSuccessDialog
 import com.bookblitzpremium.upcomingproject.ui.utility.getWindowSizeClass
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun RatingScreen(
     hotelId: String,
-    onBackPressed: () -> Unit,
-    onRatingSubmitted: () -> Unit = {},
+    bookingID: String = "",
     navController: NavHostController,
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
     val windowSizeClass = activity?.let { getWindowSizeClass(it) }
     val windowWidthSizeClass = windowSizeClass?.widthSizeClass ?: WindowWidthSizeClass.Compact
-    val viewModel: LocalRatingViewModel = hiltViewModel()
+
+    val businessRatingViewModel: BusinessRatingViewModel = hiltViewModel()
+    val isLoading by businessRatingViewModel.loading.collectAsState()
+    val hasError by businessRatingViewModel.error.collectAsState()
+    var showDialog by remember { mutableStateOf(false) }
 
     val localUserViewModel: LocalUserViewModel = hiltViewModel()
     val userID = FirebaseAuth.getInstance().currentUser?.uid ?: ""
@@ -170,11 +177,14 @@ fun RatingScreen(
                         description = comment,
                         rating = rating,
                         icon = userInfo!!.iconImage,
-                        hotelID = "BeJsfYromQZcAkgSXwtY",
+                        hotelID = hotelId,
                         userID = userID
                     )
-                    viewModel.addOrUpdateRating(newRating)
-                    onRatingSubmitted()
+                    businessRatingViewModel.addRatingToRemoteAndLocal(
+                        rating = newRating,
+                        bookingID = bookingID
+                    )
+                    showDialog = !showDialog
                 }
             },
             modifier = Modifier
@@ -186,6 +196,34 @@ fun RatingScreen(
         ) {
             Text(text = "Submit Rating", fontSize = 18.sp)
         }
+
+        if (showDialog) {
+            RatingSuccessDialog(
+                modifier = Modifier
+                    .height(300.dp)
+                    .width(300.dp),
+                hasError = hasError ?: "",
+                isLoading = isLoading,
+                onHomeButtonClick = {
+                    showDialog = it
+                    navController.navigate(AppScreen.Home.route) {
+                        popUpTo(AppScreen.Home.route) {
+                            inclusive = true
+                        }
+                    }
+                },
+                onViewRecordButtonClick = {
+                    showDialog = it
+                    navController.navigate(AppScreen.ProfileGraph.route) {
+                        popUpTo(AppScreen.Home.route)
+                    }
+                    navController.navigate(AppScreen.RatingRecords.route)
+                },
+                onDismissButtonClick = {
+                    showDialog = !showDialog
+                }
+            )
+        }
     }
 }
 
@@ -195,8 +233,6 @@ fun PhoneRatingScreenPreview() {
     val navController = rememberNavController()
     RatingScreen(
         hotelId = "hotel123",
-        onBackPressed = {},
-        onRatingSubmitted = {},
         navController = navController
     )
 }
@@ -207,8 +243,6 @@ fun TabletPortraitRatingScreenPreview() {
     val navController = rememberNavController()
     RatingScreen(
         hotelId = "hotel123",
-        onBackPressed = {},
-        onRatingSubmitted = {},
         navController = navController
     )
 }
@@ -219,8 +253,6 @@ fun TabletLandscapeRatingScreenPreview() {
     val navController = rememberNavController()
     RatingScreen(
         hotelId = "hotel123",
-        onBackPressed = {},
-        onRatingSubmitted = {},
         navController = navController
     )
 }

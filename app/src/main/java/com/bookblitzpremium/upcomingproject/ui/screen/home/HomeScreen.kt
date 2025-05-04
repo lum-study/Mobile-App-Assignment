@@ -60,8 +60,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import coil.compose.rememberAsyncImagePainter
-import com.bookblitzpremium.upcomingproject.InitializeTransaction
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.common.enums.BookingType
@@ -82,7 +80,6 @@ import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun HomeScreen(navController: NavHostController) {
-    InitializeTransaction()
     val localHotelViewModel: LocalHotelViewModel = hiltViewModel()
     val hotelList =
         remember { localHotelViewModel.getAllHotelsPagingFlow() }.collectAsLazyPagingItems()
@@ -218,45 +215,43 @@ fun GreetingProfile() {
             userInfo = localUserViewModel.getUserByID(userID)
         }
     }
-    if(userInfo != null) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Column(
-                Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(
-                    text = stringResource(id = R.string.home_title, userInfo?.name ?: ""),
-                    style = AppTheme.typography.largeBold,
-                )
-                Text(
-                    text = stringResource(id = R.string.home_description),
-                    style = AppTheme.typography.smallRegular,
-                    color = Color.Gray,
-                )
-            }
-            if (userInfo!!.iconImage.isNotEmpty()) {
-                Image(
-                    painter = rememberAsyncImagePainter(userInfo?.iconImage ?: ""),
-                    contentDescription = stringResource(R.string.profile_image),
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.FillBounds
-                )
-            } else {
-                Image(
-                    imageVector = if (userInfo!!.gender == Gender.Male.title) Icons.Default.Male else Icons.Default.Female,
-                    contentDescription = stringResource(R.string.profile_image),
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.FillBounds
-                )
-            }
+            Text(
+                text = stringResource(id = R.string.home_title, userInfo?.name ?: ""),
+                style = AppTheme.typography.largeBold,
+            )
+            Text(
+                text = stringResource(id = R.string.home_description),
+                style = AppTheme.typography.smallRegular,
+                color = Color.Gray,
+            )
+        }
+        if (userInfo?.iconImage != "") {
+            Base64Image(
+                base64String = userInfo?.iconImage ?: "",
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.FillBounds
+            )
+        } else {
+            Image(
+                imageVector = if (userInfo!!.gender == Gender.Male.title) Icons.Default.Male else Icons.Default.Female,
+                contentDescription = stringResource(R.string.profile_image),
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.FillBounds
+            )
         }
     }
 }

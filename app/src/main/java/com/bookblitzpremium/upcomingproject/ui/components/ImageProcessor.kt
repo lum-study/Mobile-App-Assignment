@@ -1,6 +1,8 @@
 package com.bookblitzpremium.upcomingproject.ui.components
 
+import android.content.Context
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.util.Base64
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
@@ -85,5 +87,16 @@ private suspend fun getBase64FromUrl(url: String): String = withContext(Dispatch
         }
     } catch (e: Exception) {
         ""
+    }
+}
+
+fun uriToBase64(context: Context, uri: Uri): String? {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val bytes = inputStream?.readBytes() ?: return null
+        Base64.encodeToString(bytes, Base64.DEFAULT)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
     }
 }

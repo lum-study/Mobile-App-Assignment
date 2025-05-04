@@ -21,15 +21,18 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
         }
 
         composable(
-            route = "${AppScreen.Ratings.route}/{hotelId}",
-            arguments = listOf(navArgument("hotelId") { type = NavType.StringType })
+            route = "${AppScreen.Ratings.route}/{hotelId}/{bookingID}",
+            arguments = listOf(
+                navArgument("hotelId") { type = NavType.StringType },
+                navArgument("bookingID") { type = NavType.StringType })
         ) { backStackEntry ->
-            val hotelId = backStackEntry.arguments?.getString("hotelId") ?: "dummyHotelId"
+            val hotelId = backStackEntry.arguments?.getString("hotelId") ?: ""
+            val bookingID = backStackEntry.arguments?.getString("bookingID") ?: ""
+
             RatingScreen(
                 navController = navController,
                 hotelId = hotelId,
-                onBackPressed = { navController.popBackStack() },
-                onRatingSubmitted = { navController.navigate(AppScreen.RatingRecords.route) }
+                bookingID = bookingID,
             )
         }
 

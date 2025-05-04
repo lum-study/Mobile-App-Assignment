@@ -1,5 +1,8 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.profile
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -49,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -60,6 +64,7 @@ import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.Base64Image
+import com.bookblitzpremium.upcomingproject.ui.components.uriToBase64
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
@@ -151,7 +156,7 @@ private fun TabletLayout(
     onDobChange: (String) -> Unit,
     onAddressChange: (String) -> Unit,
     onImageChange: (String) -> Unit,
-    gender: String
+    gender: String,
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
         Spacer(modifier = Modifier.height(24.dp))
@@ -184,7 +189,8 @@ private fun TabletLayout(
             ) {
                 ProfileImageSection(
                     iconImage = fields[0].second,
-                    onImageChange = { onImageChange(it)
+                    onImageChange = {
+                        onImageChange(it)
                     },
                     gender = gender
                 )
@@ -312,7 +318,9 @@ private fun PhoneLayout(
 
 @Composable
 private fun NavigationOptions() {
-    Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp)) {
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(start = 16.dp)) {
         Spacer(modifier = Modifier.height(24.dp))
         val navOptions = listOf(
             "Your Profile" to Icons.Outlined.Person,
@@ -322,11 +330,25 @@ private fun NavigationOptions() {
             "Log Out" to Icons.Default.Logout
         )
         navOptions.forEach { (option, iconRes) ->
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 12.dp).clickable {}) {
-                Image(imageVector = iconRes, contentDescription = null, modifier = Modifier.size(28.dp).padding(end = 8.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(vertical = 12.dp)
+                    .clickable {}) {
+                Image(
+                    imageVector = iconRes,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(28.dp)
+                        .padding(end = 8.dp)
+                )
                 Text(option, style = MaterialTheme.typography.titleMedium)
             }
-            HorizontalDivider(thickness = 1.dp, color = Color.LightGray, modifier = Modifier.padding(vertical = 4.dp))
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = Color.LightGray,
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
         }
     }
 }
@@ -338,6 +360,21 @@ private fun ProfileImageSection(
     gender: String,
     onImageChange: (String) -> Unit,
 ) {
+    val context = LocalContext.current
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var base64String by remember { mutableStateOf<String?>(null) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        imageUri = uri
+        base64String = uri?.let { uriToBase64(context, it) }
+    }
+
+    LaunchedEffect(base64String) {
+        onImageChange(base64String ?: "")
+    }
+
     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         if (iconImage.isNotEmpty()) {
             Base64Image(
@@ -369,6 +406,9 @@ private fun ProfileImageSection(
                 modifier = Modifier
                     .size(if (isPhone) 40.dp else 60.dp)
                     .padding(if (isPhone) 4.dp else 6.dp)
+                    .clickable {
+                        launcher.launch("image/*")
+                    }
             )
         }
     }
@@ -376,12 +416,37 @@ private fun ProfileImageSection(
 
 @Composable
 fun ProfileField(label: String, value: String, onValueChange: (String) -> Unit) {
-    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
-        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 32.dp))
-            BasicTextField(value, onValueChange, textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.End), modifier = Modifier.widthIn(min = 200.dp).padding(end = 32.dp))
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(vertical = 8.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                label,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(start = 32.dp)
+            )
+            BasicTextField(
+                value,
+                onValueChange,
+                textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.End),
+                modifier = Modifier
+                    .widthIn(min = 200.dp)
+                    .padding(end = 32.dp)
+            )
         }
-        HorizontalDivider(thickness = 1.dp, color = Color.LightGray, modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp))
+        HorizontalDivider(
+            thickness = 1.dp,
+            color = Color.LightGray,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp)
+        )
     }
 }
 
@@ -397,7 +462,11 @@ fun TabletPortraitPreviewEditProfile() {
     EditProfileScreen()
 }
 
-@Preview(showBackground = true, name = "Tablet Landscape", device = "spec:width=1280dp,height=800dp")
+@Preview(
+    showBackground = true,
+    name = "Tablet Landscape",
+    device = "spec:width=1280dp,height=800dp"
+)
 @Composable
 fun TabletLandscapePreviewEditProfile() {
     EditProfileScreen()

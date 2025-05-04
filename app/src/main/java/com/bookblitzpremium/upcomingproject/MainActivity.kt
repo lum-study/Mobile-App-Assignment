@@ -56,12 +56,15 @@ import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.common.enums.BottomNavigation
 import com.bookblitzpremium.upcomingproject.common.enums.DeviceType
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
+import com.bookblitzpremium.upcomingproject.data.datastore.DataStoreManager
+import com.bookblitzpremium.upcomingproject.data.datastore.DataStoreViewModel
 import com.bookblitzpremium.upcomingproject.ui.navigation.AppNavigation
 import com.bookblitzpremium.upcomingproject.ui.screen.home.DrawerLabel
 import com.bookblitzpremium.upcomingproject.ui.screen.home.GreetingProfile
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -106,6 +109,17 @@ fun App(
     val currentScreen = AppScreen.fromRoute(
         backStackEntry?.destination?.route
     )
+
+    val transactionViewModel: TransactionViewModel = hiltViewModel()
+    val userID = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    val dataStoreManager: DataStoreManager = hiltViewModel<DataStoreViewModel>().manager
+    LaunchedEffect(userID) {
+        if (userID.isNotEmpty()) {
+            println("Enter multiple")
+            dataStoreManager.setTransactionUpdated(false)
+            transactionViewModel.initializeTransaction(userID)
+        }
+    }
 
     Scaffold(
         topBar = {

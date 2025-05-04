@@ -1,12 +1,10 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.booking
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -47,6 +45,7 @@ import com.bookblitzpremium.upcomingproject.common.enums.PaymentMethod
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.TPBooking
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteTPBookingViewModel
+import com.bookblitzpremium.upcomingproject.ui.components.NotificationService
 import com.bookblitzpremium.upcomingproject.ui.components.TripPackageBookingDialog
 import com.bookblitzpremium.upcomingproject.ui.screen.payment.PaymentButton
 import com.bookblitzpremium.upcomingproject.ui.screen.payment.PaymentOptionScreen
@@ -54,7 +53,6 @@ import com.bookblitzpremium.upcomingproject.ui.screen.payment.PriceDetailsSectio
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.delay
 import java.time.LocalDate
 
 @Composable
@@ -94,7 +92,7 @@ fun TripPackageBookingScreen(
     var showDialog by remember { mutableStateOf(false) }
 
     AppTheme {
-        when (deviceType){
+        when (deviceType) {
             DeviceType.MobilePortrait -> {
                 Column(
                     modifier = Modifier
@@ -145,7 +143,11 @@ fun TripPackageBookingScreen(
                     Column(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        PriceDetailsSection(totalAmount, tripPackageName, childQuantity + adultQuantity)
+                        PriceDetailsSection(
+                            totalAmount,
+                            tripPackageName,
+                            childQuantity + adultQuantity
+                        )
                         PaymentButton(
                             onclick = {
                                 showDialog = !showDialog
@@ -183,20 +185,26 @@ fun TripPackageBookingScreen(
                     }
                 }
             }
+
             DeviceType.TabletLandscape -> {
-                Column (
+                Column(
                     modifier = Modifier
-                        .fillMaxSize().padding(horizontal = 16.dp),
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
-                ){
-                    Row (
-                        modifier = Modifier.fillMaxWidth().weight(1f),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
                         horizontalArrangement = Arrangement.spacedBy(24.dp)
-                    ){
-                        Column (
-                            modifier = Modifier.weight(1f).padding(vertical = 16.dp, horizontal = 16.dp),
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(vertical = 16.dp, horizontal = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ){
+                        ) {
                             Text(
                                 text = "Number of packages",
                                 style = AppTheme.typography.mediumBold,
@@ -218,7 +226,9 @@ fun TripPackageBookingScreen(
                         }
                         VerticalDivider()
                         Column(
-                            modifier = Modifier.weight(1f).padding(vertical = 16.dp, horizontal = 16.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(vertical = 16.dp, horizontal = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Text(
@@ -240,7 +250,11 @@ fun TripPackageBookingScreen(
                     Column(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        PriceDetailsSection(totalAmount = totalAmount, tripPackageName = tripPackageName, totalQuantity = childQuantity + adultQuantity)
+                        PriceDetailsSection(
+                            totalAmount = totalAmount,
+                            tripPackageName = tripPackageName,
+                            totalQuantity = childQuantity + adultQuantity
+                        )
                         PaymentButton(
                             onclick = {
                                 showDialog = !showDialog
@@ -278,6 +292,7 @@ fun TripPackageBookingScreen(
                     }
                 }
             }
+
             else -> {
                 Column(
                     modifier = Modifier
@@ -286,9 +301,9 @@ fun TripPackageBookingScreen(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Column (
+                    Column(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ){
+                    ) {
                         Text(
                             text = "Number of packages",
                             style = AppTheme.typography.mediumBold,
@@ -331,7 +346,11 @@ fun TripPackageBookingScreen(
                     Column(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        PriceDetailsSection(totalAmount, tripPackageName, childQuantity + adultQuantity)
+                        PriceDetailsSection(
+                            totalAmount,
+                            tripPackageName,
+                            childQuantity + adultQuantity
+                        )
                         PaymentButton(
                             onclick = {
                                 showDialog = !showDialog
@@ -372,10 +391,15 @@ fun TripPackageBookingScreen(
         }
 
         if (showDialog) {
-            Log.d("runtime", hasError.toString())
             if (childQuantity + adultQuantity <= availableSlots) {
+                NotificationService(context).showNotification(
+                    Title = tripPackageName,
+                    content = "Booking confirmed! Have a great stay."
+                )
                 TripPackageBookingDialog(
-                    modifier = Modifier.height(300.dp).width(300.dp),
+                    modifier = Modifier
+                        .height(300.dp)
+                        .width(300.dp),
                     hasError = hasError ?: "",
                     isLoading = isLoading,
                     onHomeButtonClick = {
@@ -414,7 +438,7 @@ fun TripPackageCount(
     description: String,
     quantity: Int,
     onIncrement: (Int) -> Unit,
-    onDecrement: (Int) -> Unit
+    onDecrement: (Int) -> Unit,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
