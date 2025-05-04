@@ -186,7 +186,7 @@ fun OrderScreen(navController: NavHostController) {
                         orderDate = booking.purchaseDate,
                         onColumnClick = {
                             navController.navigate(
-                                AppScreen.TripPackage.passData(
+                                AppScreen.Hotel.passData(
                                     booking.hotelID,
                                     booking.id
                                 )

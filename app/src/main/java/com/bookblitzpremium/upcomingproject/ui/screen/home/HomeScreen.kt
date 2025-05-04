@@ -77,15 +77,23 @@ import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 import com.google.firebase.auth.FirebaseAuth
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun HomeScreen(navController: NavHostController) {
+    val today = LocalDate.now()
+
     val localHotelViewModel: LocalHotelViewModel = hiltViewModel()
     val hotelList =
         remember { localHotelViewModel.getAllHotelsPagingFlow() }.collectAsLazyPagingItems()
     val localTripPackageViewModel: LocalTripPackageViewModel = hiltViewModel()
     val tripPackageList =
-        remember { localTripPackageViewModel.getAllTripPackagesPagingFlow() }.collectAsLazyPagingItems()
+        remember { localTripPackageViewModel.getAllTripPackagesPagingFlow() }.collectAsLazyPagingItems().itemSnapshotList.items
+            .filter { trip ->
+                val startDate = LocalDate.parse(trip.startDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                startDate.isAfter(today)
+            }
 
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val configuration = LocalConfiguration.current
@@ -258,7 +266,7 @@ fun GreetingProfile() {
 
 @Composable
 fun TripPackageSection(
-    tripPackageList: LazyPagingItems<TripPackage>,
+    tripPackageList: List<TripPackage>,
     modifier: Modifier = Modifier,
     isMobile: Boolean,
     isPortrait: Boolean,
@@ -277,22 +285,20 @@ fun TripPackageSection(
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(32.dp)
             ) {
-                items(tripPackageList.itemCount) { index ->
+                items(tripPackageList.size) { index ->
                     val tripPackage = tripPackageList[index]
-                    if (tripPackage != null) {
-                        TripPackageCard(
-                            tripPackage = tripPackage,
-                            modifier = Modifier.width(250.dp),
-                            onClick = {
-                                navController.navigate(
-                                    AppScreen.TripPackage.passData(
-                                        tripPackage.id,
-                                        ""
-                                    )
+                    TripPackageCard(
+                        tripPackage = tripPackage,
+                        modifier = Modifier.width(250.dp),
+                        onClick = {
+                            navController.navigate(
+                                AppScreen.TripPackage.passData(
+                                    tripPackage.id,
+                                    ""
                                 )
-                            }
-                        )
-                    }
+                            )
+                        }
+                    )
                 }
             }
         } else if (!isPortrait) {
@@ -302,7 +308,7 @@ fun TripPackageSection(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                items(tripPackageList.itemCount) { index ->
+                items(tripPackageList.size) { index ->
                     val tripPackage = tripPackageList[index]
                     TripPackageCard(
                         tripPackage = tripPackage,
@@ -311,7 +317,7 @@ fun TripPackageSection(
                         onClick = {
                             navController.navigate(
                                 AppScreen.TripPackage.passData(
-                                    tripPackage!!.id,
+                                    tripPackage.id,
                                     ""
                                 )
                             )
@@ -326,7 +332,7 @@ fun TripPackageSection(
                 verticalArrangement = Arrangement.spacedBy(32.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                items(tripPackageList.itemCount) { index ->
+                items(tripPackageList.size) { index ->
                     val tripPackage = tripPackageList[index]
                     TripPackageCard(
                         tripPackage = tripPackage,
@@ -335,7 +341,7 @@ fun TripPackageSection(
                         onClick = {
                             navController.navigate(
                                 AppScreen.TripPackage.passData(
-                                    tripPackage!!.id,
+                                    tripPackage.id,
                                     ""
                                 )
                             )
