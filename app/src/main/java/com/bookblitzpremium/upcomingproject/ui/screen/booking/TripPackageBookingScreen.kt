@@ -393,7 +393,7 @@ fun TripPackageBookingScreen(
         if (showDialog) {
             if (childQuantity + adultQuantity <= availableSlots) {
                 NotificationService(context).showNotification(
-                    Title = tripPackageName,
+                    title = tripPackageName,
                     content = "Booking confirmed! Have a great stay."
                 )
                 TripPackageBookingDialog(
