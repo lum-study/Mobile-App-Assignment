@@ -2,7 +2,6 @@ package com.bookblitzpremium.upcomingproject.Booking
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,9 +18,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -50,14 +49,14 @@ fun PaymentDetails(
     modifier: Modifier
 ) {
     var paymentMethod by remember { mutableStateOf(PaymentMethod.DebitCard) }
-    var cardNumber by remember { mutableStateOf("") }
+    var cardNumber by rememberSaveable { mutableStateOf("") }
     val remoteBookingViewModel: RemoteHotelBookingViewModel = hiltViewModel()
 
     // Loading and Error States
     val isLoading by remoteBookingViewModel.loading.collectAsState()
 
     // Handle Alert Dialog
-    var showDialog by remember { mutableStateOf(false) }
+    var showDialog by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = Modifier

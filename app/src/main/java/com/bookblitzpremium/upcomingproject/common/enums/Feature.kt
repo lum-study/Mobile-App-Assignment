@@ -14,13 +14,11 @@ import androidx.compose.material.icons.filled.SmokeFree
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.ui.graphics.vector.ImageVector
+import java.io.Serializable
 
 
-enum class Feature(val title: String, val icon: ImageVector) {
-    Rating(
-        title = "Rating",
-        icon = Icons.Default.Star
-    ),
+enum class Feature(val title: String, val icon: ImageVector): Serializable{
+
     FreeWifi(
         title = "Free Wi-Fi",
         icon = Icons.Default.Wifi
@@ -60,5 +58,9 @@ enum class Feature(val title: String, val icon: ImageVector) {
     FitnessCenter(
         title = "Fitness Center",
         icon = Icons.Default.FitnessCenter
-    )
+    ),
+    Rating(
+        title = "Rating",
+        icon = Icons.Default.Star
+    ),
 }

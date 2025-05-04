@@ -8,4 +8,5 @@ class LocalRecentSearchRepository @Inject constructor(private val recentSearchDa
     suspend fun addOrUpdateRecentSearch(recentSearch: RecentSearch) = recentSearchDao.upsertRecentSearch(recentSearch)
     suspend fun deleteRecentSearch(recentSearch: RecentSearch) = recentSearchDao.deleteRecentSearch(recentSearch)
     suspend fun getRecentSearch() = recentSearchDao.getAllRecentSearch()
+    suspend fun deleteAll() = recentSearchDao.deleteAll()
 }

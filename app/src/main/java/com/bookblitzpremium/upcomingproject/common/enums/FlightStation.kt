@@ -1,6 +1,8 @@
 package com.bookblitzpremium.upcomingproject.common.enums
 
-enum class FlightStation(val title: String) {
+import java.io.Serializable
+
+enum class FlightStation(val title: String): Serializable {
     Johor(title = "Johor"),
     Kedah(title = "Kedah"),
     KualaLumpur(title = "Kuala Lumpur"),

@@ -29,7 +29,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,13 +73,13 @@ fun TripPackageBookingScreen(
     val userID = currentUser?.uid
 
     //Booking
-    var childQuantity by remember { mutableIntStateOf(0) }
-    var adultQuantity by remember { mutableIntStateOf(1) }
+    var childQuantity by rememberSaveable { mutableIntStateOf(0) }
+    var adultQuantity by rememberSaveable { mutableIntStateOf(1) }
 
     //Payment
     val totalAmount = tripPackagePrice.toDouble() * (childQuantity + adultQuantity)
-    var paymentMethod by remember { mutableStateOf(PaymentMethod.DebitCard) }
-    var cardNumber by remember { mutableStateOf("") }
+    var paymentMethod by rememberSaveable { mutableStateOf(PaymentMethod.DebitCard) }
+    var cardNumber by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(paymentMethod) {
         cardNumber = ""
     }
@@ -89,7 +89,7 @@ fun TripPackageBookingScreen(
 
 
     //Handle Alert Dialog
-    var showDialog by remember { mutableStateOf(false) }
+    var showDialog by rememberSaveable { mutableStateOf(false) }
 
     AppTheme {
         when (deviceType) {

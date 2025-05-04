@@ -40,6 +40,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,8 +86,8 @@ fun HotelBookingHorizontalScreen(
         viewModel.getHotelByID(hotelID)
     }
 
-    var roomCount: Int? by remember { mutableStateOf(1) }
-    var adultCount: Int? by remember { mutableStateOf(4) }
+    var roomCount: Int? by rememberSaveable { mutableStateOf(1) }
+    var adultCount: Int? by rememberSaveable { mutableStateOf(4) }
 
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     val today = LocalDate.now()
@@ -96,11 +97,11 @@ fun HotelBookingHorizontalScreen(
     var endDate by remember { mutableStateOf(nextFriday.format(formatter)) }
 
     // Dialog states
-    var showFigureDialog by remember { mutableStateOf(false) }
-    var showDateDialog by remember { mutableStateOf(false) }
+    var showFigureDialog by rememberSaveable { mutableStateOf(false) }
+    var showDateDialog by rememberSaveable { mutableStateOf(false) }
     val hotel by viewModel.selectedHotel.collectAsState()
 
-    var rede by remember { mutableStateOf(false) }
+    var rede by rememberSaveable { mutableStateOf(false) }
 
     if (hotel != null) {
         val hotelData = hotel!!

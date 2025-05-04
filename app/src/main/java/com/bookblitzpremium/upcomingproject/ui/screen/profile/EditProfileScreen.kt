@@ -46,6 +46,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -77,13 +78,13 @@ fun EditProfileScreen() {
     val userID = FirebaseAuth.getInstance().currentUser?.uid ?: ""
     var userInfo by remember { mutableStateOf<User?>(null) }
 
-    var username by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var dob by remember { mutableStateOf("") }
-    var address by remember { mutableStateOf("") }
-    var iconImage by remember { mutableStateOf("") }
-    var gender by remember { mutableStateOf("") }
+    var username by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var phone by rememberSaveable { mutableStateOf("") }
+    var dob by rememberSaveable { mutableStateOf("") }
+    var address by rememberSaveable { mutableStateOf("") }
+    var iconImage by rememberSaveable { mutableStateOf("") }
+    var gender by rememberSaveable { mutableStateOf("") }
 
     LaunchedEffect(userID) {
         userInfo = localUserViewModel.getUserByID(userID)
@@ -362,7 +363,7 @@ private fun ProfileImageSection(
 ) {
     val context = LocalContext.current
     var imageUri by remember { mutableStateOf<Uri?>(null) }
-    var base64String by remember { mutableStateOf<String?>(null) }
+    var base64String by rememberSaveable { mutableStateOf<String?>(null) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()

@@ -32,7 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -101,8 +101,8 @@ fun DialogPaymentMethod(
                 .clip(RoundedCornerShape(24.dp))
                 .background(Color.White)
         ) {
-            var paymentMethod by remember { mutableStateOf(PaymentMethod.DebitCard) }
-            var cardNumber by remember { mutableStateOf("") }
+            var paymentMethod by rememberSaveable { mutableStateOf(PaymentMethod.DebitCard) }
+            var cardNumber by rememberSaveable { mutableStateOf("") }
 
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -173,14 +173,14 @@ fun ReviewFinalPackageSelected(
         val remotePaymentViewModel: RemotePaymentViewModel = hiltViewModel()
         val loading = viewModel.loading.collectAsState()
         val hotel by viewModel.selectedHotel.collectAsState()
-        var paymentMethods by remember { mutableStateOf<String?>(null) }
-        var cardNumbers by remember { mutableStateOf<String?>(null) }
+        var paymentMethods by rememberSaveable { mutableStateOf<String?>(null) }
+        var cardNumbers by rememberSaveable { mutableStateOf<String?>(null) }
 
         //Loading
         val isLoading by remoteBookingViewModel.loading.collectAsState()
 
         //Handle Alert Dialog
-        var showDialog by remember { mutableStateOf(false) }
+        var showDialog by rememberSaveable { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
             viewModel.getHotelByID(hotelID)
@@ -218,7 +218,7 @@ fun ReviewFinalPackageSelected(
                             HotelInfoContent(hotelData, AppTheme.typography.largeBold)
                         }
 
-                        var dialogTrue by remember { mutableStateOf(false) }
+                        var dialogTrue by rememberSaveable { mutableStateOf(false) }
 
                         Button(
                             onClick ={
