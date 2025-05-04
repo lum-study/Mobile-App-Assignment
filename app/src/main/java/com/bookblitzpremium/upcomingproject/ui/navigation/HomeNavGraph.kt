@@ -99,7 +99,7 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
         composable(
             AppScreen.EditScreen.route
         ) {
-            HotelBookingListScreen(navController,userId = "")
+            HotelBookingListScreen(navController,userId = "7ZpmX7cb6JY4xpOBY8fOzA4AA6W2")
         }
 
         composable(

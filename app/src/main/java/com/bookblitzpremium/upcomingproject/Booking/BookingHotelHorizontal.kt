@@ -1,11 +1,9 @@
 package com.bookblitzpremium.upcomingproject.Booking
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,7 +29,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,28 +42,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.R
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemotePaymentViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.HeaderDetails
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
-import com.bookblitzpremium.upcomingproject.ui.screen.booking.generateHotelDescription
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
-import com.bookblitzpremium.upcomingproject.ui.utility.ToastUtils
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
@@ -221,6 +214,7 @@ fun HotelBookingHorizontalScreen(
                                 HotelInfoSection(
                                     showBackButton = 2,
                                     modifier = Modifier,
+                                    navController = navController,
                                     hotel = hotelData
                                 )
                             }
@@ -278,7 +272,7 @@ fun HotelBookingHorizontalScreen(
                                     enabled = startDate != null && endDate != null && roomCount != null && adultCount != null,
                                     onClick = {
                                         coroutineScope.launch {
-                                            val paymentID = paymentViewModel.addPayment(payment)
+                                            val paymentID = paymentViewModel.addReturnIDPayment(payment)
                                             if (paymentID.isNotEmpty()) {
                                                 copyPaymnetID = paymentID
                                                 rede = true
@@ -337,6 +331,7 @@ fun PaymentImageReview(hotelImageUrl: String) {
 fun HotelInfoCard(
     hotel: Hotel,
     reviewCount: Int,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -389,11 +384,18 @@ fun HotelInfoCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.LocationOn,
-                        null,
-                        tint = AppTheme.colorScheme.primary
-                    )
+
+                    IconButton(
+                        onClick = {
+
+                        }
+                    ) {
+                        Icon(
+                            Icons.Default.LocationOn,
+                            null,
+                            tint = AppTheme.colorScheme.primary
+                        )
+                    }
                     Spacer(Modifier.width(4.dp))
                     Text(
                         hotel.address,
@@ -441,6 +443,7 @@ fun HotelInfoCard(
 fun HotelInfoSection(
     showBackButton: Int,
     modifier: Modifier,
+    navController: NavController,
     hotel: Hotel
 ) {
     val textOffset = 24.dp
@@ -483,7 +486,11 @@ fun HotelInfoSection(
                             imageVector = Icons.Default.LocationOn,
                             contentDescription = "Location",
                             tint = AppTheme.colorScheme.onBackground,
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(28.dp).clickable(
+                                onClick = {
+                                    navController.navigate("${AppScreen.Maps.route}/${hotel.name}")
+                                }
+                            )
                         )
                     }
                 }

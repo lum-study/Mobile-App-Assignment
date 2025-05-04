@@ -23,6 +23,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +47,7 @@ import com.bookblitzpremium.upcomingproject.common.enums.PaymentMethod
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemotePaymentViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.TeamMemberDropdown
+import com.bookblitzpremium.upcomingproject.ui.components.TripPackageBookingDialog
 import com.bookblitzpremium.upcomingproject.ui.screen.payment.PaymentOptionScreen
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.google.firebase.auth.FirebaseAuth
@@ -182,10 +185,24 @@ fun GuestSection(
         val currentUser = FirebaseAuth.getInstance().currentUser
         var userID = currentUser?.uid.toString()
 
+        val error by paymentViewModel.error.collectAsState()
+        var showDialog by remember { mutableStateOf(false) }
+
+//        LaunchedEffect(error) {
+//            showDialog = !error.isNullOrEmpty() // Show dialog only if error is non-null and non-empty
+//        }
+//
+//        if (showDialog) {
+//            TripPackageBookingDialog(
+//                modifier = Modifier,
+//                hasError = error ?: ""
+//            ) {
+//                showDialog = false
+//            }
+//        }
+
         Button(
             onClick = {
-
-
                 val totalPerson = selectedAdult
                 val totalPrice = (price.toDoubleOrNull() ?: 0.0) * roomBooked
                 val hotelID = URLEncoder.encode(hotelID, "UTF-8")
@@ -205,23 +222,14 @@ fun GuestSection(
                 )
 
                 coroutineScope.launch {
-                    try {
-                        val paymentID = paymentViewModel.addPayment(payment)
-                        if (paymentID.isNotEmpty()) {
-                            val encodedPaymentID = URLEncoder.encode(paymentID, "UTF-8")
-                            if(encodedPaymentID.isNotEmpty() && cardNumber.isNotEmpty() && paymentMethod.isNotEmpty()){
-                                navController.navigate(
-                                    "${AppScreen.BookingReview.route}/$hotelID/$startDate/$endDate/$totalPerson/$roomBooked/$totalPrice/$paymentMethod/$cardNumber/$encodedPaymentID"
-                                )
-                            }else{
-                                //add the resposen to user
-                            }
-                        } else {
-                            // Handle empty paymentID
-                            //error appear can make the dialog to redirect the user to the homePage
+                    val paymentID = paymentViewModel.addReturnIDPayment(payment)
+                    if (paymentID.isNotEmpty()) {
+                        val encodedPaymentID = URLEncoder.encode(paymentID, "UTF-8")
+                        if (encodedPaymentID.isNotEmpty() && cardNumber.isNotEmpty() && paymentMethod.isNotEmpty()) {
+                            navController.navigate(
+                                "${AppScreen.BookingReview.route}/$hotelID/$startDate/$endDate/$totalPerson/$roomBooked/$totalPrice/$paymentMethod/$cardNumber/$encodedPaymentID"
+                            )
                         }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
                     }
                 }
             },

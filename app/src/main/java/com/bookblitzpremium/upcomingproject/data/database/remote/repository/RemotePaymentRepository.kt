@@ -2,11 +2,15 @@ package com.bookblitzpremium.upcomingproject.data.database.remote.repository
 
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
+import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalPaymentRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
-class RemotePaymentRepository @Inject constructor(private val firestore: FirebaseFirestore) {
+class RemotePaymentRepository @Inject constructor(
+    private val firestore: FirebaseFirestore,
+    private val localPaymentRepo: LocalPaymentRepository
+) {
     private val paymentRef = firestore.collection("payment")
 
     suspend fun getAllPaymentByUserID(userID: String): List<Payment> = try {
@@ -28,15 +32,14 @@ class RemotePaymentRepository @Inject constructor(private val firestore: Firebas
         throw Exception(e)
     }
 
-
     suspend fun deletePayment(id: String) {
         require(id.isNotEmpty()) { "Payment ID cannot be empty" }
         paymentRef.document(id).delete().await()
     }
 
     suspend fun updatePayment(payment: Payment) {
-        require(payment.id.isNotEmpty()) { "Payment ID cannot be empty" }
         paymentRef.document(payment.id).set(payment).await()
+        localPaymentRepo.addOrUpdatePayment(payment)
     }
 
 }

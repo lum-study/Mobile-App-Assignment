@@ -12,10 +12,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -146,7 +150,7 @@ fun OrderScreen(navController: NavHostController) {
                     BookingCard(
                         amount = booking.paymentAmount.toFloat(),
                         quantity = booking.purchaseCount.toString(),
-                        tripPackageName = booking.tripPackageName,
+                        name = booking.tripPackageName,
                         status = getBookingStatus(
                             booking.tripPackageStartDate,
                             booking.status,
@@ -163,7 +167,8 @@ fun OrderScreen(navController: NavHostController) {
                             )
                         },
                         onRatingClick = { navController.navigate(AppScreen.Ratings.passData(booking.tripPackageID)) },
-                        isMobile = isMobile
+                        isMobile = isMobile,
+                        isTripPackage = true
                     )
                 }
             }
@@ -176,7 +181,7 @@ fun OrderScreen(navController: NavHostController) {
                     BookingCard(
                         amount = booking.totalAmount.toFloat(),
                         quantity = booking.numberOfRoom.toString(),
-                        tripPackageName = booking.hotelName,
+                        name = booking.hotelName,
                         status = getBookingStatus(
                             booking.endDate,
                             booking.status,
@@ -200,7 +205,13 @@ fun OrderScreen(navController: NavHostController) {
                                 )
                             )
                         },
-                        isMobile = isMobile
+                        onEditClick = {
+                            navController.navigate(
+                                AppScreen.BookingHistory.passData(booking.id)
+                            )
+                        },
+                        isMobile = isMobile,
+                        isTripPackage = false,
                     )
                 }
             }
@@ -222,100 +233,118 @@ fun OrderScreen(navController: NavHostController) {
 fun BookingCard(
     amount: Float,
     quantity: String,
-    tripPackageName: String,
+    name: String,
     status: String,
     imageUrl: String,
     orderDate: String,
     onColumnClick: () -> Unit,
     onRatingClick: () -> Unit,
     isMobile: Boolean = true,
+    onEditClick: () -> Unit = {},
+    isTripPackage: Boolean,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(160.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFFF3F3F3))
-            .clickable { onColumnClick() },
+    Box(
+
     ) {
-        Row(
+        Column(
             modifier = Modifier
-                .padding(vertical = 20.dp, horizontal = 16.dp)
-                .fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                .fillMaxWidth()
+                .height(160.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFFF3F3F3))
+                .clickable { onColumnClick() },
         ) {
-            if (imageUrl.startsWith("http")) {
-                UrlImage(
-                    imageUrl = imageUrl,
-                    modifier = Modifier
-                        .height(if (isMobile) 100.dp else 120.dp)
-                        .width(if (isMobile) 100.dp else 150.dp)
-                        .clip(RoundedCornerShape(12.dp)),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Base64Image(
-                    imageUrl,
-                    modifier = Modifier
-                        .height(if (isMobile) 100.dp else 120.dp)
-                        .width(if (isMobile) 100.dp else 150.dp)
-                        .clip(RoundedCornerShape(12.dp)),
-                    contentScale = ContentScale.Crop
-                )
-            }
-            Column(
+            Row(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(vertical = 4.dp),
-                verticalArrangement = Arrangement.SpaceAround,
+                    .padding(vertical = 20.dp, horizontal = 16.dp)
+                    .fillMaxSize(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    text = tripPackageName,
-                    style = AppTheme.typography.mediumBold
-                )
-                Text(
-                    text = stringResource(
-                        R.string.booking_date,
-                        LocalDate.parse(orderDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                            .format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
-                    ),
-                    style = AppTheme.typography.smallRegular
-                )
-                Text(
-                    text = stringResource(R.string.booking_quantity, quantity),
-                    style = AppTheme.typography.smallRegular
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                if (imageUrl.startsWith("http")) {
+                    UrlImage(
+                        imageUrl = imageUrl,
+                        modifier = Modifier
+                            .height(if (isMobile) 100.dp else 120.dp)
+                            .width(if (isMobile) 100.dp else 150.dp)
+                            .clip(RoundedCornerShape(12.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Base64Image(
+                        imageUrl,
+                        modifier = Modifier
+                            .height(if (isMobile) 100.dp else 120.dp)
+                            .width(if (isMobile) 100.dp else 150.dp)
+                            .clip(RoundedCornerShape(12.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(vertical = 4.dp),
+                    verticalArrangement = Arrangement.SpaceAround,
                 ) {
                     Text(
-                        text = stringResource(R.string.price, amount),
+                        text = name,
                         style = AppTheme.typography.mediumBold
                     )
-                    OutlinedButton(
-                        onClick = {
-                            if (status == BookingStatus.ToReview.title) {
-                                onRatingClick()
-                            }
-                        },
-                        modifier = Modifier.height(24.dp),
-                        contentPadding = PaddingValues(vertical = 4.dp, horizontal = 8.dp),
-                        enabled = status == BookingStatus.ToReview.title
+                    Text(
+                        text = stringResource(
+                            R.string.booking_date,
+                            LocalDate.parse(orderDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                                .format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+                        ),
+                        style = AppTheme.typography.smallRegular
+                    )
+                    Text(
+                        text = stringResource(R.string.booking_quantity, quantity),
+                        style = AppTheme.typography.smallRegular
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = status,
-                            style = AppTheme.typography.smallSemiBold,
-                            color = if (status == BookingStatus.ToReview.title) Color(0xFF4CAF50) else Color.Unspecified
+                            text = stringResource(R.string.price, amount),
+                            style = AppTheme.typography.mediumBold
                         )
+                        OutlinedButton(
+                            onClick = {
+                                if (status == BookingStatus.ToReview.title) {
+                                    onRatingClick()
+                                }
+                            },
+                            modifier = Modifier.height(24.dp),
+                            contentPadding = PaddingValues(vertical = 4.dp, horizontal = 8.dp),
+                            enabled = status == BookingStatus.ToReview.title
+                        ) {
+                            Text(
+                                text = status,
+                                style = AppTheme.typography.smallSemiBold,
+                                color = if (status == BookingStatus.ToReview.title) Color(0xFF4CAF50) else Color.Unspecified
+                            )
+                        }
                     }
                 }
             }
         }
+        if (!isTripPackage) {
+            Icon(
+                imageVector = Icons.Default.Edit,
+                contentDescription = "Edit",
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(end = 8.dp, top = 8.dp)
+                    .size(20.dp)
+                    .clickable { onEditClick() }
+            )
+        }
     }
+
 }
 
 fun getBookingStatus(date: String, bookingStatus: String, isTripPackage: Boolean): String {

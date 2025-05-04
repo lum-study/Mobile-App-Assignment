@@ -281,7 +281,7 @@ fun CalendarView(
                         .clip(CircleShape)
                         .background(
                             when {
-                                isStartDate || isEndDate -> AppTheme.colorScheme.primary
+                                isStartDate || isEndDate -> AppTheme.colorScheme.selectDate
                                 isInRange -> AppTheme.colorScheme.inRangeBackground // Use defined inRangeBackground
                                 else -> Color.Transparent
                             }

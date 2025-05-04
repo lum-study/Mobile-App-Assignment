@@ -170,7 +170,6 @@ fun ReviewFinalPackageSelected(
 
         val viewModel: LocalHotelViewModel = hiltViewModel()
         val remoteBookingViewModel: RemoteHotelBookingViewModel = hiltViewModel()
-        val remotePaymentViewModel: RemotePaymentViewModel = hiltViewModel()
         val loading = viewModel.loading.collectAsState()
         val hotel by viewModel.selectedHotel.collectAsState()
         var paymentMethods by remember { mutableStateOf<String?>(null) }
@@ -181,6 +180,36 @@ fun ReviewFinalPackageSelected(
 
         //Handle Alert Dialog
         var showDialog by remember { mutableStateOf(false) }
+
+        val success by remoteBookingViewModel.success.collectAsState()
+
+        val context = LocalContext.current
+        LaunchedEffect(success) {
+            if (success) {
+                val notificationService = NotificationService(context)
+                notificationService.showNotification("Booking Successfully", "Thank you for supporting us")
+            }
+        }
+
+        if (showDialog) {
+            TripPackageBookingDialog(
+                isLoading = isLoading,
+                onHomeButtonClick = {
+                    showDialog = it
+                    navController.navigate(AppScreen.Home.route) {
+                        popUpTo(AppScreen.Home.route) {
+                            inclusive = true
+                        }
+                    }
+                },
+                onViewOrderButtonClick = {
+                    showDialog = it
+                    navController.navigate(AppScreen.OrderGraph.route) {
+                        popUpTo(AppScreen.Home.route)
+                    }
+                }
+            )
+        }
 
         LaunchedEffect(Unit) {
             viewModel.getHotelByID(hotelID)
@@ -252,6 +281,14 @@ fun ReviewFinalPackageSelected(
 
             val heightSize = if((isTablet.toString() == "true")) 150.dp else 80.dp
 
+            val locationName = hotelData.name
+//            BoxMaps(
+//                addressInput = locationName,
+//                onClick = {
+//                    navController.navigate("${AppScreen.Maps.route}/${locationName}")
+//                },
+//            )
+//
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -302,13 +339,7 @@ fun ReviewFinalPackageSelected(
                 }
             }
 
-            val locationName = hotelData.name
-            BoxMaps(
-                addressInput = locationName,
-                onClick = {
-                    navController.navigate("${AppScreen.Maps.route}/$locationName")
-                },
-            )
+
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -344,8 +375,8 @@ fun ReviewFinalPackageSelected(
                         userID = userID.toString()
                     )
 
-                    remotePaymentViewModel.updatePaymentBoth(localPayment)
-                    remoteBookingViewModel.addNewIntegratedRecord(booking)
+//                    remotePaymentViewModel.updatePaymentBoth(localPayment)
+                    remoteBookingViewModel.addNewIntegratedRecord(booking,localPayment)
                     showDialog = true
 
                 },
@@ -362,31 +393,6 @@ fun ReviewFinalPackageSelected(
                 )
             }
         }
-
-        if(showDialog){
-            val context = LocalContext.current
-            val noticationService = NotificationService(context)
-            noticationService.showNotification("Booking Successfully", "Thank you for supporting us")
-            TripPackageBookingDialog(
-                isLoading = isLoading,
-                onHomeButtonClick = {
-                    showDialog = it
-                    navController.navigate(AppScreen.Home.route) {
-                        popUpTo(AppScreen.Home.route) {
-                            inclusive = true
-                        }
-                    }
-                },
-                onViewOrderButtonClick = {
-                    showDialog = it
-                    navController.navigate(AppScreen.OrderGraph.route) {
-                        popUpTo(AppScreen.Home.route)
-                    }
-                }
-            )
-        }
-
-
     }
 }
 

@@ -204,7 +204,7 @@ private fun HotelInfoSection(name: String, address: String, rating: Double, navC
         Row(verticalAlignment = Alignment.CenterVertically) {
             Button(
                 onClick = {
-                    navController.navigate(AppScreen.Maps.passData(name))
+                    navController.navigate("${AppScreen.Maps.route}/${name}")
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(

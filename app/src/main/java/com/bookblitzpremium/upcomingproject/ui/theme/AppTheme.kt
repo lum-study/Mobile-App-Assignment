@@ -10,25 +10,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-
 // Dark theme color scheme
-private val darkColorScheme = MainDesign(
-    background = Color(0xFF121212),      // Dark gray
-    onBackground = Color.White,          // Fixed for readability
-    primary = Color.White,               // White for buttons
-    onPrimary = Color.Black,             // Fixed for contrast
-    secondary = Color.Gray,
-    onSecondary = Color.White,           // White on secondary
-    surface = Color(0xFF1E1E1E),         // Dark surface
-    onSurface = Color.White,             // Fixed for readability
-    surfaceVariant = Color(0xFF333333),  // Darker surface
-    error = Color(0xFFCF6679),
-    onText = Color.White,                // Fixed for readability
-    starRating = Color(0xFFFFD700),      // Gold
-    primaryGradientStart = Color(0xFF8B5CF6), // Purple
-    primaryGradientEnd = Color(0xFFEC4899),    // Pink
-    inRangeBackground = Color.Gray.copy(alpha = 0.5f)
+private val lightTheme = MainDesign(
+    background = Color.White,
+    onBackground = Color.Black,
+    primary = Color.Black,
+    onPrimary = Color.White,
+    secondary = Color(0xFF625B71),
+    onSecondary = Color.White,
+    surface = Color(0xFFF5F5F5),
+    onSurface = Color.Black,
+    surfaceVariant = Color(0xFFE0E0E0),
+    error = Color(0xFFB00020),
+    selectDate = Color(0x8D151212),
+    onText = Color.Black,
+    starRating = Color(0xFFFFD700),
+    primaryGradientStart = Color(0xFF8B5CF6),
+    primaryGradientEnd = Color(0xFFEC4899),
+    inRangeBackground = Color(0xFF625B71).copy(alpha = 0.5f)
 )
+
 
 // Light theme color scheme
 private val lightColorScheme = MainDesign(
@@ -43,11 +44,13 @@ private val lightColorScheme = MainDesign(
     surfaceVariant = Color(0xFFE0E0E0),  // Slightly darker gray
     error = Color(0xFFB00020),
     onText = Color.Black,
+    selectDate = Color(0xFF6750A4),
     starRating = Color(0xFFFFD700),      // Gold
     primaryGradientStart = Color(0xFF8B5CF6), // Purple
     primaryGradientEnd = Color(0xFFEC4899),    // Pink
     inRangeBackground = Color(0xFF625B71).copy(alpha = 0.5f)
 )
+
 
 // Typography instance
 private val typography = AppTypography(
@@ -194,6 +197,7 @@ private val typography = AppTypography(
     )
 )
 
+
 // Size instance
 private val size = AppSize(
     large = 32.dp,
@@ -202,11 +206,14 @@ private val size = AppSize(
     small = 4.dp
 )
 
+
 // Shape instance
 private val shape = AppShape(
     container = RoundedCornerShape(8.dp),
     button = RoundedCornerShape(16.dp)
 )
+
+
 
 
 // App theme composable
@@ -215,7 +222,7 @@ fun AppTheme(
     isDark: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (isDark) darkColorScheme else lightColorScheme
+    val colorScheme = if (isDark) lightColorScheme else lightTheme
     CompositionLocalProvider(
         LocalAppColorSchema provides colorScheme,
         LocalAppTypography provides typography,
@@ -230,20 +237,26 @@ fun AppTheme(
     )
 }
 
+
 // App theme object
 object AppTheme {
     val colorScheme: MainDesign
         @Composable get() = LocalAppColorSchema.current
 
+
     val typography: AppTypography
         @Composable get() = LocalAppTypography.current
+
 
     val shape: AppShape
         @Composable get() = LocalAppShape.current
 
+
     val size: AppSize
         @Composable get() = LocalAppSize.current
+
 
     val elevation: Elevation
         @Composable get() = LocalElevation.current
 }
+

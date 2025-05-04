@@ -45,7 +45,7 @@ class BusinessRatingViewModel @Inject constructor(
                     if (booking != null) {
                         val updatedBooking = booking.copy(status = BookingStatus.Completed.title)
                         println(updatedBooking)
-                        remoteHotelBookingRepository.updatePayment(updatedBooking)
+                        remoteHotelBookingRepository.updateHotelBooking(updatedBooking)
                         localHotelBookingRepository.upsertHotelBooking(updatedBooking)
                     }
                 }

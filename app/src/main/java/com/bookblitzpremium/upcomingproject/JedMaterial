@@ -374,7 +374,7 @@ fun ReadLocalDatabase(
 
                                         coroutineScope.launch {
                                             try {
-                                                val paymentID = paymentViewModel.addPayment(payment)
+                                                val paymentID = paymentViewModel.addReturnIDPayment(payment)
                                                 if (paymentID.isNotEmpty()) {
                                                     copyPaymnetID = paymentID
                                                     rede = true

@@ -45,7 +45,6 @@ class RemotePaymentViewModel @Inject constructor(
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
-
             try {
                 _payments.value = remotePaymentRepository.getAllPaymentByUserID(userID)
             } catch (e: Exception) {
@@ -56,7 +55,7 @@ class RemotePaymentViewModel @Inject constructor(
         }
     }
 
-    suspend fun addPayment(payment: Payment): String {
+    suspend fun addReturnIDPayment(payment: Payment): String {
         _loading.value = true
         _error.value = null
 
@@ -108,11 +107,15 @@ class RemotePaymentViewModel @Inject constructor(
 
     fun updatePaymentBoth(localPayment: Payment) {
         viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
             try {
                 remotePaymentRepository.updatePayment(localPayment)
                 localPaymentRepository.addOrUpdatePayment(localPayment)
             } catch (e: Exception) {
-                _error.value = "Failed to delete payment: ${e.localizedMessage}"
+                _error.value = "Failed to add payment: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
             }
         }
     }

@@ -4,8 +4,10 @@ import android.database.sqlite.SQLiteException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalHotelBookingRepo
 import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteHotelBookingRepository
+import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemotePaymentRepository
 import com.google.firebase.firestore.FirebaseFirestoreException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.TimeoutCancellationException
@@ -20,6 +22,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RemoteHotelBookingViewModel @Inject constructor(
+    private val remotePaymentRepo: RemotePaymentRepository,
     private val remoteHotelBookingRepository: RemoteHotelBookingRepository,
     private val localHotelBookingRepository: LocalHotelBookingRepo,
 ) : ViewModel() {
@@ -48,16 +51,20 @@ class RemoteHotelBookingViewModel @Inject constructor(
             _loading.value = false
         }
     }
+
   
-    fun addNewIntegratedRecord(hotelBooking: HotelBooking) {
+    fun addNewIntegratedRecord(hotelBooking: HotelBooking, payment : Payment) {
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
+            _success.value = false
             try {
                 withTimeout(5000L){
+                    remotePaymentRepo.updatePayment(payment)
                     val firestoreId = remoteHotelBookingRepository.addHotelBooking(hotelBooking)
                     val updatedBooking = hotelBooking.copy(id = firestoreId)
                     localHotelBookingRepository.insertHotelBooking(updatedBooking)
+                    _success.value = true
                 }
             } catch (e: TimeoutCancellationException) {
                 _error.value = "Request timed out."
@@ -91,14 +98,30 @@ class RemoteHotelBookingViewModel @Inject constructor(
         }
     }
 
-    fun updatePayment(hotelBooking: HotelBooking) {
+    private val _success = MutableStateFlow(false)
+    val success: StateFlow<Boolean> = _success.asStateFlow()
+
+    fun updateHotelBooking(hotelBooking: HotelBooking) {
         viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+            _success.value = false // Reset success at the start
             try {
-                remoteHotelBookingRepository.updatePayment(hotelBooking)
+                remoteHotelBookingRepository.updateHotelBooking(hotelBooking)
+                localHotelBookingRepository.upsertHotelBooking(hotelBooking)
+                _success.value = true
+            } catch (e: SQLiteException) {
+                _error.value = "Database error: ${e.localizedMessage}"
             } catch (e: Exception) {
-                _error.value = "Failed to get hotel bookings: ${e.localizedMessage}"
+                _error.value = "Error updating hotel booking: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
             }
         }
+    }
+
+    fun clearSuccess() {
+        _success.value = false
     }
 
     suspend fun getHotelBookingIfNotLoaded(userID: String): List<HotelBooking> {
