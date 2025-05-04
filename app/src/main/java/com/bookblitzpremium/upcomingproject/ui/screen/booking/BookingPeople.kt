@@ -182,12 +182,6 @@ fun GuestSection(
         val currentUser = FirebaseAuth.getInstance().currentUser
         var userID = currentUser?.uid.toString()
 
-
-        Text(
-            text = userID.toString()
-        )
-
-
         Button(
             onClick = {
 
@@ -209,9 +203,6 @@ fun GuestSection(
                     currency = "Ringgit Malaysia",
                     userID = userID.toString()
                 )
-
-
-
 
                 coroutineScope.launch {
                     try {
@@ -286,9 +277,7 @@ fun BookingAmount(
             "24 Person - 6 Room",
         )
 
-
         Spacer(modifier = Modifier.height(5.dp))
-
 
         Column(
             verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -319,10 +308,8 @@ fun BookingAmount(
                 val personRegex = Regex("(\\d+) Person")
                 val roomRegex = Regex("(\\d+) Room")
 
-
                 val personMatch = personRegex.find(it)?.groupValues?.getOrNull(1)?.toIntOrNull()
                 val roomMatch = roomRegex.find(it)?.groupValues?.getOrNull(1)?.toIntOrNull()
-
 
                 selectedAdult = personMatch ?: 1
                 selectedRoom = roomMatch ?: 1

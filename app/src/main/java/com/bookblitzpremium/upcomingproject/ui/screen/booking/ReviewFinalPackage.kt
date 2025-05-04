@@ -33,7 +33,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +48,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.bookblitzpremium.upcomingproject.BoxMaps
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.common.enums.PaymentMethod
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
@@ -57,13 +57,12 @@ import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemotePaymentViewModel
+import com.bookblitzpremium.upcomingproject.ui.components.NotificationService
 import com.bookblitzpremium.upcomingproject.ui.components.TripPackageBookingDialog
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
 import com.bookblitzpremium.upcomingproject.ui.screen.payment.PaymentOptionScreen
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
-import com.bookblitzpremium.upcomingproject.ui.utility.ToastUtils
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 @Preview(showBackground = true, widthDp = 500, heightDp = 1000)
@@ -97,12 +96,11 @@ fun DialogPaymentMethod(
     ) {
         Box(
             modifier = Modifier
-                .height(450.dp)
+                .height(400.dp)
                 .width(500.dp)
                 .clip(RoundedCornerShape(24.dp))
                 .background(Color.White)
         ) {
-
             var paymentMethod by remember { mutableStateOf(PaymentMethod.DebitCard) }
             var cardNumber by remember { mutableStateOf("") }
 
@@ -177,16 +175,12 @@ fun ReviewFinalPackageSelected(
         val hotel by viewModel.selectedHotel.collectAsState()
         var paymentMethods by remember { mutableStateOf<String?>(null) }
         var cardNumbers by remember { mutableStateOf<String?>(null) }
-        val context = LocalContext.current
 
         //Loading
         val isLoading by remoteBookingViewModel.loading.collectAsState()
 
         //Handle Alert Dialog
         var showDialog by remember { mutableStateOf(false) }
-
-        //Handle the maps
-        var triggerMaps by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
             viewModel.getHotelByID(hotelID)
@@ -205,15 +199,11 @@ fun ReviewFinalPackageSelected(
             val hotelData = hotel!!
 
             val isTablet = tabletPortrait == "true"
-
             StyledImage(hotelData.imageUrl.toString(), isTablet.toString())
-
-            Spacer(modifier = Modifier.height(18.dp))
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp),
+                    .padding(start = 8.dp),
             ) {
                 if ((isTablet.toString() == "true")) {
                     Row(
@@ -313,13 +303,11 @@ fun ReviewFinalPackageSelected(
             }
 
             val locationName = hotelData.name
-            MapsButton(
+            BoxMaps(
+                addressInput = locationName,
                 onClick = {
                     navController.navigate("${AppScreen.Maps.route}/$locationName")
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(heightSize)
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -331,13 +319,8 @@ fun ReviewFinalPackageSelected(
                 modifier = Modifier
             )
 
-            val coroutineScope = rememberCoroutineScope()
             val currentUser = FirebaseAuth.getInstance().currentUser
             var userID = currentUser?.uid.toString()
-
-            Text(
-                text = userID.toString()
-            )
 
             Button(
                 onClick = {
@@ -362,14 +345,9 @@ fun ReviewFinalPackageSelected(
                     )
 
                     remotePaymentViewModel.updatePaymentBoth(localPayment)
-                    coroutineScope.launch {
-                        try {
-                            remoteBookingViewModel.addNewIntegratedRecord(booking)
-                            showDialog = true
-                        } catch (e: Exception) {
-                            ToastUtils.showSingleToast(context,"Failed to save booking")
-                        }
-                    }
+                    remoteBookingViewModel.addNewIntegratedRecord(booking)
+                    showDialog = true
+
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = AppTheme.colorScheme.primary, // Use primary for button
@@ -386,6 +364,9 @@ fun ReviewFinalPackageSelected(
         }
 
         if(showDialog){
+            val context = LocalContext.current
+            val noticationService = NotificationService(context)
+            noticationService.showNotification("Booking Successfully", "Thank you for supporting us")
             TripPackageBookingDialog(
                 isLoading = isLoading,
                 onHomeButtonClick = {
@@ -652,7 +633,7 @@ fun StyledImage(
     Card(
         elevation = CardDefaults.cardElevation(4.dp),
         modifier = Modifier
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 8.dp)
             .clip(RoundedCornerShape(16.dp)),
         colors = CardDefaults.cardColors(
             containerColor = AppTheme.colorScheme.surface // Use surface for card

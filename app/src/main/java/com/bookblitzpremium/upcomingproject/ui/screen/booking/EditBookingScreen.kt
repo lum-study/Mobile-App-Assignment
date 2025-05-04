@@ -134,9 +134,6 @@ fun ModifyHotelBooking(
     booking : String
 ) {
 
-    //left the exception for the it is expired
-    //can change to into a function
-
     val bookingViewModel: LocalHotelBookingViewModel = hiltViewModel()
     val hotelViewModel: LocalHotelViewModel = hiltViewModel()
 

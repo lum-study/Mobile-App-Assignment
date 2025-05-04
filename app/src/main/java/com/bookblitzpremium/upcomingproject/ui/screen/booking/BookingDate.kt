@@ -56,34 +56,20 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewDate(){
-    val navController = rememberNavController()
-    BookingDatePage(
-        navController = navController,
-        hotelID = "",
-        hotelPrice = ""
-    )
-}
-
-
 @Composable
 fun BookingDatePage(
     navController: NavController,
-    hotelID : String,
-    hotelPrice : String,
+    hotelID: String,
+    hotelPrice: String,
 ) {
     var selectedStartDate by remember { mutableStateOf<LocalDate?>(null) }
     var selectedEndDate by remember { mutableStateOf<LocalDate?>(null) }
-
 
     val calendarParameter = Calendar(
         hotelID = hotelID,
         hotelPrice = hotelPrice,
         showNext = true
     )
-
 
     CalendarView(
         navController = navController,
@@ -97,9 +83,6 @@ fun BookingDatePage(
     )
 }
 
-
-
-
 @Composable
 fun ShowDate(
     date: String,
@@ -111,10 +94,10 @@ fun ShowDate(
             .padding(bottom = 16.dp, top = 0.dp)
             .border(
                 width = 2.dp,
-                color = AppTheme.colorScheme.onPrimary,
+                color = AppTheme.colorScheme.primary, // Changed to primary for better visibility
                 shape = RoundedCornerShape(16.dp)
             )
-            .background(AppTheme.colorScheme.surface) // Use surface for background
+            .background(AppTheme.colorScheme.surface)
             .padding(16.dp)
     ) {
         Row(
@@ -129,27 +112,24 @@ fun ShowDate(
                 Icon(
                     imageVector = Icons.Filled.CalendarToday,
                     contentDescription = "Calendar",
-                    tint = AppTheme.colorScheme.primary, // Use primary for icons
+                    tint = AppTheme.colorScheme.primary,
                     modifier = Modifier.size(28.dp)
                 )
-
 
                 Text(
                     text = if (date.isNotEmpty()) date else "Not Selected",
                     style = AppTheme.typography.mediumBold,
-                    color = AppTheme.colorScheme.onSurface, // Text on surface
+                    color = AppTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(top = 16.dp)
                 )
             }
 
-
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = "Arrow Forward",
-                tint = AppTheme.colorScheme.secondary, // Use secondary for arrow
+                tint = AppTheme.colorScheme.secondary,
                 modifier = Modifier.size(42.dp)
             )
-
 
             Column(
                 modifier = Modifier.weight(1f),
@@ -158,22 +138,20 @@ fun ShowDate(
                 Icon(
                     imageVector = Icons.Filled.CalendarToday,
                     contentDescription = "Calendar",
-                    tint = AppTheme.colorScheme.primary, // Use primary for icons
+                    tint = AppTheme.colorScheme.primary,
                     modifier = Modifier.size(28.dp)
                 )
-
 
                 Text(
                     text = if (date2.isNotEmpty()) date2 else "Not Selected",
                     style = AppTheme.typography.mediumBold,
-                    color = AppTheme.colorScheme.onSurface, // Text on surface
+                    color = AppTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(top = 16.dp)
                 )
             }
         }
     }
 }
-
 
 @Composable
 fun RangeBetweenDate(
@@ -191,7 +169,7 @@ fun RangeBetweenDate(
         Icon(
             imageVector = Icons.Filled.ArrowCircleLeft,
             contentDescription = "ArrowCircleLeft",
-            tint = AppTheme.colorScheme.primary, // Use primary for navigation icons
+            tint = AppTheme.colorScheme.primary,
             modifier = Modifier
                 .size(32.dp)
                 .clickable {
@@ -199,14 +177,12 @@ fun RangeBetweenDate(
                 }
         )
 
-
         content()
-
 
         Icon(
             imageVector = Icons.Filled.ArrowCircleRight,
             contentDescription = "ArrowCircleRight",
-            tint = AppTheme.colorScheme.primary, // Use primary for navigation icons
+            tint = AppTheme.colorScheme.primary,
             modifier = Modifier
                 .size(32.dp)
                 .clickable {
@@ -216,17 +192,15 @@ fun RangeBetweenDate(
     }
 }
 
-
 @Composable
 fun DateFormat(currentMonth: YearMonth) {
     Text(
         text = "${currentMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${currentMonth.year}",
         style = AppTheme.typography.dateBold,
-        color = AppTheme.colorScheme.onSurface, // Text on surface
+        color = AppTheme.colorScheme.onSurface,
         modifier = Modifier.padding(start = 16.dp, end = 16.dp)
     )
 }
-
 
 @Composable
 fun CalendarView(
@@ -241,27 +215,23 @@ fun CalendarView(
     val hotelPrice = optionalParameter.hotelPrice
     var showNext = optionalParameter.showNext
 
-
     var currentMonth by rememberSaveable { mutableStateOf(YearMonth.now()) }
     var tempStartDate by rememberSaveable { mutableStateOf<LocalDate?>(startDate) }
     var tempEndDate by rememberSaveable { mutableStateOf<LocalDate?>(endDate) }
-
 
     val daysOfWeek = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
     val daysInMonth = currentMonth.lengthOfMonth()
     val firstDayOfMonth = LocalDate.of(currentMonth.year, currentMonth.month, 1)
     val firstDayOfWeek = firstDayOfMonth.dayOfWeek.value % 7
 
-
     // Define availability map
     val availability = (1..daysInMonth).associateWith { "Available" }
-
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-            .background(AppTheme.colorScheme.background) // Use background for entire view
+            .background(AppTheme.colorScheme.background)
     ) {
         RangeBetweenDate(currentMonth, onMonthChange = { newMonth ->
             currentMonth = newMonth
@@ -269,9 +239,7 @@ fun CalendarView(
             DateFormat(currentMonth)
         }
 
-
         Spacer(modifier = Modifier.height(20.dp))
-
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -281,14 +249,13 @@ fun CalendarView(
                 Text(
                     text = day,
                     style = AppTheme.typography.labelMedium,
-                    color = AppTheme.colorScheme.onSurface, // Text on surface
+                    color = AppTheme.colorScheme.onSurface,
                     modifier = Modifier
                         .weight(1f)
                         .padding(8.dp)
                 )
             }
         }
-
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(7),
@@ -297,12 +264,10 @@ fun CalendarView(
             val today = LocalDate.now()
             items(firstDayOfWeek) { Box(modifier = Modifier.size(40.dp)) }
 
-
             items(daysInMonth) { dayIndex ->
                 val day = dayIndex + 1
                 val date = LocalDate.of(currentMonth.year, currentMonth.month, day)
                 val status = if (date.isBefore(today)) "NotAvailable" else availability[day] ?: "NotAvailable"
-
 
                 val isStartDate = tempStartDate == date
                 val isEndDate = tempEndDate == date
@@ -310,23 +275,20 @@ fun CalendarView(
                         date in (tempStartDate!!..tempEndDate!!) &&
                         availability[day] == "Available"
 
-
                 Box(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
                         .background(
                             when {
-                                isStartDate || isEndDate -> AppTheme.colorScheme.primary // Use primary for start/end
-                                isInRange -> AppTheme.colorScheme.secondary.copy(alpha = 0.5f) // Use secondary for range
+                                isStartDate || isEndDate -> AppTheme.colorScheme.primary
+                                isInRange -> AppTheme.colorScheme.inRangeBackground // Use defined inRangeBackground
                                 else -> Color.Transparent
                             }
                         )
                         .clickable(
                             enabled = true,
                             onClick = {
-
-
                                 if (status == "Available") {
                                     when {
                                         tempStartDate == null -> tempStartDate = date
@@ -346,7 +308,7 @@ fun CalendarView(
                                             tempEndDate = null
                                         }
                                     }
-                                }else{
+                                } else {
                                     ToastUtils.showSingleToast(context, "Date is not Available")
                                 }
                             }
@@ -356,9 +318,13 @@ fun CalendarView(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = day.toString(),
-                            fontSize = 16.sp,
+                            style = AppTheme.typography.mediumNormal, // Use defined typography
                             textAlign = TextAlign.Center,
-                            color = if (status == "Available") AppTheme.colorScheme.onSurface else AppTheme.colorScheme.onSecondary,
+                            color = if (status == "Available") {
+                                AppTheme.colorScheme.onSurface
+                            } else {
+                                AppTheme.colorScheme.onSurface.copy(alpha = 0.5f) // Adjusted for unavailable dates
+                            }
                         )
                         Box(
                             modifier = Modifier
@@ -377,7 +343,6 @@ fun CalendarView(
             }
         }
 
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -388,19 +353,15 @@ fun CalendarView(
             LegendItem(color = AppTheme.colorScheme.primary, label = "Start/End Date")
         }
 
-
         Spacer(modifier = Modifier.height(40.dp))
-
 
         Text(
             text = "Selected Date",
             style = AppTheme.typography.titleLarge,
-            color = AppTheme.colorScheme.onSurface // Text on surface
+            color = AppTheme.colorScheme.onSurface
         )
 
-
         Spacer(modifier = Modifier.height(20.dp))
-
 
         ShowDate(
             date = tempStartDate?.toString() ?: "Not selected",
@@ -408,11 +369,7 @@ fun CalendarView(
             modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
         )
 
-
-
-
         Spacer(modifier = Modifier.weight(1f))
-
 
         if (showNext) {
             val isDateValid = tempStartDate != null && tempEndDate != null
@@ -438,15 +395,13 @@ fun CalendarView(
             ) {
                 Text(
                     text = "Next",
+                    style = AppTheme.typography.mediumBold, // Added typography for button
                     color = AppTheme.colorScheme.onPrimary
                 )
             }
         }
     }
 }
-
-
-
 
 @Composable
 fun LegendItem(color: Color, label: String) {
@@ -461,8 +416,7 @@ fun LegendItem(color: Color, label: String) {
         Text(
             text = label,
             style = AppTheme.typography.smallSemiBold,
-            color = AppTheme.colorScheme.onSurface // Text on surface
+            color = AppTheme.colorScheme.onSurface
         )
     }
 }
-

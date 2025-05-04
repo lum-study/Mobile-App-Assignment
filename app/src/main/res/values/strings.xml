@@ -133,4 +133,5 @@
     <!-- Formatter -->
     <string name="price">RM %.2f</string>
     <string name="from_to">%s to %s</string>
+    <string name="bookblitzpremium">Bookblitzpremium</string>
 </resources>

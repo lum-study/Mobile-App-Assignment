@@ -14,7 +14,7 @@ import com.bookblitzpremium.upcomingproject.ui.screen.profile.ProfileScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.profile.RatingRecordsScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.rating.RatingScreen
 
-fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
+fun NavGraphBuilder.profileNavGraph(navController: NavHostController, userViewModel: AuthViewModel) {
     navigation(startDestination = AppScreen.Profile.route, route = AppScreen.ProfileGraph.route) {
         composable(route = AppScreen.EditProfile.route) {
             EditProfileScreen()
@@ -41,9 +41,6 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
         }
 
         composable(route = AppScreen.Profile.route) {
-            val authViewModel: AuthViewModel = hiltViewModel()
-            val hotelId = "dummyHotelId"
-
             ProfileScreen(
                 navController = navController,
                 userName = "John Doe",
@@ -54,7 +51,7 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
                         "My Orders" -> navController.navigate(AppScreen.MyOrders.route)
                         "Ratings" -> navController.navigate(AppScreen.RatingRecords.route)
                         "Log out" -> {
-                            authViewModel.signOut()
+                            userViewModel.signOut()
                             navController.navigate(AppScreen.AuthGraph.route) {
                                 popUpTo(AppScreen.Home.route) { inclusive = true }
                             }

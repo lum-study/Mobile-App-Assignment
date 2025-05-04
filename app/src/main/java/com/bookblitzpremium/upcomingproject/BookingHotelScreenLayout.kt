@@ -54,9 +54,8 @@ fun HotelBookingScreenLayout(
         else -> {
             println("I ma portrait")
             HotelBookingVerticalScreen(
-                showNUmber = 2,
-                defaultSize = 300.dp,
-                maxSize =  500.dp,
+                defaultSize = 500.dp,
+                maxSize =  800.dp,
                 hotelID = hotelID,
                 navController = navController,
             )
