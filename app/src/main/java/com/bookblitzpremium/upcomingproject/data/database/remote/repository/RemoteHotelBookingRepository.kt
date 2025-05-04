@@ -37,7 +37,14 @@ class RemoteHotelBookingRepository @Inject constructor(
     }
 
     suspend fun getAllHotelBookingByUserID(userID: String): List<HotelBooking> = try {
-        hotelbookingRef.whereEqualTo("userID", userID).get().await()
+        hotelbookingRef.whereEqualTo("userid", userID).get().await()
+            .toObjects(HotelBooking::class.java)
+    } catch (e: Exception) {
+        throw Exception(e)
+    }
+
+    suspend fun getHotelBookingByID(id: String): List<HotelBooking> = try {
+        hotelbookingRef.whereEqualTo("id", id).get().await()
             .toObjects(HotelBooking::class.java)
     } catch (e: Exception) {
         throw Exception(e)

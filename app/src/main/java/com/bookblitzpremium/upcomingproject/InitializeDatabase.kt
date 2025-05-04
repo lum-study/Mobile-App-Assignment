@@ -5,28 +5,36 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalHotelBookingRepo
+import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalPaymentRepository
+import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalTPBookingRepository
+import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalUserRepository
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalFlightViewModel
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalPaymentViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalRatingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalScheduleViewModel
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalTPBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalTripPackageViewModel
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
+import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteHotelBookingRepository
+import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemotePaymentRepository
+import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteTPBookingRepository
+import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteUserRepository
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteFlightViewModel
-import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteHotelViewModel
-import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemotePaymentViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteRatingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteScheduleViewModel
-import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteTPBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteTripPackageViewModel
-import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
 import com.bookblitzpremium.upcomingproject.data.datastore.DataStoreManager
 import com.bookblitzpremium.upcomingproject.data.datastore.DataStoreViewModel
-import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @Composable
 fun InitializeDatabase(
@@ -87,48 +95,50 @@ fun InitializeDatabase(
     }
 }
 
-@Composable
-fun InitializeTransaction(
-    dataStoreManager: DataStoreManager = hiltViewModel<DataStoreViewModel>().manager,
-) {
-    val isTransactionUpdated by dataStoreManager.isTransactionUpdated.collectAsState(initial = null)
-    val userID = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+@HiltViewModel
+class TransactionViewModel @Inject constructor(
+    private val dataStoreManager: DataStoreManager,
+    private val remoteUserRepository: RemoteUserRepository,
+    private val remoteTPBookingRepository: RemoteTPBookingRepository,
+    private val remotePaymentRepository: RemotePaymentRepository,
+    private val remoteHotelBookingRepository: RemoteHotelBookingRepository,
+    private val localUserRepository: LocalUserRepository,
+    private val localTPBookingRepository: LocalTPBookingRepository,
+    private val localPaymentRepository: LocalPaymentRepository,
+    private val localHotelBookingRepository: LocalHotelBookingRepo,
+) : ViewModel() {
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading.asStateFlow()
 
-    val remoteUserViewModel: RemoteUserViewModel = hiltViewModel()
-    val remoteTPBookingViewModel: RemoteTPBookingViewModel = hiltViewModel()
-    val remotePaymentViewModel: RemotePaymentViewModel = hiltViewModel()
-    val remoteHotelBookingViewModel: RemoteHotelBookingViewModel = hiltViewModel()
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
 
-    val localUserViewModel: LocalUserViewModel = hiltViewModel()
-    val localTPBookingViewModel: LocalTPBookingViewModel = hiltViewModel()
-    val localPaymentViewModel: LocalPaymentViewModel = hiltViewModel()
-    val localHotelBookingViewModel: LocalHotelBookingViewModel = hiltViewModel()
+    fun initializeTransaction(userID: String) {
+        viewModelScope.launch {
+            try {
+                _loading.value = true
+                _error.value = null
+                val isTransactionUpdated = dataStoreManager.isTransactionUpdated.first()
+                if (!isTransactionUpdated && userID.isNotEmpty()) {
+                    val user = remoteUserRepository.getUserByID(userID)
+                    user?.let { localUserRepository.addOrUpdateUser(it) }
 
-    LaunchedEffect(userID, isTransactionUpdated) {
-        if (isTransactionUpdated == false && userID.isNotEmpty()) {
-            val user = remoteUserViewModel.getUsersIfNotLoaded(userID)
-
-            if (user != null) {
-                localUserViewModel.addOrUpdateUser(user)
+                    remotePaymentRepository.getAllPaymentByUserID(userID).forEach {
+                        localPaymentRepository.addOrUpdatePayment(it)
+                    }
+                    remoteTPBookingRepository.getAllTripPackageBookingByUserID(userID).forEach {
+                        localTPBookingRepository.addOrUpdateTPBooking(it)
+                    }
+                    remoteHotelBookingRepository.getAllHotelBookingByUserID(userID).forEach {
+                        localHotelBookingRepository.upsertHotelBooking(it)
+                    }
+                    dataStoreManager.setTransactionUpdated(true)
+                }
+            } catch (e: Exception) {
+                _error.value = "Transaction Failed: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
             }
-
-            val payment = remotePaymentViewModel.getPaymentsIfNotLoaded(userID)
-            if (user != null) {
-                payment.forEach { localPaymentViewModel.addOrUpdatePayment(it) }
-            }
-
-            val tripPackageBooking =
-                remoteTPBookingViewModel.getTripPackageBookingIfNotLoaded(userID)
-            if (user != null) {
-                tripPackageBooking.forEach { localTPBookingViewModel.addOrUpdateTPBooking(it) }
-            }
-
-            val hotelBooking = remoteHotelBookingViewModel.getHotelBookingIfNotLoaded(userID)
-            if (user != null) {
-                hotelBooking.forEach { localHotelBookingViewModel.addOrUpdateHotelBooking(it) }
-            }
-
-            dataStoreManager.setTransactionUpdated(true)
         }
     }
 }

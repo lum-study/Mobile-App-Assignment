@@ -1,10 +1,12 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.search
 
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,6 +40,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -56,6 +60,12 @@ import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 
 @Composable
 fun SearchScreen(navController: NavHostController) {
+    val recentSearchViewModel: LocalRecentSearchViewModel = hiltViewModel()
+    val recentSearch by recentSearchViewModel.recentSearch.collectAsState()
+    var isRecentSearchClear by remember { mutableStateOf(false) }
+    LaunchedEffect(recentSearch) {
+        isRecentSearchClear = recentSearch == null
+    }
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val configuration = LocalConfiguration.current
     val deviceType = getDeviceType(windowSizeClass, configuration)
@@ -75,7 +85,6 @@ fun SearchScreen(navController: NavHostController) {
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(end = 16.dp, bottom = 8.dp, start = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     SearchBar(
                         searchText = keyword,
@@ -107,7 +116,8 @@ fun SearchScreen(navController: NavHostController) {
                             showEmptyListToast = !showEmptyListToast
                         }
                     }
-                    if (hotelList.itemCount > 0) {
+                    if (hotelList.itemCount > 0 && isRecentSearchClear) {
+                        Spacer(modifier = Modifier.height(16.dp))
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(1),
                             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -129,7 +139,27 @@ fun SearchScreen(navController: NavHostController) {
                                     })
                             }
                         }
-                    } else {
+                    }
+                    else if(!isRecentSearchClear){
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(end = 24.dp),
+                            contentAlignment = Alignment.CenterEnd
+                        ){
+                            Text(
+                                text = "Clear",
+                                style = AppTheme.typography.mediumNormal.copy(textDecoration = TextDecoration.Underline),
+                                textAlign = TextAlign.End,
+                                color = Color.Blue,
+                                modifier = Modifier.clickable {
+                                    isRecentSearchClear = true
+                                },
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        FilteredResultScreen(navController = navController)
+                    }
+                    else {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                         ) {

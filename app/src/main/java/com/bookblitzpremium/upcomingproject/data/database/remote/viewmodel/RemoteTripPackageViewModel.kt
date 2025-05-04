@@ -104,4 +104,7 @@ class RemoteTripPackageViewModel @Inject constructor(private val remoteTripPacka
         }
     }
 
+    suspend fun getPackageByID(id: String): TripPackage? {
+        return remoteTripPackageRepository.getTripPackageByID(id)
+    }
 }

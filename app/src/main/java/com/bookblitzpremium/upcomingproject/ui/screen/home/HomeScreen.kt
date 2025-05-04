@@ -60,8 +60,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import coil.compose.rememberAsyncImagePainter
-import com.bookblitzpremium.upcomingproject.InitializeTransaction
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.common.enums.BookingType
@@ -79,16 +77,23 @@ import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 import com.google.firebase.auth.FirebaseAuth
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun HomeScreen(navController: NavHostController) {
-    InitializeTransaction()
+    val today = LocalDate.now()
+
     val localHotelViewModel: LocalHotelViewModel = hiltViewModel()
     val hotelList =
         remember { localHotelViewModel.getAllHotelsPagingFlow() }.collectAsLazyPagingItems()
     val localTripPackageViewModel: LocalTripPackageViewModel = hiltViewModel()
     val tripPackageList =
-        remember { localTripPackageViewModel.getAllTripPackagesPagingFlow() }.collectAsLazyPagingItems()
+        remember { localTripPackageViewModel.getAllTripPackagesPagingFlow() }.collectAsLazyPagingItems().itemSnapshotList.items
+            .filter { trip ->
+                val startDate = LocalDate.parse(trip.startDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                startDate.isAfter(today)
+            }
 
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val configuration = LocalConfiguration.current
@@ -218,52 +223,50 @@ fun GreetingProfile() {
             userInfo = localUserViewModel.getUserByID(userID)
         }
     }
-    if(userInfo != null) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Column(
-                Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(
-                    text = stringResource(id = R.string.home_title, userInfo?.name ?: ""),
-                    style = AppTheme.typography.largeBold,
-                )
-                Text(
-                    text = stringResource(id = R.string.home_description),
-                    style = AppTheme.typography.smallRegular,
-                    color = Color.Gray,
-                )
-            }
-            if (userInfo!!.iconImage.isNotEmpty()) {
-                Image(
-                    painter = rememberAsyncImagePainter(userInfo?.iconImage ?: ""),
-                    contentDescription = stringResource(R.string.profile_image),
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.FillBounds
-                )
-            } else {
-                Image(
-                    imageVector = if (userInfo!!.gender == Gender.Male.title) Icons.Default.Male else Icons.Default.Female,
-                    contentDescription = stringResource(R.string.profile_image),
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.FillBounds
-                )
-            }
+            Text(
+                text = stringResource(id = R.string.home_title, userInfo?.name ?: ""),
+                style = AppTheme.typography.largeBold,
+            )
+            Text(
+                text = stringResource(id = R.string.home_description),
+                style = AppTheme.typography.smallRegular,
+                color = Color.Gray,
+            )
+        }
+        if (userInfo?.iconImage != "") {
+            Base64Image(
+                base64String = userInfo?.iconImage ?: "",
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.FillBounds
+            )
+        } else {
+            Image(
+                imageVector = if (userInfo!!.gender == Gender.Male.title) Icons.Default.Male else Icons.Default.Female,
+                contentDescription = stringResource(R.string.profile_image),
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.FillBounds
+            )
         }
     }
 }
 
 @Composable
 fun TripPackageSection(
-    tripPackageList: LazyPagingItems<TripPackage>,
+    tripPackageList: List<TripPackage>,
     modifier: Modifier = Modifier,
     isMobile: Boolean,
     isPortrait: Boolean,
@@ -282,22 +285,20 @@ fun TripPackageSection(
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(32.dp)
             ) {
-                items(tripPackageList.itemCount) { index ->
+                items(tripPackageList.size) { index ->
                     val tripPackage = tripPackageList[index]
-                    if (tripPackage != null) {
-                        TripPackageCard(
-                            tripPackage = tripPackage,
-                            modifier = Modifier.width(250.dp),
-                            onClick = {
-                                navController.navigate(
-                                    AppScreen.TripPackage.passData(
-                                        tripPackage.id,
-                                        ""
-                                    )
+                    TripPackageCard(
+                        tripPackage = tripPackage,
+                        modifier = Modifier.width(250.dp),
+                        onClick = {
+                            navController.navigate(
+                                AppScreen.TripPackage.passData(
+                                    tripPackage.id,
+                                    ""
                                 )
-                            }
-                        )
-                    }
+                            )
+                        }
+                    )
                 }
             }
         } else if (!isPortrait) {
@@ -307,7 +308,7 @@ fun TripPackageSection(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                items(tripPackageList.itemCount) { index ->
+                items(tripPackageList.size) { index ->
                     val tripPackage = tripPackageList[index]
                     TripPackageCard(
                         tripPackage = tripPackage,
@@ -316,7 +317,7 @@ fun TripPackageSection(
                         onClick = {
                             navController.navigate(
                                 AppScreen.TripPackage.passData(
-                                    tripPackage!!.id,
+                                    tripPackage.id,
                                     ""
                                 )
                             )
@@ -331,7 +332,7 @@ fun TripPackageSection(
                 verticalArrangement = Arrangement.spacedBy(32.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                items(tripPackageList.itemCount) { index ->
+                items(tripPackageList.size) { index ->
                     val tripPackage = tripPackageList[index]
                     TripPackageCard(
                         tripPackage = tripPackage,
@@ -340,7 +341,7 @@ fun TripPackageSection(
                         onClick = {
                             navController.navigate(
                                 AppScreen.TripPackage.passData(
-                                    tripPackage!!.id,
+                                    tripPackage.id,
                                     ""
                                 )
                             )

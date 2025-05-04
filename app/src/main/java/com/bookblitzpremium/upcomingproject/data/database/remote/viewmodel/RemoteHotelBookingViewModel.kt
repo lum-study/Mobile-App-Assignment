@@ -48,7 +48,7 @@ class RemoteHotelBookingViewModel @Inject constructor(
             _loading.value = false
         }
     }
-
+  
     fun addNewIntegratedRecord(hotelBooking: HotelBooking) {
         viewModelScope.launch {
             _loading.value = true
@@ -105,9 +105,10 @@ class RemoteHotelBookingViewModel @Inject constructor(
         return try {
             _loading.value = true
             _error.value = null
-            remoteHotelBookingRepository.getAllHotelBookingByUserID(userID)
+            _hotel_booking.value = remoteHotelBookingRepository.getAllHotelBookingByUserID(userID)
+            _hotel_booking.value
         } catch (e: Exception) {
-            _error.value = e.localizedMessage ?: "Failed to load trip package booking"
+            _error.value = e.localizedMessage ?: "Failed to load hotel booking"
             emptyList()
         } finally {
             _loading.value = false

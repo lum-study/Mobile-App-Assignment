@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -54,20 +53,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.bookblitzpremium.upcomingproject.HotelBookingScreenLayout
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.common.enums.DeviceType
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalTripPackageViewModel
+import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteTripPackageViewModel
 import com.bookblitzpremium.upcomingproject.data.model.TripPackageInformation
 import com.bookblitzpremium.upcomingproject.model.TripPackageTabs
 import com.bookblitzpremium.upcomingproject.ui.components.Base64Image
 import com.bookblitzpremium.upcomingproject.ui.components.SkeletonLoader
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
-import com.bookblitzpremium.upcomingproject.ui.screen.booking.HotelDetailScreen
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 import java.time.LocalDate
@@ -77,10 +76,16 @@ import java.util.Locale
 @Composable
 fun TripPackageScreen(navController: NavHostController, tripPackageID: String, bookingID: String) {
     val localTripPackageViewModel: LocalTripPackageViewModel = hiltViewModel()
+    val remoteTripPackageViewModel: RemoteTripPackageViewModel = hiltViewModel()
+
     var selectedTripPackage: TripPackageInformation? by remember { mutableStateOf(null) }
 
     LaunchedEffect(Unit) {
-        selectedTripPackage = localTripPackageViewModel.getTripPackageInformation(tripPackageID)
+        val tripPackage = remoteTripPackageViewModel.getPackageByID(tripPackageID)
+        if (tripPackage != null) {
+            localTripPackageViewModel.addOrUpdateTrip(tripPackage)
+            selectedTripPackage = localTripPackageViewModel.getTripPackageInformation(tripPackageID)
+        }
     }
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val configuration = LocalConfiguration.current
@@ -95,6 +100,7 @@ fun TripPackageScreen(navController: NavHostController, tripPackageID: String, b
                     bookingID = bookingID
                 )
             }
+
             DeviceType.TabletLandscape -> {
                 TripPackageInformationTabletLayout(
                     navController = navController,
@@ -103,6 +109,7 @@ fun TripPackageScreen(navController: NavHostController, tripPackageID: String, b
                     isPortrait = false
                 )
             }
+
             else -> {
                 TripPackageInformationTabletLayout(
                     navController = navController,
@@ -329,10 +336,11 @@ fun TripPackageInformationTabletLayout(
                 title = "Hotel",
                 icon = Icons.Outlined.HomeWork,
                 screen = {
-                    HotelDetailScreen(navController = navController, hotelBookingId = selectedTripPackage.hotelID, tripPackageID = selectedTripPackage.id)
-//                    TripPackageHotelTabScreen(
-//                        hotelID = selectedTripPackage.hotelID,
-//                    )
+                    HotelBookingScreenLayout(
+                        navController = navController,
+                        hotelID = selectedTripPackage.hotelID,
+                        tripPackageID = selectedTripPackage.id,
+                    )
                 }
             ),
         )
@@ -342,7 +350,7 @@ fun TripPackageInformationTabletLayout(
                 .fillMaxSize()
                 .padding(vertical = 8.dp, horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(if (isPortrait)32.dp else 8.dp),
+            verticalArrangement = Arrangement.spacedBy(if (isPortrait) 32.dp else 8.dp),
         ) {
             if (!isPortrait) {
                 Row(
@@ -451,8 +459,7 @@ fun TripPackageInformationTabletLayout(
                         }
                     }
                 }
-            }
-            else {
+            } else {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),

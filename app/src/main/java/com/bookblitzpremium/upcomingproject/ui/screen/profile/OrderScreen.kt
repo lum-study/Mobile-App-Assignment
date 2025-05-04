@@ -15,11 +15,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,9 +44,11 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.common.enums.BookingStatus
+import com.bookblitzpremium.upcomingproject.common.enums.BookingType
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalTPBookingViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.Base64Image
+import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.google.firebase.auth.FirebaseAuth
 import java.time.LocalDate
@@ -49,6 +56,7 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun OrderScreen(navController: NavHostController) {
+    val today = remember { LocalDate.now() }
     val isMobile =
         currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT
     val windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
@@ -59,10 +67,40 @@ fun OrderScreen(navController: NavHostController) {
     val localTPBookingViewModel: LocalTPBookingViewModel = hiltViewModel()
     val localHotelBookingViewModel: LocalHotelBookingViewModel = hiltViewModel()
     val hotelBookingList =
-        remember { localHotelBookingViewModel.getHotelBookingInformationByUserID(userID) }.collectAsLazyPagingItems()
-    val tripPackageBookingList =
-        remember { localTPBookingViewModel.getTPBookingByUserID(userID) }.collectAsLazyPagingItems()
+        remember { localHotelBookingViewModel.getHotelBookingInformationByUserID(userID) }.collectAsLazyPagingItems().itemSnapshotList.items
+            .sortedWith { a, b ->
+                val aDate = LocalDate.parse(a.startDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                val bDate = LocalDate.parse(b.startDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
+                when {
+                    !aDate.isBefore(today) && !bDate.isBefore(today) -> aDate.compareTo(bDate)
+                    aDate.isBefore(today) && bDate.isBefore(today) -> bDate.compareTo(aDate)
+                    aDate.isBefore(today) -> 1
+                    else -> -1
+                }
+            }
+
+    val tripPackageBookingList =
+        remember { localTPBookingViewModel.getTPBookingByUserID(userID) }.collectAsLazyPagingItems().itemSnapshotList.items
+            .sortedWith { a, b ->
+                val aDate = LocalDate.parse(
+                    a.tripPackageStartDate,
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                )
+                val bDate = LocalDate.parse(
+                    b.tripPackageStartDate,
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                )
+                when {
+                    !aDate.isBefore(today) && !bDate.isBefore(today) -> aDate.compareTo(bDate)
+                    aDate.isBefore(today) && bDate.isBefore(today) -> bDate.compareTo(aDate)
+                    aDate.isBefore(today) -> 1
+                    else -> -1
+                }
+            }
+
+    val bookingType = BookingType.entries
+    var selectedBookingType by rememberSaveable { mutableStateOf(BookingType.TripPackage) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -74,19 +112,46 @@ fun OrderScreen(navController: NavHostController) {
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
+        Spacer(modifier = Modifier.height(12.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            bookingType.forEach {
+                OutlinedButton(
+                    onClick = { selectedBookingType = it },
+                    modifier = Modifier.weight(1f),
+                    enabled = selectedBookingType != it,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        disabledContainerColor = Color(0xFFECECEC),
+                        disabledContentColor = AppTheme.colorScheme.primary
+                    )
+                ) {
+                    Text(
+                        text = it.title,
+                        style = AppTheme.typography.mediumNormal
+                    )
+                }
+            }
+        }
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (tripPackageBookingList.itemCount > 0) {
+        if (selectedBookingType == BookingType.TripPackage && tripPackageBookingList.isNotEmpty()) {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(tripPackageBookingList.itemCount) { index ->
+                items(tripPackageBookingList.size) { index ->
                     val booking = tripPackageBookingList[index]
                     BookingCard(
-                        amount = booking!!.paymentAmount.toFloat(),
+                        amount = booking.paymentAmount.toFloat(),
                         quantity = booking.purchaseCount.toString(),
                         tripPackageName = booking.tripPackageName,
-                        status = getBookingStatus(booking.tripPackageStartDate, booking.status),
+                        status = getBookingStatus(
+                            booking.tripPackageStartDate,
+                            booking.status,
+                            isTripPackage = true
+                        ),
                         imageUrl = booking.tripPackageImageUrl,
                         orderDate = booking.purchaseDate,
                         onColumnClick = {
@@ -102,28 +167,39 @@ fun OrderScreen(navController: NavHostController) {
                     )
                 }
             }
-        } else if (hotelBookingList.itemCount > 0) {
+        } else if (selectedBookingType == BookingType.Hotel && hotelBookingList.isNotEmpty()) {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(hotelBookingList.itemCount) { index ->
+                items(hotelBookingList.size) { index ->
                     val booking = hotelBookingList[index]
                     BookingCard(
-                        amount = booking!!.totalAmount.toFloat(),
+                        amount = booking.totalAmount.toFloat(),
                         quantity = booking.numberOfRoom.toString(),
                         tripPackageName = booking.hotelName,
-                        status = getBookingStatus(booking.endDate, booking.status),
+                        status = getBookingStatus(
+                            booking.endDate,
+                            booking.status,
+                            isTripPackage = false
+                        ),
                         imageUrl = booking.hotelImageUrl,
                         orderDate = booking.purchaseDate,
                         onColumnClick = {
                             navController.navigate(
-                                AppScreen.TripPackage.passData(
+                                AppScreen.Hotel.passData(
                                     booking.hotelID,
                                     booking.id
                                 )
                             )
                         },
-                        onRatingClick = { navController.navigate(AppScreen.Ratings.passData(booking.hotelID)) },
+                        onRatingClick = {
+                            navController.navigate(
+                                AppScreen.Ratings.passData(
+                                    booking.hotelID,
+                                    booking.id
+                                )
+                            )
+                        },
                         isMobile = isMobile
                     )
                 }
@@ -169,14 +245,25 @@ fun BookingCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Base64Image(
-                imageUrl,
-                modifier = Modifier
-                    .height(if (isMobile) 100.dp else 120.dp)
-                    .width(if (isMobile) 100.dp else 150.dp)
-                    .clip(RoundedCornerShape(12.dp)),
-                contentScale = ContentScale.Crop
-            )
+            if (imageUrl.startsWith("http")) {
+                UrlImage(
+                    imageUrl = imageUrl,
+                    modifier = Modifier
+                        .height(if (isMobile) 100.dp else 120.dp)
+                        .width(if (isMobile) 100.dp else 150.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Base64Image(
+                    imageUrl,
+                    modifier = Modifier
+                        .height(if (isMobile) 100.dp else 120.dp)
+                        .width(if (isMobile) 100.dp else 150.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -231,12 +318,14 @@ fun BookingCard(
     }
 }
 
-fun getBookingStatus(date: String, bookingStatus: String): String {
+fun getBookingStatus(date: String, bookingStatus: String, isTripPackage: Boolean): String {
     val formattedDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
     return if (bookingStatus == BookingStatus.Completed.title || bookingStatus == BookingStatus.Cancelled.title) {
         bookingStatus
     } else if (LocalDate.now() < formattedDate) {
         BookingStatus.Confirmed.title
+    } else if (isTripPackage && LocalDate.now() > formattedDate) {
+        BookingStatus.Completed.title
     } else {
         BookingStatus.ToReview.title
     }
