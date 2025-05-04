@@ -1,6 +1,5 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.booking
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,7 +28,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelBookingViewModel
-import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.bookblitzpremium.upcomingproject.ui.utility.ToastUtils
@@ -47,7 +45,7 @@ fun HotelBookingListScreen(navController: NavController, userId: String) {
     val hotelMap by viewModelHotelBooking.hotelsMap.collectAsState()
 
     when {
-        bookingData == null -> {
+        false -> {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -56,7 +54,7 @@ fun HotelBookingListScreen(navController: NavController, userId: String) {
             }
         }
 
-        bookingData!!.isEmpty() -> {
+        bookingData.isEmpty() -> {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -72,7 +70,7 @@ fun HotelBookingListScreen(navController: NavController, userId: String) {
                     .padding(top = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(bookingData!!) { booking ->
+                items(bookingData) { booking ->
                     val hotel = hotelMap[booking.hotelID]
                     hotel?.let {
                         HotelBookingItem(

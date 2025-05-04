@@ -110,11 +110,8 @@ class RemotePaymentViewModel @Inject constructor(
             _loading.value = true
             _error.value = null
             try {
-
-//                remotePaymentRepository.updatePayment(localPayment)
-
+                remotePaymentRepository.updatePayment(localPayment)
                 localPaymentRepository.addOrUpdatePayment(localPayment)
-
             } catch (e: Exception) {
                 _error.value = "Failed to add payment: ${e.localizedMessage}"
             } finally {

@@ -146,8 +146,8 @@ fun PaymentDetails(
                                         userID = userID
                                     )
 
-                                    remotePaymentViewModel.updatePaymentBoth(localPayment)
-                                    remoteBookingViewModel.addNewIntegratedRecord(booking)
+//                                    remotePaymentViewModel.updatePaymentBoth(localPayment)
+                                    remoteBookingViewModel.addNewIntegratedRecord(booking,localPayment)
                                     showDialog = true
                                 },
                                 enabled = cardNumber.isNotEmpty() && paymentMethod.title.isNotEmpty(),
