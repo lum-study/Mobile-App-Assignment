@@ -206,7 +206,7 @@ fun GuestSection(
 
                 coroutineScope.launch {
                     try {
-                        val paymentID = paymentViewModel.addPayment(payment)
+                        val paymentID = paymentViewModel.addReturnIDPayment(payment)
                         if (paymentID.isNotEmpty()) {
                             val encodedPaymentID = URLEncoder.encode(paymentID, "UTF-8")
                             if(encodedPaymentID.isNotEmpty() && cardNumber.isNotEmpty() && paymentMethod.isNotEmpty()){

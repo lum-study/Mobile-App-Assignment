@@ -35,7 +35,6 @@ class RemotePaymentRepository @Inject constructor(private val firestore: Firebas
     }
 
     suspend fun updatePayment(payment: Payment) {
-        require(payment.id.isNotEmpty()) { "Payment ID cannot be empty" }
         paymentRef.document(payment.id).set(payment).await()
     }
 

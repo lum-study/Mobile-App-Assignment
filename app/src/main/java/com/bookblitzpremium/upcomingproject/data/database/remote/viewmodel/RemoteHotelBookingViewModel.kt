@@ -91,14 +91,30 @@ class RemoteHotelBookingViewModel @Inject constructor(
         }
     }
 
-    fun updatePayment(hotelBooking: HotelBooking) {
+    private val _success = MutableStateFlow(false)
+    val success: StateFlow<Boolean> = _success.asStateFlow()
+
+    fun updateHotelBooking(hotelBooking: HotelBooking) {
         viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+            _success.value = false // Reset success at the start
             try {
-                remoteHotelBookingRepository.updatePayment(hotelBooking)
+                remoteHotelBookingRepository.updateHotelBooking(hotelBooking)
+                localHotelBookingRepository.upsertHotelBooking(hotelBooking)
+                _success.value = true
+            } catch (e: SQLiteException) {
+                _error.value = "Database error: ${e.localizedMessage}"
             } catch (e: Exception) {
-                _error.value = "Failed to get hotel bookings: ${e.localizedMessage}"
+                _error.value = "Error updating hotel booking: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
             }
         }
+    }
+
+    fun clearSuccess() {
+        _success.value = false
     }
 
     suspend fun getHotelBookingIfNotLoaded(userID: String): List<HotelBooking> {

@@ -252,6 +252,14 @@ fun ReviewFinalPackageSelected(
 
             val heightSize = if((isTablet.toString() == "true")) 150.dp else 80.dp
 
+            val locationName = hotelData.name
+//            BoxMaps(
+//                addressInput = locationName,
+//                onClick = {
+//                    navController.navigate("${AppScreen.Maps.route}/${locationName}")
+//                },
+//            )
+//
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -302,13 +310,7 @@ fun ReviewFinalPackageSelected(
                 }
             }
 
-            val locationName = hotelData.name
-            BoxMaps(
-                addressInput = locationName,
-                onClick = {
-                    navController.navigate("${AppScreen.Maps.route}/$locationName")
-                },
-            )
+
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -345,7 +347,9 @@ fun ReviewFinalPackageSelected(
                     )
 
                     remotePaymentViewModel.updatePaymentBoth(localPayment)
+
                     remoteBookingViewModel.addNewIntegratedRecord(booking)
+
                     showDialog = true
 
                 },

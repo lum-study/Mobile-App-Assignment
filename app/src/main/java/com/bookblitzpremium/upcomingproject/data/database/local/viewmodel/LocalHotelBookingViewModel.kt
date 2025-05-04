@@ -95,31 +95,29 @@ class LocalHotelBookingViewModel @Inject constructor(
     }
 
 
-    fun insertHotelBooking(hotelBooking: HotelBooking) {
-        viewModelScope.launch {
-            _loading.value = true
-            _error.value = null
-
-            try {
-                localHotelBookingRepo.insertHotelBooking(hotelBooking)
-                remoteHotelBookingRepository.updatePayment(hotelBooking)
-            } catch (e: SQLiteException) {
-                _error.value = "Database error: ${e.localizedMessage}"
-            } catch (e: Exception) {
-                _error.value = "Error fetching hotel booking: ${e.localizedMessage}"
-            } finally {
-                _loading.value = false
-            }
-        }
-    }
-
-
-    fun updateHotelBooking(hotelBooking: HotelBooking) {
+//    fun insertHotelBooking(hotelBooking: HotelBooking) {
+//        viewModelScope.launch {
+//            _loading.value = true
+//            _error.value = null
+//            try {
+//                localHotelBookingRepo.insertHotelBooking(hotelBooking)
+//                remoteHotelBookingRepository.updateHotelBooking(hotelBooking)
+//            } catch (e: SQLiteException) {
+//                _error.value = "Database error: ${e.localizedMessage}"
+//            } catch (e: Exception) {
+//                _error.value = "Error fetching hotel booking: ${e.localizedMessage}"
+//            } finally {
+//                _loading.value = false
+//            }
+//        }
+//    }
+//
+    fun updateHotelBooking(booking: HotelBooking) {
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
             try {
-                localHotelBookingRepo.updateHotelBooking(hotelBooking) // Use update instead of insert
+                localHotelBookingRepo.upsertHotelBooking(booking)
             } catch (e: SQLiteException) {
                 _error.value = "Database error: ${e.localizedMessage}"
             } catch (e: Exception) {
@@ -145,6 +143,9 @@ class LocalHotelBookingViewModel @Inject constructor(
             }
         }
     }
+
+
+
 
     fun fetchHotelBookingsById(hotelId: String){
         viewModelScope.launch {

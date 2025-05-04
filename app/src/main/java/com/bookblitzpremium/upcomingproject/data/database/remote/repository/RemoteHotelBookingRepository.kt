@@ -25,11 +25,17 @@ class RemoteHotelBookingRepository @Inject constructor(
         throw Exception(e)
     }
 
-    suspend fun updatePayment(hotelBooking: HotelBooking) {
+    suspend fun updateHotelBooking(hotelBooking: HotelBooking) {
         try {
+            val snapshot = hotelbookingRef.whereEqualTo("id", hotelBooking.id).get().await()
+            if (snapshot.isEmpty) {
+                throw Exception("No hotel booking found with id: ${hotelBooking.id}")
+            }
+            // Update the first matching document (assuming id is unique)
+            val document = snapshot.documents.first()
             hotelbookingRef
-                .document(hotelBooking.id)
-                .set(hotelBooking) // Overwrites the entire document
+                .document(document.id)
+                .set(hotelBooking)
                 .await()
         } catch (e: Exception) {
             throw e

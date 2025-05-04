@@ -2,24 +2,29 @@ package com.bookblitzpremium.upcomingproject.ui.screen.booking
 
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -29,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,7 +43,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -45,11 +53,15 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.bookblitzpremium.upcomingproject.BoxMaps
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
+import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteHotelBookingViewModel
+import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import com.bookblitzpremium.upcomingproject.ui.utility.ToastUtils
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -67,23 +79,25 @@ fun PreviewIt(){
 fun BookingDaySelector(
     modifier: Modifier = Modifier,
     startDate: String,
-    maxRange: Int, // Maximum number of days for booking (e.g., 30 days)
-    onBookingRangeSelected: (LocalDate, LocalDate) -> Unit // Callback to return the selected dates
+    maxRange: Int,
+    onBookingRangeSelected: (LocalDate, LocalDate) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     var selectedText by rememberSaveable { mutableStateOf("Select Booking Range") }
-    // Define the pattern of the date string
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd") // Adjust the pattern if needed
-    val startDateLocalDate = LocalDate.parse(startDate, formatter)
 
-    // Generate booking options with start and end dates
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val startDateLocalDate = LocalDate.parse(startDate, formatter)
+    val today = LocalDate.now()
+
     val options = mutableListOf<Pair<LocalDate, LocalDate>>()
-    val range = (0 until maxRange) // The number of options you want (first, second, third, fourth)
+    val range = (0 until maxRange)
 
     range.forEach { offset ->
         val startOption = startDateLocalDate.minusDays(7 - offset.toLong())
         val endOption = startOption.plusDays((maxRange - 1).toLong())
-        options.add(Pair(startOption, endOption))
+        if (!startOption.isBefore(today)) {
+            options.add(Pair(startOption, endOption))
+        }
     }
 
     ExposedDropdownMenuBox(
@@ -111,17 +125,25 @@ fun BookingDaySelector(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            options.forEach { (start, end) ->
+            if (options.isEmpty()) {
                 DropdownMenuItem(
-                    text = {
-                        Text("From $start to $end")
-                    },
-                    onClick = {
-                        selectedText = "From $start to $end"
-                        onBookingRangeSelected(start, end)
-                        expanded = false
-                    }
+                    text = { Text("No options available") },
+                    onClick = { expanded = false },
+                    enabled = false
                 )
+            } else {
+                options.forEach { (start, end) ->
+                    DropdownMenuItem(
+                        text = {
+                            Text("From $start to $end")
+                        },
+                        onClick = {
+                            selectedText = "From $start to $end"
+                            onBookingRangeSelected(start, end)
+                            expanded = false
+                        }
+                    )
+                }
             }
         }
     }
@@ -136,6 +158,7 @@ fun ModifyHotelBooking(
 
     val bookingViewModel: LocalHotelBookingViewModel = hiltViewModel()
     val hotelViewModel: LocalHotelViewModel = hiltViewModel()
+    val remoteHotelBooking: RemoteHotelBookingViewModel = hiltViewModel()
 
     var selectedStartDate by remember { mutableStateOf<LocalDate?>(null) }
     var selectedEndDate by remember { mutableStateOf<LocalDate?>(null) }
@@ -149,13 +172,21 @@ fun ModifyHotelBooking(
 
     val hotelData by hotelViewModel.selectedHotel.collectAsState()
 
+    val success by remoteHotelBooking.success.collectAsState()
+
+    LaunchedEffect(success) {
+        if (success) {
+            navController.navigate(AppScreen.MyOrders.route)
+            remoteHotelBooking.clearSuccess() // Reset success after navigation
+        }
+    }
+
+
     booking?.let {
         if (hotelData != null) {
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-
             val start = LocalDate.parse(booking.startDate, formatter)
             val end = LocalDate.parse(booking.endDate, formatter)
-
             val maxRange = ChronoUnit.DAYS.between(start, end).toInt()
 
             val onBookingRangeSelected: (LocalDate, LocalDate) -> Unit = { start, end ->
@@ -167,8 +198,8 @@ fun ModifyHotelBooking(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(8.dp)
+                    .verticalScroll(rememberScrollState())
             ) {
-
                 Spacer(modifier = Modifier.height(20.dp))
 
                 StyledImage(hotelData?.imageUrl.toString(), tabletPortrait = "true")
@@ -226,46 +257,66 @@ fun ModifyHotelBooking(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Row to split the screen into two equal sections for Check-In and Check-Out
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(80.dp)
-                            .background(Color.LightGray) // Light gray background for the row
-                            .padding(horizontal = 40.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween, // Evenly distribute items
-                        verticalAlignment = Alignment.CenterVertically // Center items vertically
-                    ) {
-                        // Check-In section
-                        LegendItem1(
-                            icon = Icons.Filled.CalendarToday,
-                            iconDescription = "Check-In Icon",
-                            label = "Check-In",
-                            date = selectedStartDate?.toString() ?: booking.startDate,
-                            modifier = Modifier.weight(1f) // Equal width for balanced layout
-                        )
 
-                        // Spacer for consistent spacing between sections
-                        Spacer(modifier = Modifier.width(16.dp))
-
-                        // Check-Out section
-                        LegendItem1(
-                            icon = Icons.Filled.CalendarToday,
-                            iconDescription = "Check-Out Icon",
-                            label = "Check-Out",
-                            date = selectedEndDate?.toString() ?: booking.endDate,
-                            modifier = Modifier.weight(1f) // Equal width for balanced layout
-                        )
-                    }
+                    val locationName = hotelData!!.name
+//                    BoxMaps(
+//                        addressInput = locationName,
+//                        onClick = {
+//                            navController.navigate("${AppScreen.Maps.route}/${locationName}")
+//                        },
+//                    )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    val locationName = hotelData!!.name
-                    MapsButton(
-                        onClick = {
-                            navController.navigate("${AppScreen.Maps.route}/$locationName")
-                        }, modifier = Modifier
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height( 80.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(AppTheme.colorScheme.surface) // Use surface for background
+                            .border(1.dp, AppTheme.colorScheme.primary, RoundedCornerShape(12.dp)),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Check-In half
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            LegendItem1(
+                                icon = Icons.Filled.CalendarToday,
+                                iconDescription = "Check-In Icon",
+                                label = "Check-In",
+                                date = selectedStartDate?.toString() ?: booking.startDate,
+                                modifier = Modifier
+                            )
+                        }
+
+                        // Vertical divider
+                        Divider(
+                            color = AppTheme.colorScheme.primary, // Use primary for divider
+                            modifier = Modifier
+                                .width(1.dp)
+                                .fillMaxHeight()
+                        )
+
+                        // Check-Out half
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            LegendItem1(
+                                icon = Icons.Filled.CalendarToday,
+                                iconDescription = "Check-Out Icon",
+                                label = "Check-Out",
+                                date = selectedEndDate?.toString() ?: booking.endDate,
+                                modifier = Modifier
+                            )
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -289,16 +340,30 @@ fun ModifyHotelBooking(
                             .weight(1f)
                     )
 
+                    val error by remoteHotelBooking.error.collectAsState()
+
+                    val context = LocalContext.current
+                    LaunchedEffect(error) {
+                        error?.let { error ->
+                            ToastUtils.showSingleToast(context, error)
+                        }
+                    }
+
                     // — NEXT BUTTON: fixed at bottom, centered horizontally —
                     Button(
                         onClick = {
                             val booking = HotelBooking(
+                                numberOFClient = booking.numberOFClient,
+                                numberOfRoom = booking.numberOfRoom,
+                                hotelID = booking.hotelID,
+                                userid = booking.userid,
+                                paymentID = booking.paymentID,
+                                status = booking.status,
+                                id = booking.id,
                                 startDate = selectedStartDate?.toString() ?: booking.startDate,
                                 endDate = selectedEndDate?.toString() ?: booking.endDate,
                             )
-                            bookingViewModel.updateHotelBooking(booking)
-
-                            //whetever to direct to homepage or where
+                            remoteHotelBooking.updateHotelBooking(booking)
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -312,8 +377,15 @@ fun ModifyHotelBooking(
                     }
                 }
             }
+
         }else{
-            CircularProgressIndicator()
+            CheckStatusLoading()
+        }
+
+        val isBookingLoading by remoteHotelBooking.loading.collectAsState()
+
+        if(isBookingLoading){
+            CheckStatusLoading()
         }
     }
 }

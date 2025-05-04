@@ -228,16 +228,16 @@ fun DraggableObject(
                 modifier = Modifier
                     .size(48.dp)
                     .background(AppTheme.colorScheme.surfaceVariant, RoundedCornerShape(16.dp))
-                    .clickable {
-                        navController.navigate(AppScreen.Maps.passData(hotel.name))
-                    },
+                    ,
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.LocationOn,
                     contentDescription = "Location",
                     tint = AppTheme.colorScheme.onBackground,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(28.dp).clickable {
+                        navController.navigate("${AppScreen.Maps.route}/${hotel.name}")
+                    }
                 )
             }
         }
@@ -313,7 +313,7 @@ fun DraggableObject(
             enabled = startDate.isNotEmpty() && endDate.isNotEmpty() && roomBooked != 0 && adultCount != 0,
             onClick = {
                 coroutineScope.launch {
-                    val paymentID = paymentViewModel.addPayment(payment)
+                    val paymentID = paymentViewModel.addReturnIDPayment(payment)
                     if (paymentID.isNotEmpty()) {
                         val encodedPaymentID = URLEncoder.encode(paymentID, "UTF-8")
                         val baseRoute =
