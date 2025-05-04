@@ -38,36 +38,6 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
             )
         }
 
-        composable(
-            route = "BookingReview/{hotelID}/{startDate}/{endDate}/{totalPerson}/{roomBooked}/{totalPrice}/{paymentMethod}/{cardNumber}/{paymentID}/{tabletPortrait}"
-        ) { backStackEntry ->
-            val hotelID = URLDecoder.decode(backStackEntry.arguments?.getString("hotelID") ?: "", "UTF-8")
-            val startDate = URLDecoder.decode(backStackEntry.arguments?.getString("startDate") ?: "", "UTF-8")
-            val endDate = URLDecoder.decode(backStackEntry.arguments?.getString("endDate") ?: "", "UTF-8")
-            val totalPerson = backStackEntry.arguments?.getString("totalPerson")?.toIntOrNull() ?: 0
-            val roomBooked = backStackEntry.arguments?.getString("roomBooked")?.toIntOrNull() ?: 0
-            val totalPrice = backStackEntry.arguments?.getString("totalPrice")?.toDoubleOrNull() ?: 0.0
-            val paymentMethod = URLDecoder.decode(backStackEntry.arguments?.getString("paymentMethod") ?: "", "UTF-8")
-            val cardNumber = URLDecoder.decode(backStackEntry.arguments?.getString("cardNumber") ?: "", "UTF-8")
-            val paymentId = URLDecoder.decode(backStackEntry.arguments?.getString("paymentID") ?: "", "UTF-8")
-            val tabletPortrait = backStackEntry.arguments?.getString("tabletPortrait") == "true"
-
-            ReviewFinalPackageSelected(
-                modifier = Modifier,
-                navController = navController,
-                hotelID = hotelID,
-                totalPrice = totalPrice.toString(),
-                startDate = startDate,
-                endDate = endDate,
-                totalPerson = totalPerson.toString(),
-                roomBooked = roomBooked.toString(),
-                paymentID = paymentId,
-                paymentMethod = paymentMethod,
-                cardNumber = cardNumber,
-                tabletPortrait = tabletPortrait.toString()
-            )
-        }
-
         composable(AppScreen.Home.route) {
             HomeScreen(navController)
         }

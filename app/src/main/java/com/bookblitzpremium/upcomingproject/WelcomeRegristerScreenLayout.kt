@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
-import com.bookblitzpremium.upcomingproject.TabletAuth.Step2Screen
+import com.bookblitzpremium.upcomingproject.TabletAuth.WelcomeRegristerScreen
 import com.bookblitzpremium.upcomingproject.common.enums.DeviceType
 import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 
@@ -25,7 +25,7 @@ fun WelcomeRegristerSizeLayout(
     when (deviceType){
         DeviceType.TabletLandscape -> {
 
-            Step2Screen(
+            WelcomeRegristerScreen(
                 navController = navController,
                 tabletScreen = false,
                 email  = email,
@@ -35,7 +35,7 @@ fun WelcomeRegristerSizeLayout(
         }
 
         else -> {
-            Step2Screen(
+            WelcomeRegristerScreen(
                 navController = navController,
                 tabletScreen = true,
                 email  = email,

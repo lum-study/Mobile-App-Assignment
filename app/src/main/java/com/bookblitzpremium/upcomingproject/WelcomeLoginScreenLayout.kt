@@ -4,7 +4,7 @@ import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.navigation.NavController
-import com.bookblitzpremium.upcomingproject.TabletAuth.LoginScreen2
+import com.bookblitzpremium.upcomingproject.TabletAuth.LoginWelcomeScreen
 import com.bookblitzpremium.upcomingproject.common.enums.DeviceType
 import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 
@@ -24,7 +24,7 @@ fun WelcomeLoginSizeLayout(
 
     when (deviceType){
         DeviceType.TabletLandscape -> {
-            LoginScreen2(
+            LoginWelcomeScreen(
                 navController = navController,
                 tabletScreen  = true,
                 email = email,
@@ -33,7 +33,7 @@ fun WelcomeLoginSizeLayout(
         }
 
         else -> {
-            LoginScreen2(
+            LoginWelcomeScreen(
                 navController = navController,
                 tabletScreen  = false,
                 email = email,

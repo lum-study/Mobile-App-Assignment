@@ -1,6 +1,5 @@
 package com.bookblitzpremium.upcomingproject.TabletAuth
 
-import android.util.Patterns
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,8 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,11 +25,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -47,125 +40,44 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.bookblitzpremium.upcomingproject.GenderSelectionScreen
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
-import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
 import com.bookblitzpremium.upcomingproject.data.model.SignupState
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextFieldPassword
-import com.google.firebase.auth.FirebaseAuth
+import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
 
-// Main entry point for the navigation
-
-//vertical = true
-//regrister = false
-
-//@Composable
-//fun RegristerVertical() {
-//    val navController = rememberNavController()
-//    NavHost(navController = navController, startDestination = "step1") {
-//
-//        composable("step1") { Step1Screen(navController,false) }
-//
-//        composable(route = "step1/{email}/{password}",
-//            arguments = listOf(
-//                navArgument("email") { type = NavType.StringType },
-//                navArgument("password") { type = NavType.StringType },
-//            )) { backStackEntry ->
-//            val email = backStackEntry.arguments?.getString("email").toString()
-//            val password = backStackEntry.arguments?.getString("password").toString()
-//
-//            Step1Screen(
-//                navController,
-//                tabletScreen = false,
-//                email = email,
-//                password =password
-//            )
-//        }
-//
-//        composable(
-//            route = "gender/{email}/{password}/{selectedGender}",
-//            arguments = listOf(
-//                navArgument("email") { type = NavType.StringType },
-//                navArgument("password") { type = NavType.StringType },
-//                navArgument("selectedGender") { type = NavType.StringType },
-//            )
-//        ) { backStackEntry ->
-//            val email = backStackEntry.arguments?.getString("email").toString()
-//            val password = backStackEntry.arguments?.getString("password").toString()
-//            val selectedGender = backStackEntry.arguments?.getString("password").toString()
-//
-//            GenderSelectionScreen(navController,false, email,password)
-//        }
-//
-//        composable(
-//            route = "step2/{email}/{password}/{genderSelected}",
-//            arguments = listOf(
-//                navArgument("email") { type = NavType.StringType },
-//                navArgument("password") { type = NavType.StringType },
-//                navArgument("genderSelected") { type = NavType.StringType },
-//            )
-//        ) { backStackEntry ->
-//            val email = backStackEntry.arguments?.getString("email").toString()
-//            val password = backStackEntry.arguments?.getString("password").toString()
-//            val genderSelected = backStackEntry.arguments?.getString("genderSelected").toString()
-//
-//            Step2Screen(navController, true, email ,password ,genderSelected ) // pass it to your screen
-//        }
-//
-//    }
-//}
-
-data class LoginFormState(
-    val email: String,
-    val password: String
-)
 
 fun String.encodeToUris(): String = this.toUri().toString().substringAfterLast("/")
 
+
 @Composable
-fun Step1Screen(
+fun RegristerTabletScreen(
     navController: NavController,
     tabletScreen: Boolean,
-    email :String  = "",
-    password :String =""
+    email: String = "",
+    password: String = ""
 ) {
-    val valueVertical: Dp = if (tabletScreen) 100.dp else 100.dp
-    var email by rememberSaveable { mutableStateOf( email) }
+
+    var email by rememberSaveable { mutableStateOf(email) }
     var password by rememberSaveable { mutableStateOf(password) }
     var confirmPassword by rememberSaveable { mutableStateOf(password) }
     val context = LocalContext.current
-    var toastMessage by remember { mutableStateOf<String?>(null) } // State for Toast message
-    var toastTrigger by remember { mutableStateOf(0) } // Unique trigger for Toast
-
-    val confirm by remember { mutableStateOf(false) }
+    var toastMessage by remember { mutableStateOf<String?>(null) }
+    var toastTrigger by remember { mutableStateOf(0) }
 
     LaunchedEffect(toastMessage, toastTrigger) {
         toastMessage?.let { message ->
@@ -174,30 +86,19 @@ fun Step1Screen(
         }
     }
 
-    //validation
+    val valueVertical = if(tabletScreen) 60.dp else 100.dp
+
     fun getPasswordErrorMessage(password: String): String? {
         if (password.length < 8) {
             return "Password must be at least 8 characters long"
         }
-//        if (!password.contains(Regex(".*[A-Z].*[A-Z].*"))) {
-//            return "Password must contain at least 2 uppercase letters"
-//        }
-//        if (!password.contains(Regex(".*[!@#$&*].*"))) {
-//            return "Password must contain at least 1 special character (!@#$&*)"
-//        }
-//        if (!password.contains(Regex(".*[0-9].*[0-9].*"))) {
-//            return "Password must contain at least 2 digits"
-//        }
-//        if (!password.contains(Regex(".*[a-z].*[a-z].*[a-z].*"))) {
-//            return "Password must contain at least 3 lowercase letters"
-//        }
         return null
     }
 
     fun doPasswordsMatch(): Boolean = password == confirmPassword
 
     fun isFormValid(): Boolean {
-        if (email.isBlank() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        if (email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             Toast.makeText(context, "Please enter a valid email address", Toast.LENGTH_SHORT).show()
             return false
         }
@@ -221,36 +122,28 @@ fun Step1Screen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(AppTheme.colorScheme.background)
             .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         Spacer(modifier = Modifier.height(valueVertical))
 
-        // Header: Title and Stepper
         Text(
             text = "Sign Up for Free",
-            style = TextStyle(
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            ),
+            style = AppTheme.typography.largeBold,
+            color = AppTheme.colorScheme.onBackground,
             modifier = Modifier.padding(top = 16.dp)
         )
 
         Text(
             text = "register to get loving trip package",
-            style = TextStyle(
-                fontSize = 16.sp,
-                color = Color.Gray
-            ),
+            style = AppTheme.typography.bodyLarge,
+            color = AppTheme.colorScheme.secondary,
             modifier = Modifier.padding(top = 4.dp)
         )
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Stepper (1/3) with clickable bubbles
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -258,7 +151,7 @@ fun Step1Screen(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val currentStep = 1 // This can be dynamic based on the current route
+            val currentStep = 1
             repeat(3) { index ->
                 val stepNumber = index + 1
                 val isActive = stepNumber == currentStep
@@ -266,11 +159,10 @@ fun Step1Screen(
                     modifier = Modifier
                         .size(40.dp)
                         .background(
-                            color = if (isActive) Color.Black else Color.LightGray,
+                            color = if (isActive) AppTheme.colorScheme.primary else AppTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(32.dp)
                         )
                         .clickable {
-                            // Navigate to the corresponding step
                             when (stepNumber) {
                                 1 -> navController.navigate("${AppScreen.Register.route}/${email.encodeToUri()}/${password.encodeToUri()}")
                             }
@@ -279,16 +171,16 @@ fun Step1Screen(
                 ) {
                     Text(
                         text = "$stepNumber",
-                        color = Color.White,
-                        fontSize = 12.sp
+                        color = AppTheme.colorScheme.onPrimary,
+                        style = AppTheme.typography.smallSemiBold
                     )
                 }
-                if (index < 2) { // Draw line between steps
+                if (index < 2) {
                     Box(
                         modifier = Modifier
                             .width(24.dp)
                             .height(2.dp)
-                            .background(Color.LightGray)
+                            .background(AppTheme.colorScheme.surfaceVariant)
                     )
                 }
             }
@@ -296,14 +188,10 @@ fun Step1Screen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Main Content: Personal Information
         Text(
             text = "PERSONAL INFORMATION",
-            style = TextStyle(
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            ),
+            style = AppTheme.typography.mediumBold,
+            color = AppTheme.colorScheme.onBackground,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp)
@@ -311,10 +199,8 @@ fun Step1Screen(
 
         Text(
             text = "Provide the basic information to get you registered with us.",
-            style = TextStyle(
-                fontSize = 14.sp,
-                color = Color.Gray
-            ),
+            style = AppTheme.typography.labelMedium,
+            color = AppTheme.colorScheme.secondary,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 4.dp, bottom = 16.dp)
@@ -358,38 +244,6 @@ fun Step1Screen(
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         )
 
-
-//        LoginScreen(
-//
-//        )
-        // Business Name
-//        CustomTextField(
-//            value = email,
-//            onValueChange = { email = it },
-//            label = "Enter email",
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(bottom = 16.dp),
-//        )
-//
-//        CustomTextFieldPassword(
-//            value = password,
-//            onValueChange = { password = it },
-//            label = "Password",
-//            placeholder = "Enter your Password",
-//            modifier = Modifier
-//                .fillMaxWidth()
-//        )
-
-        CustomTextFieldPassword(
-            value = confirmPassword,
-            onValueChange = { confirmPassword = it },
-            label = "Confirm Password",
-            placeholder = "Enter your Confirm Password",
-            modifier = Modifier
-                .fillMaxWidth()
-        )
-
         Spacer(modifier = Modifier.weight(1f))
 
         if (tabletScreen == false) {
@@ -402,44 +256,40 @@ fun Step1Screen(
                     },
                     modifier = Modifier
                         .weight(0.5f)
-                        .height(48.dp)
-                    ,
+                        .height(48.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Black
+                        containerColor = AppTheme.colorScheme.primary
                     ),
                     shape = RoundedCornerShape(24.dp)
                 ) {
                     Text(
                         text = "Login account",
-                        color = Color.White,
-                        fontSize = 16.sp
+                        style = AppTheme.typography.mediumBold,
+                        color = AppTheme.colorScheme.onPrimary
                     )
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                if(confirm){
-                    navController.navigate("${AppScreen.GenderScreen.route}/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}")
-                }
-                // Next Button
                 Button(
                     onClick = {
-//                        if(isFormValid()){
-//                        }
+                        if (isFormValid()) {
+                            navController.navigate("${AppScreen.GenderScreen.route}/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}")
+                        }
                     },
                     modifier = Modifier
                         .weight(0.5f)
                         .height(48.dp)
-                        .border(1.dp, Color.Black, RoundedCornerShape(24.dp)),
+                        .border(1.dp, AppTheme.colorScheme.onBackground, RoundedCornerShape(24.dp)),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (valueVertical == 20.dp) Color.Black else Color.White
+                        containerColor = AppTheme.colorScheme.primary
                     ),
                     shape = RoundedCornerShape(24.dp)
                 ) {
                     Text(
                         text = "Next",
-                        color = Color.Black,
-                        fontSize = 16.sp
+                        style = AppTheme.typography.mediumBold,
+                        color = AppTheme.colorScheme.onPrimary
                     )
                 }
             }
@@ -447,7 +297,6 @@ fun Step1Screen(
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Content for Column layout
                 Button(
                     onClick = {
                         navController.navigate(AppScreen.Login.route)
@@ -456,23 +305,22 @@ fun Step1Screen(
                         .fillMaxWidth()
                         .height(48.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Black
+                        containerColor = AppTheme.colorScheme.primary
                     ),
                     shape = RoundedCornerShape(24.dp)
                 ) {
                     Text(
                         text = "Login account",
-                        color = Color.White,
-                        fontSize = 16.sp
+                        style = AppTheme.typography.mediumBold,
+                        color = AppTheme.colorScheme.onPrimary
                     )
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Next Button
                 Button(
                     onClick = {
-                        if(isFormValid()){
+                        if (isFormValid()) {
                             navController.navigate("${AppScreen.GenderScreen.route}/${email.encodeToUri()}/${password.encodeToUri()}/${selectedGender.encodeToUri()}")
                         }
                     },
@@ -480,14 +328,14 @@ fun Step1Screen(
                         .fillMaxWidth()
                         .height(48.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White
+                        containerColor = AppTheme.colorScheme.primary
                     ),
                     shape = RoundedCornerShape(24.dp)
                 ) {
                     Text(
                         text = "Next",
-                        color = Color.Black,
-                        fontSize = 16.sp
+                        style = AppTheme.typography.mediumBold,
+                        color = AppTheme.colorScheme.onPrimary
                     )
                 }
             }
@@ -496,7 +344,7 @@ fun Step1Screen(
 }
 
 @Composable
-fun Step2Screen(
+fun WelcomeRegristerScreen(
     navController: NavController,
     tabletScreen: Boolean,
     email: String,
@@ -505,7 +353,6 @@ fun Step2Screen(
     viewModel: AuthViewModel = hiltViewModel(),
     remoteUserViewModel: RemoteUserViewModel = hiltViewModel()
 ) {
-    println("hello" + genderSelected)
     val context = LocalContext.current
     val signupState by viewModel.signupState.collectAsState()
     var toastMessage by remember { mutableStateOf<String?>(null) }
@@ -513,7 +360,6 @@ fun Step2Screen(
     var triggerSignup by rememberSaveable { mutableStateOf(false) }
     var signupJob by remember { mutableStateOf<Job?>(null) }
 
-    // Show Toast for errors
     LaunchedEffect(toastMessage, toastTrigger) {
         toastMessage?.let { message ->
             withContext(Dispatchers.Main) {
@@ -523,12 +369,10 @@ fun Step2Screen(
         }
     }
 
-    // Trigger signup and handle state changes
     LaunchedEffect(triggerSignup, signupState) {
         if (triggerSignup) {
-            println(genderSelected)
-            triggerSignup = false // Reset immediately
-            signupJob = viewModel.performSignup(email, password,genderSelected)
+            triggerSignup = false
+            signupJob = viewModel.performSignup(email, password, genderSelected)
         }
 
         when (signupState) {
@@ -545,11 +389,10 @@ fun Step2Screen(
                 toastTrigger++
                 viewModel.clearSignUpState()
             }
-            else -> {} // Idle or Loading
+            else -> {}
         }
     }
 
-    // Cancel signup job when composable is disposed
     DisposableEffect(Unit) {
         onDispose {
             signupJob?.cancel()
@@ -561,7 +404,6 @@ fun Step2Screen(
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Background image
         Image(
             painter = painterResource(id = if (tabletScreen) R.drawable.hiking_potrait else R.drawable.hiking_new),
             contentDescription = null,
@@ -569,7 +411,6 @@ fun Step2Screen(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Content over the background image
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -580,38 +421,31 @@ fun Step2Screen(
             val valueVertical: Dp = if (tabletScreen) 100.dp else 60.dp
             Spacer(modifier = Modifier.height(valueVertical))
 
-            // Card-like container
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
-                    .background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(24.dp))
+                    .background(AppTheme.colorScheme.background.copy(alpha = 0.9f), RoundedCornerShape(24.dp))
                     .padding(16.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "Thanks for joining us",
-                    style = TextStyle(
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    ),
+                    style = AppTheme.typography.largeBold,
+                    color = AppTheme.colorScheme.onBackground,
                     modifier = Modifier.padding(top = 16.dp)
                 )
 
                 Text(
                     text = "register to get loving trip package",
-                    style = TextStyle(
-                        fontSize = 16.sp,
-                        color = Color.Gray
-                    ),
+                    style = AppTheme.typography.bodyLarge,
+                    color = AppTheme.colorScheme.secondary,
                     modifier = Modifier.padding(top = 4.dp)
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Stepper (1/3)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -627,7 +461,7 @@ fun Step2Screen(
                             modifier = Modifier
                                 .size(40.dp)
                                 .background(
-                                    color = if (isActive) Color.Black else Color.LightGray,
+                                    color = if (isActive) AppTheme.colorScheme.primary else AppTheme.colorScheme.surfaceVariant,
                                     shape = RoundedCornerShape(32.dp)
                                 )
                                 .then(
@@ -647,8 +481,8 @@ fun Step2Screen(
                         ) {
                             Text(
                                 text = "$stepNumber",
-                                color = Color.White,
-                                fontSize = 12.sp
+                                color = AppTheme.colorScheme.onPrimary,
+                                style = AppTheme.typography.smallSemiBold
                             )
                         }
                         if (index < 2) {
@@ -656,7 +490,7 @@ fun Step2Screen(
                                 modifier = Modifier
                                     .width(24.dp)
                                     .height(2.dp)
-                                    .background(Color.LightGray)
+                                    .background(AppTheme.colorScheme.surfaceVariant)
                             )
                         }
                     }
@@ -664,7 +498,6 @@ fun Step2Screen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Next Button
                 Button(
                     onClick = {
                         triggerSignup = true
@@ -673,31 +506,30 @@ fun Step2Screen(
                         .fillMaxWidth()
                         .height(48.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Black
+                        containerColor = AppTheme.colorScheme.primary
                     ),
                     shape = RoundedCornerShape(24.dp),
                     enabled = signupState !is SignupState.Loading
                 ) {
                     Text(
                         text = "Next",
-                        color = Color.White,
-                        fontSize = 16.sp
+                        style = AppTheme.typography.mediumBold,
+                        color = AppTheme.colorScheme.onPrimary
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(valueVertical))
 
-            // Loading overlay
             if (signupState is SignupState.Loading) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.5f)),
+                        .background(AppTheme.colorScheme.surface.copy(alpha = 0.5f)),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary
+                        color = AppTheme.colorScheme.primary
                     )
                 }
             }
@@ -705,17 +537,8 @@ fun Step2Screen(
     }
 }
 
-
-
-@Preview(showBackground = true)
-@Composable
-fun TestBubles(){
-    CountrySelectionScreen()
-}
-
 @Composable
 fun CountrySelectionScreen() {
-    // State for the list of countries
     val initialCountries = listOf(
         "Australia", "Canada", "France",
         "Germany", "Ireland",
@@ -726,22 +549,21 @@ fun CountrySelectionScreen() {
     )
     val countries = remember { mutableStateListOf<String>().apply { addAll(initialCountries) } }
 
-    // State for selected countries
     var selectedCountries by rememberSaveable { mutableStateOf<List<String>>(emptyList()) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White, shape = RoundedCornerShape(32.dp))
+            .background(AppTheme.colorScheme.background, shape = RoundedCornerShape(32.dp))
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
+            columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(3),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(32.dp)
-                .background(Color.White, shape = RoundedCornerShape(32.dp)),
+                .background(AppTheme.colorScheme.background, shape = RoundedCornerShape(32.dp)),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -753,22 +575,21 @@ fun CountrySelectionScreen() {
                     val itemsInRow = if (rowIndex % 2 == 0) 3 else 2
                     val positionInRow = calculatePositionInRow(index)
                     val spanSize = if (positionInRow == itemsInRow - 1) 3 - positionInRow else 1
-                    GridItemSpan(spanSize)
+                    androidx.compose.foundation.lazy.grid.GridItemSpan(spanSize)
                 }
             ) { index, country ->
                 val isSelected = country in selectedCountries
-                // Debug log to confirm selection state
                 LaunchedEffect(isSelected) {
                     println("Country: $country, isSelected: $isSelected, selectedCountries: $selectedCountries")
                 }
-                Card(
+                androidx.compose.material3.Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(4.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    elevation = androidx.compose.material3.CardDefaults.cardElevation(defaultElevation = 4.dp),
                     shape = RoundedCornerShape(32.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (isSelected) Color(0xFFE0E0E0) else Color.White
+                    colors = androidx.compose.material3.CardDefaults.cardColors(
+                        containerColor = if (isSelected) AppTheme.colorScheme.surfaceVariant else AppTheme.colorScheme.background
                     )
                 ) {
                     Column(
@@ -788,10 +609,8 @@ fun CountrySelectionScreen() {
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = country,
-                            style = TextStyle(
-                                fontSize = 14.sp,
-                                color = Color.Black
-                            )
+                            style = AppTheme.typography.labelMedium,
+                            color = AppTheme.colorScheme.onBackground
                         )
                     }
                 }
@@ -800,7 +619,6 @@ fun CountrySelectionScreen() {
     }
 }
 
-// Helper function to calculate the row index for a given item index
 fun calculateRowIndex(itemIndex: Int): Int {
     var remainingItems = itemIndex
     var rowIndex = 0
@@ -813,7 +631,6 @@ fun calculateRowIndex(itemIndex: Int): Int {
     return rowIndex
 }
 
-// Helper function to calculate the position within the row for a given item index
 fun calculatePositionInRow(itemIndex: Int): Int {
     var remainingItems = itemIndex
     var rowIndex = 0
@@ -832,7 +649,6 @@ fun EntryPage() {
         modifier = Modifier
             .fillMaxSize()
     ) {
-        // Background Image
         Image(
             painter = painterResource(id = R.drawable.content),
             contentDescription = null,
@@ -840,11 +656,10 @@ fun EntryPage() {
             modifier = Modifier.fillMaxSize()
         )
 
-        // Foreground Content
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp), // optional padding
+                .padding(24.dp),
             verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -856,14 +671,14 @@ fun EntryPage() {
                     .fillMaxWidth()
                     .height(48.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black
+                    containerColor = AppTheme.colorScheme.primary
                 ),
                 shape = RoundedCornerShape(24.dp)
             ) {
                 Text(
                     text = "Sign up a account",
-                    color = Color.White,
-                    fontSize = 16.sp
+                    style = AppTheme.typography.mediumBold,
+                    color = AppTheme.colorScheme.onPrimary
                 )
             }
 
@@ -877,20 +692,19 @@ fun EntryPage() {
                     .fillMaxWidth()
                     .height(48.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White
+                    containerColor = AppTheme.colorScheme.primary
                 ),
                 shape = RoundedCornerShape(24.dp)
             ) {
                 Text(
                     text = "Next",
-                    color = Color.Black,
-                    fontSize = 16.sp
+                    style = AppTheme.typography.mediumBold,
+                    color = AppTheme.colorScheme.onPrimary
                 )
             }
         }
     }
 }
-
 //@Composable
 //fun GenderSelectionScreen(
 //    remoteUserViewModel: RemoteUserViewModel = hiltViewModel(),

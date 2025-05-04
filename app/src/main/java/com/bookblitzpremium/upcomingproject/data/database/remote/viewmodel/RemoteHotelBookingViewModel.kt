@@ -9,6 +9,7 @@ import com.bookblitzpremium.upcomingproject.data.database.remote.repository.Remo
 import com.google.firebase.firestore.FirebaseFirestoreException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -48,27 +49,27 @@ class RemoteHotelBookingViewModel @Inject constructor(
         }
     }
 
-    suspend fun addNewIntegratedRecord(hotelBooking: HotelBooking) {
-        _loading.value = true
-        _error.value = null
-        try {
-            withTimeout(5000L){
-                val firestoreId = remoteHotelBookingRepository.addHotelBooking(hotelBooking)
-                // Step 2: Update the booking with the Firestore ID
-                val updatedBooking = hotelBooking.copy(id = firestoreId)
-                // Step 3: Save to local database with the Firestore ID
-                localHotelBookingRepository.insertHotelBooking(updatedBooking)
+    fun addNewIntegratedRecord(hotelBooking: HotelBooking) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+            try {
+                withTimeout(5000L){
+                    val firestoreId = remoteHotelBookingRepository.addHotelBooking(hotelBooking)
+                    val updatedBooking = hotelBooking.copy(id = firestoreId)
+                    localHotelBookingRepository.insertHotelBooking(updatedBooking)
+                }
+            } catch (e: TimeoutCancellationException) {
+                _error.value = "Request timed out."
+            } catch (e: FirebaseFirestoreException) {
+                _error.value = "Firestore error: ${e.localizedMessage}"
+            } catch (e: SQLiteException) {
+                _error.value = "Database error: ${e.localizedMessage}"
+            } catch (e: Exception) {
+                _error.value = "Unexpected error: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
             }
-        } catch (e: TimeoutCancellationException) {
-            _error.value = "Request timed out."
-        } catch (e: FirebaseFirestoreException) {
-            _error.value = "Firestore error: ${e.localizedMessage}"
-        } catch (e: SQLiteException) {
-            _error.value = "Database error: ${e.localizedMessage}"
-        } catch (e: Exception) {
-            _error.value = "Unexpected error: ${e.localizedMessage}"
-        } finally {
-            _loading.value = false
         }
     }
 

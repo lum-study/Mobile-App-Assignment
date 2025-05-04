@@ -9,12 +9,17 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -27,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -39,9 +45,11 @@ import com.bookblitzpremium.upcomingproject.data.model.LineType
 import com.bookblitzpremium.upcomingproject.ui.utility.MapViewModel
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.Dash
 import com.google.android.gms.maps.model.Gap
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
@@ -49,6 +57,7 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
+import java.nio.file.WatchEvent
 
 
 @Composable
@@ -135,7 +144,6 @@ fun MapScreen(
     val error by viewModel.error.collectAsState()
     val locationResult by viewModel.locationResult.collectAsState()
     var mapProperties by remember { mutableStateOf(MapProperties()) }
-    var changeIcon by remember { mutableStateOf(false) }
     var lineType by remember { mutableStateOf(LineType.SOLID) }
 
 
@@ -147,11 +155,6 @@ fun MapScreen(
             addressFilter = { addr -> addr.locality ?: addr.getAddressLine(0) }
         )
     }
-
-
-
-
-
 
     LocationPermissionWrapper {
         Column(
@@ -206,13 +209,10 @@ fun MapScreen(
             else if (locationResult != null) {
                 locationResult?.let { (currentLatLng, destLatLng, addressText) ->
                     MyMap(
-                        context = context,
                         currentLatLng = currentLatLng,
                         destLatLng = destLatLng,
                         mapProperties = mapProperties,
                         lineType = lineType,
-                        changeIcon = changeIcon,
-                        onChangeMarkerIcon = { changeIcon = !changeIcon },
                         onChangeMapType = { mapProperties = mapProperties.copy(mapType = it) },
                         onChangeLineType = { lineType = it }
                     )
@@ -227,16 +227,159 @@ fun MapScreen(
     }
 }
 
+@Composable
+fun BoxMaps(
+    addressInput: String,
+    onClick: () -> Unit,
+    viewModel: MapViewModel = viewModel(),
+) {
+    val context = LocalContext.current
+    val locationResult by viewModel.locationResult.collectAsState()
+    var mapProperties by remember { mutableStateOf(MapProperties()) }
+
+    // Automatically trigger getLatLngFromAddress when screen is composed
+    LaunchedEffect(addressInput) {
+        viewModel.getLatLngFromAddress(
+            context = context,
+            addressInput = addressInput,
+            addressFilter = { addr -> addr.locality ?: addr.getAddressLine(0) }
+        )
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .clip(shape = RoundedCornerShape(32.dp))
+    ) {
+        if (locationResult != null) {
+            val (currentLatLng, destLatLng) = locationResult!!
+            val cameraPositionState = rememberCameraPositionState {
+                // Center on destination with fixed zoom
+                position = CameraPosition.fromLatLngZoom(destLatLng, 15f)
+            }
+
+            // Update camera position when destLatLng is available
+            LaunchedEffect(destLatLng) {
+                cameraPositionState.position = CameraPosition.fromLatLngZoom(destLatLng, 15f)
+            }
+
+            // Define the light theme map style
+            val mapStyleJson = """
+                [
+                  {
+                    "elementType": "geometry",
+                    "stylers": [
+                      { "color": "#f5f5f5" }
+                    ]
+                  },
+                  {
+                    "elementType": "labels.text.fill",
+                    "stylers": [
+                      { "color": "#3c4043" }
+                    ]
+                  },
+                  {
+                    "elementType": "labels.text.stroke",
+                    "stylers": [
+                      { "color": "#ffffff" }
+                    ]
+                  },
+                  {
+                    "featureType": "administrative",
+                    "elementType": "geometry",
+                    "stylers": [
+                      { "color": "#d1d1d1" }
+                    ]
+                  },
+                  {
+                    "featureType": "administrative.country",
+                    "elementType": "geometry.stroke",
+                    "stylers": [
+                      { "color": "#a9a9a9" }
+                    ]
+                  },
+                  {
+                    "featureType": "landscape",
+                    "elementType": "geometry",
+                    "stylers": [
+                      { "color": "#e0e0e0" }
+                    ]
+                  },
+                  {
+                    "featureType": "poi",
+                    "elementType": "geometry",
+                    "stylers": [
+                      { "color": "#ffffff" }
+                    ]
+                  },
+                  {
+                    "featureType": "road",
+                    "elementType": "geometry",
+                    "stylers": [
+                      { "color": "#ffffff" }
+                    ]
+                  },
+                  {
+                    "featureType": "road",
+                    "elementType": "labels.text.fill",
+                    "stylers": [
+                      { "color": "#3c4043" }
+                    ]
+                  },
+                  {
+                    "featureType": "road.highway",
+                    "elementType": "geometry",
+                    "stylers": [
+                      { "color": "#fdd835" }
+                    ]
+                  },
+                  {
+                    "featureType": "water",
+                    "elementType": "geometry",
+                    "stylers": [
+                      { "color": "#c9e1f5" }
+                    ]
+                  },
+                  {
+                    "elementType": "labels.icon",
+                    "stylers": [
+                      { "visibility": "on" }
+                    ]
+                  }
+                ]
+            """.trimIndent()
+
+            // Update mapProperties with the light theme style and disable interactions
+            val styledMapProperties = mapProperties.copy(
+                mapStyleOptions = MapStyleOptions(mapStyleJson),
+            )
+
+            GoogleMap(
+                modifier = Modifier.fillMaxSize(),
+                cameraPositionState = cameraPositionState,
+                properties = styledMapProperties,
+                onMapClick = {
+                    onClick()
+                }
+            ) {
+                MapMarker(
+                    context = context,
+                    position = destLatLng,
+                    title = "Destination",
+                    iconResourceId = R.drawable.hotel_location
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun MyMap(
-    context: Context,
     currentLatLng: LatLng,
     destLatLng: LatLng,
     mapProperties: MapProperties,
     lineType: LineType,
-    changeIcon: Boolean,
-    onChangeMarkerIcon: () -> Unit,
     onChangeMapType: (MapType) -> Unit,
     onChangeLineType: (LineType) -> Unit
 ) {
@@ -255,7 +398,6 @@ fun MyMap(
     ) {
         val context = LocalContext.current
 
-
         GoogleMap(
             modifier = Modifier
                 .fillMaxSize()
@@ -263,13 +405,11 @@ fun MyMap(
             cameraPositionState = cameraPositionState,
             properties = mapProperties
         ) {
-
-
             MapMarker(
                 context = context,
                 position = currentLatLng,
                 title = "Current Location",
-                iconResourceId =  R.drawable.hotel_location
+                iconResourceId =  R.drawable.current_location
             )
 
 
@@ -277,7 +417,7 @@ fun MyMap(
                 context = context,
                 position = destLatLng,
                 title = "Destination",
-                iconResourceId = R.drawable.current_location
+                iconResourceId = R.drawable.hotel_location
             )
 
 

@@ -145,30 +145,6 @@ fun LoginPage(
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             )
 
-
-
-//            CustomTextField(
-//                value = email,
-//                onValueChange = { email = it },
-//                label = "Username",
-//                placeholder = "Enter your username",
-//                trailingIcon = Icons.Default.Clear,
-//                shape = RoundedCornerShape(12.dp),
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(horizontal = 16.dp, vertical = 12.dp)
-//            )
-//            Spacer(modifier = Modifier.height(16.dp))
-//            CustomTextFieldPassword(
-//                value = password,
-//                onValueChange = { password = it },
-//                label = "Password",
-//                placeholder = "Enter your Password",
-//                shape = RoundedCornerShape(12.dp),
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(horizontal = 16.dp, vertical = 16.dp)
-//            )
             Text(
                 text = "Forgot Password?",
                 style = AppTheme.typography.bodyLarge,

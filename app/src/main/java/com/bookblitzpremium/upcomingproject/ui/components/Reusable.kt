@@ -1,7 +1,5 @@
 package com.bookblitzpremium.upcomingproject.ui.components
 
-import android.content.Context
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,10 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -62,7 +57,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.R
-import com.bookblitzpremium.upcomingproject.TabletAuth.LoginFormState
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 
 @Preview(showBackground = true)
