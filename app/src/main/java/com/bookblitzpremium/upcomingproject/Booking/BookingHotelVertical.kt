@@ -229,7 +229,7 @@ fun DraggableObject(
                     .size(48.dp)
                     .background(AppTheme.colorScheme.surfaceVariant, RoundedCornerShape(16.dp))
                     .clickable {
-                        navController.navigate(AppScreen.Maps.route)
+                        navController.navigate(AppScreen.Maps.passData(hotel.name))
                     },
                 contentAlignment = Alignment.Center
             ) {
