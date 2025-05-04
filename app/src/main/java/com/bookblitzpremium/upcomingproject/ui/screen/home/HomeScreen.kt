@@ -43,6 +43,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -157,7 +158,7 @@ fun HomeScreen(navController: NavHostController) {
 
         else -> {
             val bookingType = BookingType.entries
-            var selectedTabIndex by remember { mutableStateOf(0) }
+            var selectedTabIndex by rememberSaveable { mutableStateOf(0) }
             Row {
                 Column(
                     modifier = Modifier
@@ -275,13 +276,11 @@ fun TripPackageSection(
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp), modifier = modifier.fillMaxWidth()
     ) {
-        if (!isPortrait) {
+        if (isMobile) {
             Text(
                 text = stringResource(R.string.home_package_title),
                 style = AppTheme.typography.mediumSemiBold
             )
-        }
-        if (isMobile) {
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(32.dp)
             ) {

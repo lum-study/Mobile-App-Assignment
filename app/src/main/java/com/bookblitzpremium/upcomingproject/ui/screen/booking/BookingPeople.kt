@@ -273,7 +273,7 @@ fun BookingAmount(
         var selectedAdult by rememberSaveable { mutableStateOf(4) }
         var selectedRoom by rememberSaveable { mutableStateOf(1) }
         var paymentMethod by remember { mutableStateOf(PaymentMethod.DebitCard) }
-        var cardNumber by remember { mutableStateOf("") }
+        var cardNumber by rememberSaveable { mutableStateOf("") }
 
 
         val names = listOf(

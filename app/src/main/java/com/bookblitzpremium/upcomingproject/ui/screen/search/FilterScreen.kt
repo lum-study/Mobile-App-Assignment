@@ -36,6 +36,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -68,25 +71,31 @@ fun FilterScreen(
     minPrice: String,
     maxPrice: String,
     isMobile: Boolean = true,
+    onApplyClick: () -> Unit = {},
 ) {
     val localRecentSearchViewModel: LocalRecentSearchViewModel = hiltViewModel()
 
-    var selectedOption by remember { mutableStateOf(BookingType.Hotel) }
+    var selectedOption by rememberSaveable { mutableStateOf(BookingType.Hotel) }
     var selectedPriceRange by remember { mutableStateOf(minPrice.toFloat()..maxPrice.toFloat()) }
 
     //hotel
-    var selectedRating by remember { mutableStateOf(Rating.Rate1) }
-    val selectedFeature = remember { mutableStateListOf<Feature>() }
+    var selectedRating by rememberSaveable { mutableStateOf(Rating.Rate1) }
+    val featureListSaver: Saver<SnapshotStateList<Feature>, Any> = listSaver(
+        save = { it.toList() },
+        restore = { mutableStateListOf(*it.toTypedArray()) }
+    )
+    val selectedFeature = rememberSaveable(saver = featureListSaver) { mutableStateListOf() }
+
 
     //trip package
-    var selectedDeparture by remember { mutableStateOf(FlightStation.KualaLumpur) }
-    var selectedArrival by remember { mutableStateOf(FlightStation.Sabah) }
+    var selectedDeparture by rememberSaveable { mutableStateOf(FlightStation.KualaLumpur) }
+    var selectedArrival by rememberSaveable { mutableStateOf(FlightStation.Sabah) }
 
     val dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-    var startDate by remember { mutableStateOf(LocalDate.now()) }
-    var endDate by remember { mutableStateOf(LocalDate.now().plusMonths(1)) }
-    var showStartDatePicker by remember { mutableStateOf(false) }
-    var showEndDatePicker by remember { mutableStateOf(false) }
+    var startDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
+    var endDate by rememberSaveable { mutableStateOf(LocalDate.now().plusMonths(1)) }
+    var showStartDatePicker by rememberSaveable { mutableStateOf(false) }
+    var showEndDatePicker by rememberSaveable { mutableStateOf(false) }
 
     AppTheme {
         Column(
@@ -278,6 +287,8 @@ fun FilterScreen(
                                 AppScreen.Search.route
                             )
                         }
+                    } else{
+                        onApplyClick()
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -358,7 +369,7 @@ fun FilterDropDownMenu(
     title: String,
     modifier: Modifier = Modifier
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by rememberSaveable { mutableStateOf(false) }
     val options = FlightStation.entries
 
     Column(

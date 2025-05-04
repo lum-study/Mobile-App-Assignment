@@ -80,4 +80,21 @@ class LocalRecentSearchViewModel @Inject constructor(private val recentSearchRep
             }
         }
     }
+
+    fun deleteAll(){
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+
+            try {
+                recentSearchRepository.deleteAll()
+            } catch (e: SQLiteException) {
+                _error.value = "Database error: ${e.localizedMessage}"
+            } catch (e: Exception) {
+                _error.value = "Error deleting recentSearch: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
 }

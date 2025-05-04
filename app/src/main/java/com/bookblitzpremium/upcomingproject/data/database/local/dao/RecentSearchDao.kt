@@ -16,4 +16,7 @@ interface RecentSearchDao {
 
     @Query("SELECT * FROM recent_search ORDER BY id DESC LIMIT 1")
     suspend fun getAllRecentSearch(): RecentSearch
+
+    @Query("DELETE FROM recent_search")
+    suspend fun deleteAll()
 }
