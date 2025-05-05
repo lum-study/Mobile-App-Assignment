@@ -4,23 +4,19 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -41,7 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -56,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.compose.rememberNavController
+import com.bookblitzpremium.upcomingproject.BoxMaps
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 
@@ -63,7 +59,7 @@ import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 @Composable
 fun PreviewDialog(){
 //    HotelFullNotication()
-     val navContoller = rememberNavController()
+    rememberNavController()
     CustomDialog(onDismissRequest = {}, onNextClick = {})
 }
 
@@ -127,30 +123,30 @@ fun PreviewNotication(){
 
 @Composable
 fun NoticationToUser(){
-     Box(
+    Box(
         modifier = Modifier
             .padding(16.dp)
             .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(16.dp))
             .padding(16.dp)
-     ){
-         Row(
-             modifier = Modifier
-                 .fillMaxWidth()
-                 .padding(start = 16.dp),
-             horizontalArrangement = Arrangement.spacedBy(16.dp),
-             verticalAlignment = Alignment.CenterVertically
-         ){
+    ){
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ){
             Icon(
                 imageVector = Icons.Filled.Image,
                 contentDescription = null
             )
 
-             Text(
-                 text = "Donot forget to Checkout",
-                 style = AppTheme.typography.labelMedium
-             )
-         }
-     }
+            Text(
+                text = "Donot forget to Checkout",
+                style = AppTheme.typography.labelMedium
+            )
+        }
+    }
 }
 
 @Composable
@@ -195,37 +191,7 @@ fun ButtonHeader(
 }
 
 @Composable
-fun HotelHeader(showBackButton: Int) {
-    val heightSize: Modifier = if (showBackButton == 1) Modifier.fillMaxSize() else Modifier.height(500.dp)
-    val pictureSize: Modifier = if (showBackButton == 1) Modifier.fillMaxSize() else Modifier.height(550.dp)
-
-    Box(
-        modifier = Modifier
-            .background(Color.White)
-    ){
-        Image(
-            painter = painterResource(id = R.drawable.hotel_images),
-            contentDescription = "Hotel Image",
-            contentScale = ContentScale.Crop, // ✅ Crops and fills the box
-            modifier = Modifier.fillMaxSize() // ✅ Fills the Box
-        )
-
-        Icon(
-            imageVector = Icons.Default.ArrowBack,
-            contentDescription = "Back",
-            tint = Color.White,
-            modifier = Modifier
-                .padding(16.dp)
-                .size(32.dp)
-                .clickable { /* Handle back navigation */ }
-                .align(Alignment.TopStart)
-        )
-
-    }
-}
-
-@Composable
-fun HeaderDetails( textResId: String , offsetX :Dp,modifier: Modifier ){
+fun HeaderDetails(textResId: String , offsetX :Dp,modifier: Modifier ){
     Text(
         text = textResId,
         color = Color.Black,
@@ -235,11 +201,6 @@ fun HeaderDetails( textResId: String , offsetX :Dp,modifier: Modifier ){
             .offset(x = offsetX)
     )
 }
-
-data class LoginFormState(
-    val email: String,
-    val password: String
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -387,3 +348,48 @@ fun CustomTextFieldPassword(
     )
 }
 
+@Composable
+fun MapsComponent(hotelName:String, onClick:()-> Unit = {},modifier: Modifier){
+    BoxMaps(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .padding(16.dp)
+            .clip(shape = RoundedCornerShape(32.dp)),
+        addressInput = hotelName,
+        onClick = {
+            onClick()
+        },
+    )
+}
+
+
+//@Composable
+//fun HotelHeader(showBackButton: Int) {
+//    val heightSize: Modifier = if (showBackButton == 1) Modifier.fillMaxSize() else Modifier.height(500.dp)
+//    val pictureSize: Modifier = if (showBackButton == 1) Modifier.fillMaxSize() else Modifier.height(550.dp)
+//
+//    Box(
+//        modifier = Modifier
+//            .background(Color.White)
+//    ){
+//        Image(
+//            painter = painterResource(id = R.drawable.hotel_images),
+//            contentDescription = "Hotel Image",
+//            contentScale = ContentScale.Crop, // ✅ Crops and fills the box
+//            modifier = Modifier.fillMaxSize() // ✅ Fills the Box
+//        )
+//
+//        Icon(
+//            imageVector = Icons.Default.ArrowBack,
+//            contentDescription = "Back",
+//            tint = Color.White,
+//            modifier = Modifier
+//                .padding(16.dp)
+//                .size(32.dp)
+//                .clickable { /* Handle back navigation */ }
+//                .align(Alignment.TopStart)
+//        )
+//
+//    }
+//}

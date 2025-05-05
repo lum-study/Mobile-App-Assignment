@@ -38,7 +38,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,8 +78,8 @@ fun HotelBookingHorizontalScreen(
         viewModel.getHotelByID(hotelID)
     }
 
-    var roomCount: Int? by rememberSaveable { mutableStateOf(1) }
-    var adultCount: Int? by rememberSaveable { mutableStateOf(4) }
+    var roomCount: Int? by remember { mutableStateOf(1) }
+    var adultCount: Int? by remember { mutableStateOf(4) }
 
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     val today = LocalDate.now()
@@ -90,11 +89,11 @@ fun HotelBookingHorizontalScreen(
     var endDate by remember { mutableStateOf(nextFriday.format(formatter)) }
 
     // Dialog states
-    var showFigureDialog by rememberSaveable { mutableStateOf(false) }
-    var showDateDialog by rememberSaveable { mutableStateOf(false) }
+    var showFigureDialog by remember { mutableStateOf(false) }
+    var showDateDialog by remember { mutableStateOf(false) }
     val hotel by viewModel.selectedHotel.collectAsState()
 
-    var rede by rememberSaveable { mutableStateOf(false) }
+    var rede by remember { mutableStateOf(false) }
 
     if (hotel != null) {
         val hotelData = hotel!!
@@ -117,7 +116,7 @@ fun HotelBookingHorizontalScreen(
                     )
 
                     if (rede) {
-                        // Placeholder for payment UI
+
                     } else {
                         Row(
                             modifier = Modifier
@@ -183,32 +182,52 @@ fun HotelBookingHorizontalScreen(
                     }
                 }
 
+                var copyPaymentID by remember { mutableStateOf("") }
+                val paymentViewModel: RemotePaymentViewModel = hiltViewModel()
+                val coroutineScope = rememberCoroutineScope()
+
+                val totalPrice = (roomCount ?: 0).toDouble() * hotelData.price
+
+                val payment = remember(copyPaymentID) {
+                    Payment(
+                        createDate = LocalDate.now().toString(),
+                        totalAmount = totalPrice,
+                        paymentMethod = "Credit Card", // Fixed: Use a valid payment method
+                        cardNumber = "",
+                        currency = "Ringgit Malaysia",
+                        userID = FirebaseAuth.getInstance().currentUser?.uid.toString()
+                    ).copy(id = copyPaymentID) // Update paymentID reactively
+                }
+
+                val paymentDetails = HotelDetails(
+                    totalPrice = totalPrice.toString(),
+                    totalPerson = (adultCount ?: 0).toString(),
+                    roomBooked = (roomCount ?: 0).toString(),
+                    startDate = startDate.toString(),
+                    endDate = endDate.toString(),
+                    paymentID = copyPaymentID
+                )
+
                 Column(
-                    modifier = Modifier
+                    modifier = modifier
                         .weight(1f)
                         .fillMaxHeight()
                         .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
                         .background(AppTheme.colorScheme.background)
                 ) {
-                    val totalPrice = (roomCount ?: 0).toDouble() * hotelData.price
-                    var copyPaymnetID = ""
-
-                    val payment = hotelDetails(
-                        totalPrice = totalPrice.toString(),
-                        totalPerson = (adultCount ?: 0).toString(),
-                        roomBooked = (roomCount ?: 0).toString(),
-                        startDate = startDate.toString(),
-                        endDate = endDate.toString(),
-                        paymentID = copyPaymnetID
-                    )
 
                     if (rede) {
-                        PaymentDetails(
-                            navController = navController,
-                            payment = payment,
-                            hotel = hotelData,
+                        Column(
                             modifier = Modifier
-                        )
+                                .padding(horizontal = 24.dp)
+                        ){
+                            PaymentDetails(
+                                navController = navController,
+                                payment = paymentDetails,
+                                hotel = hotelData,
+                                modifier = Modifier
+                            )
+                        }
                     } else {
                         LazyColumn {
                             item {
@@ -221,12 +240,16 @@ fun HotelBookingHorizontalScreen(
                             }
 
                             item {
-                                FeatureDisplay(
-                                    hotel = hotelData.feature,
-                                    rating = hotelData.rating,
-                                    tabletScreen = true,
-                                    modifier = Modifier.padding(16.dp)
-                                )
+                                Column(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                ){
+                                    FeatureDisplay(
+                                        hotel = hotelData.feature,
+                                        rating = hotelData.rating,
+                                        tabletScreen = true,
+                                    )
+                                }
                             }
 
                             item {
@@ -247,20 +270,6 @@ fun HotelBookingHorizontalScreen(
                             }
 
                             item {
-                                var userID = FirebaseAuth.getInstance().currentUser?.uid
-
-                                var coroutineScope = rememberCoroutineScope()
-                                val paymentViewModel: RemotePaymentViewModel = hiltViewModel()
-
-                                val payment = Payment(
-                                    createDate = LocalDate.now().toString(),
-                                    totalAmount = totalPrice,
-                                    paymentMethod = startDate.toString(),
-                                    cardNumber = "",
-                                    currency = "Ringgit Malaysia",
-                                    userID = userID.toString()
-                                )
-
                                 Button(
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = AppTheme.colorScheme.primary,
@@ -275,7 +284,7 @@ fun HotelBookingHorizontalScreen(
                                         coroutineScope.launch {
                                             val paymentID = paymentViewModel.addReturnIDPayment(payment)
                                             if (paymentID.isNotEmpty()) {
-                                                copyPaymnetID = paymentID
+                                                copyPaymentID = paymentID
                                                 rede = true
                                             }
                                         }
@@ -288,7 +297,7 @@ fun HotelBookingHorizontalScreen(
                                     )
                                 }
                             }
-                            item { Spacer(modifier = Modifier.height(100.dp)) }
+//                            item { Spacer(modifier = Modifier.height(100.dp)) }
                         }
                     }
                 }

@@ -162,6 +162,7 @@ fun PaymentOptionScreen(
     cardNumber: String = "xxxx xxxx xxxx xxxx",
     onCardNumberChange: (String) -> Unit = {},
 ) {
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -262,6 +263,8 @@ fun PaymentOptionScreen(
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
+
         }
+
     }
 }

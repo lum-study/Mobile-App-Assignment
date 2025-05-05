@@ -17,13 +17,10 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -33,10 +30,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Hotel
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -60,23 +55,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.common.enums.Feature
-import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalRatingViewModel
 import com.bookblitzpremium.upcomingproject.data.model.Calendar
+import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
 import com.bookblitzpremium.upcomingproject.ui.components.HeaderDetails
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
 import com.bookblitzpremium.upcomingproject.ui.screen.booking.CalendarView
+import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import java.time.LocalDate
 
 
-
-
-data class hotelDetails(
+data class HotelDetails(
     val totalPrice : String ,
     val totalPerson : String ,
     val roomBooked : String ,
@@ -86,20 +79,20 @@ data class hotelDetails(
 )
 
 
-fun generateHotelDescription(hotelName: String, rating: Double): String {
-    val templates = listOf(
-        "$hotelName offers a luxurious stay with a remarkable $rating★ rating, perfect for travelers seeking comfort and convenience.",
-        "Experience premium hospitality at $hotelName, rated $rating★ for its top-notch service and serene atmosphere.",
-        "With a $rating★ rating, $hotelName stands out as one of the most sought-after stays, blending elegance and value.",
-        "Enjoy breathtaking views and world-class service at $hotelName — proudly rated $rating★ by guests.",
-        "$hotelName delivers exceptional comfort and amenities, earning a solid $rating★ from satisfied visitors.",
-        "Guests love $hotelName for its peaceful vibes and excellent service, reflected in its $rating★ rating.",
-        "Stay at $hotelName and enjoy the perfect balance of luxury and affordability, with a guest rating of $rating★."
-    )
-
-
-    return templates.random()
-}
+//fun generateHotelDescription(hotelName: String, rating: Double): String {
+//    val templates = listOf(
+//        "$hotelName offers a luxurious stay with a remarkable $rating★ rating, perfect for travelers seeking comfort and convenience.",
+//        "Experience premium hospitality at $hotelName, rated $rating★ for its top-notch service and serene atmosphere.",
+//        "With a $rating★ rating, $hotelName stands out as one of the most sought-after stays, blending elegance and value.",
+//        "Enjoy breathtaking views and world-class service at $hotelName — proudly rated $rating★ by guests.",
+//        "$hotelName delivers exceptional comfort and amenities, earning a solid $rating★ from satisfied visitors.",
+//        "Guests love $hotelName for its peaceful vibes and excellent service, reflected in its $rating★ rating.",
+//        "Stay at $hotelName and enjoy the perfect balance of luxury and affordability, with a guest rating of $rating★."
+//    )
+//
+//
+//    return templates.random()
+//}
 
 
 @Composable
@@ -179,7 +172,7 @@ private fun TableCell(
         Icon(
             icon,
             contentDescription = iconDesc,
-            tint = Color(0xFF4CAF50), // Soft green color
+            tint = AppTheme.colorScheme.primary, // Soft green color
             modifier = Modifier.size(28.dp)
         )
         Spacer(Modifier.height(8.dp))
@@ -238,7 +231,7 @@ fun HotelReviewsSection(
 
     Column(
         modifier = modifier
-            .padding(top = 16.dp)
+            .padding(top = 8.dp)
             .fillMaxWidth()
     ) {
         HeaderDetails("Reviews", 24.dp, modifier = Modifier)
@@ -246,11 +239,7 @@ fun HotelReviewsSection(
 
         when {
             loading -> {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(16.dp)
-                )
+                CheckStatusLoading()
             }
             error != null -> {
                 Text(
@@ -326,11 +315,8 @@ fun ReviewItem(
                 contentScale = ContentScale.Crop
             )
 
-
             Spacer(modifier = Modifier.width(16.dp))
 
-
-            // Review details
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = spacedBy(4.dp)
@@ -365,46 +351,46 @@ fun ReviewItem(
     }
 }
 
-
-@Composable
-fun HotelDescriptionSection(
-    showBackButton: Int,
-    modifier: Modifier = Modifier,
-    description: String
-) {
-    val textOffset = if (showBackButton == 1) 24.dp else 24.dp
-
-
-    var expanded by remember { mutableStateOf(false) }
-
-
-    Column(
-        verticalArrangement = spacedBy(6.dp),
-        modifier = Modifier.padding(top = 16.dp)
-    ) {
-        HeaderDetails("Description", textOffset, modifier = Modifier)
-
-
-        Text(
-            text = description,
-            color = Color.Black,
-            fontSize = 14.sp,
-            maxLines = if (expanded) Int.MAX_VALUE else 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.offset(x = textOffset)
-        )
-
-
-        Text(
-            text = if (expanded) "Read less" else "Read more",
-            color = Color.Blue,
-            fontSize = 14.sp,
-            modifier = Modifier
-                .offset(x = textOffset)
-                .clickable { expanded = !expanded }
-        )
-    }
-}
+//
+//@Composable
+//fun HotelDescriptionSection(
+//    showBackButton: Int,
+//    modifier: Modifier = Modifier,
+//    description: String
+//) {
+//    val textOffset = if (showBackButton == 1) 24.dp else 24.dp
+//
+//
+//    var expanded by remember { mutableStateOf(false) }
+//
+//
+//    Column(
+//        verticalArrangement = spacedBy(6.dp),
+//        modifier = Modifier.padding(top = 16.dp)
+//    ) {
+//        HeaderDetails("Description", textOffset, modifier = Modifier)
+//
+//
+//        Text(
+//            text = description,
+//            color = Color.Black,
+//            fontSize = 14.sp,
+//            maxLines = if (expanded) Int.MAX_VALUE else 2,
+//            overflow = TextOverflow.Ellipsis,
+//            modifier = Modifier.offset(x = textOffset)
+//        )
+//
+//
+//        Text(
+//            text = if (expanded) "Read less" else "Read more",
+//            color = Color.Blue,
+//            fontSize = 14.sp,
+//            modifier = Modifier
+//                .offset(x = textOffset)
+//                .clickable { expanded = !expanded }
+//        )
+//    }
+//}
 
 
 @Preview(showBackground = true)
@@ -438,8 +424,8 @@ fun FeatureDisplay(
 
     FlowRow(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = spacedBy(8.dp),
+        verticalArrangement = spacedBy(8.dp),
         maxItemsInEachRow = 3
     ) {
         allFeatures.forEach { feature ->
@@ -450,6 +436,7 @@ fun FeatureDisplay(
                     option = feature,
                     rating = if (feature == ratingFeature) rating else null,
                     tabletScreen,
+                    modifier
                 )
             }
         }
@@ -462,10 +449,10 @@ fun ScanOptionCard(
     option: Feature,
     rating: Double? = null,
     tabletScreen: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier
 ) {
     val minHeight = 80.dp // Adjusted to fit icon, title, rating, and padding
-    val size = if(tabletScreen) 24.dp else 16.dp
+    val size = if(tabletScreen) 24.dp else 20.dp
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -708,7 +695,7 @@ fun StarRating(rating: Int, maxRating: Int = 5, modifier: Modifier = Modifier) {
             Icon(
                 imageVector = if (i <= rating) Icons.Default.Star else Icons.Default.Star,
                 contentDescription = null,
-                tint = if (i <= rating) Color(0xFF4CAF50) else Color.Gray, // Green for filled, gray for empty
+                tint = if (i <= rating) AppTheme.colorScheme.starRating else Color.Gray, // Green for filled, gray for empty
                 modifier = Modifier.size(16.dp)
             )
         }

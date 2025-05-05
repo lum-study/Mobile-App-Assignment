@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,10 +50,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.media3.common.util.Log
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.bookblitzpremium.upcomingproject.BoxMaps
-import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
@@ -64,6 +62,7 @@ import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.bookblitzpremium.upcomingproject.ui.utility.ToastUtils
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
 
 @Preview(showBackground = true)
@@ -86,17 +85,32 @@ fun BookingDaySelector(
     var selectedText by rememberSaveable { mutableStateOf("Select Booking Range") }
 
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    val startDateLocalDate = LocalDate.parse(startDate, formatter)
-    val today = LocalDate.now()
+    val startDateLocalDate = try {
+        LocalDate.parse(startDate, formatter)
+    } catch (e: DateTimeParseException) {
+        Log.e("BookingDaySelector", "Invalid startDate format: $startDate", e)
+        LocalDate.now()
+    }
 
     val options = mutableListOf<Pair<LocalDate, LocalDate>>()
-    val range = (0 until maxRange)
+    require(maxRange >= 1) { "maxRange must be at least 1 to allow a 1-day range" }
+    val safeMaxRange = maxRange.coerceAtMost(365)
+    val today = LocalDate.now()
+    val endDateLimit = startDateLocalDate
+    val daysDifference = ChronoUnit.DAYS.between(today, endDateLimit).toInt().coerceAtLeast(0)
+    val range = (0..daysDifference)
 
     range.forEach { offset ->
-        val startOption = startDateLocalDate.minusDays(7 - offset.toLong())
-        val endOption = startOption.plusDays((maxRange - 1).toLong())
-        if (!startOption.isBefore(today)) {
-            options.add(Pair(startOption, endOption))
+        val startOption = today.plusDays(offset.toLong())
+        // Add 1-day range option
+        val endOption1 = startOption.plusDays(1)
+        if (endOption1.isAfter(startOption)) {
+            options.add(Pair(startOption, endOption1))
+        }
+        // Add maxRange option (if different)
+        val endOptionMax = startOption.plusDays((safeMaxRange - 1).toLong())
+        if (endOptionMax.isAfter(startOption) && safeMaxRange > 1) {
+            options.add(Pair(startOption, endOptionMax))
         }
     }
 
@@ -113,11 +127,11 @@ fun BookingDaySelector(
             modifier = Modifier.menuAnchor()
                 .fillMaxWidth(),
             colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = AppTheme.colorScheme.primary,
-                unfocusedIndicatorColor = AppTheme.colorScheme.secondary,
-                focusedLabelColor = AppTheme.colorScheme.primary,
-                unfocusedLabelColor = AppTheme.colorScheme.onSurface,
-                cursorColor = AppTheme.colorScheme.primary,
+                focusedIndicatorColor = AppTheme.colorScheme?.primary ?: Color.Black,
+                unfocusedIndicatorColor = AppTheme.colorScheme?.secondary ?: Color.Gray,
+                focusedLabelColor = AppTheme.colorScheme?.primary ?: Color.Black,
+                unfocusedLabelColor = AppTheme.colorScheme?.onSurface ?: Color.DarkGray,
+                cursorColor = AppTheme.colorScheme?.primary ?: Color.Black,
             )
         )
 
@@ -135,10 +149,10 @@ fun BookingDaySelector(
                 options.forEach { (start, end) ->
                     DropdownMenuItem(
                         text = {
-                            Text("From $start to $end")
+                            Text("From $start to $end (up to $safeMaxRange days)")
                         },
                         onClick = {
-                            selectedText = "From $start to $end"
+                            selectedText = "From $start to $end (up to $safeMaxRange days)"
                             onBookingRangeSelected(start, end)
                             expanded = false
                         }
@@ -176,7 +190,7 @@ fun ModifyHotelBooking(
 
     LaunchedEffect(success) {
         if (success) {
-            navController.navigate(AppScreen.MyOrders.route)
+            navController.popBackStack()
             remoteHotelBooking.clearSuccess() // Reset success after navigation
         }
     }
@@ -258,8 +272,12 @@ fun ModifyHotelBooking(
                     Spacer(modifier = Modifier.height(12.dp))
 
 
-                    val locationName = hotelData!!.name
+//                    val locationName = hotelData!!.name
 //                    BoxMaps(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .height(200.dp)
+//                            .clip(shape = RoundedCornerShape(32.dp)),
 //                        addressInput = locationName,
 //                        onClick = {
 //                            navController.navigate("${AppScreen.Maps.route}/${locationName}")

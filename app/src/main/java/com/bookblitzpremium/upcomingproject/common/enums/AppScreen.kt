@@ -50,7 +50,7 @@ sealed class AppScreen(val route: String, val hasTopBar: Boolean, val hasBottomB
     data object BookingReview : AppScreen("BookingReview", hasTopBar = true, hasBottomBar = false)
     data object BookingHistory : AppScreen("BookingHistory", hasTopBar = true, hasBottomBar = false)
     data object EditScreen : AppScreen("EditScreen", hasTopBar = true, hasBottomBar = false)
-    data object Maps: AppScreen("Maps", hasTopBar = false, hasBottomBar = false)
+    data object Maps: AppScreen("Maps", hasTopBar = true, hasBottomBar = false)
 
     // Entry Page
     data object EntryPage : AppScreen("EntryPage", hasTopBar = false, hasBottomBar = false)
