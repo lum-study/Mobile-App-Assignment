@@ -116,7 +116,7 @@ fun HotelBookingHorizontalScreen(
                     )
 
                     if (rede) {
-                        // Placeholder for payment UI
+
                     } else {
                         Row(
                             modifier = Modifier
@@ -182,7 +182,6 @@ fun HotelBookingHorizontalScreen(
                     }
                 }
 
-                var rede by remember { mutableStateOf(false) }
                 var copyPaymentID by remember { mutableStateOf("") }
                 val paymentViewModel: RemotePaymentViewModel = hiltViewModel()
                 val coroutineScope = rememberCoroutineScope()
@@ -241,12 +240,16 @@ fun HotelBookingHorizontalScreen(
                             }
 
                             item {
-                                FeatureDisplay(
-                                    hotel = hotelData.feature,
-                                    rating = hotelData.rating,
-                                    tabletScreen = true,
-                                    modifier = Modifier.padding(16.dp)
-                                )
+                                Column(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                ){
+                                    FeatureDisplay(
+                                        hotel = hotelData.feature,
+                                        rating = hotelData.rating,
+                                        tabletScreen = true,
+                                    )
+                                }
                             }
 
                             item {

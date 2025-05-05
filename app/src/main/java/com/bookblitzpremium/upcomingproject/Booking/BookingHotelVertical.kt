@@ -255,15 +255,20 @@ fun DraggableObject(
             modifier = Modifier.offset(x = textOffset)
         )
 
-        FeatureDisplay(
-            hotel = hotel.feature,
-            rating = hotel.rating,
-            tabletScreen = true,
+        Column(
             modifier = Modifier
-                .padding(top = 8.dp)
-                .fillMaxWidth()
                 .padding(16.dp)
-        )
+        ){
+            FeatureDisplay(
+                hotel = hotel.feature,
+                rating = hotel.rating,
+                tabletScreen = true,
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .fillMaxWidth()
+
+            )
+        }
 
         BookingSummaryTable(
             startDate = startDate,

@@ -90,6 +90,9 @@ fun PaymentDetails(
                 navController.navigate(AppScreen.OrderGraph.route) {
                     popUpTo(AppScreen.Home.route)
                 }
+            },
+            onDismissButtonClick = {
+                showDialog = false
             }
         )
     }
@@ -113,7 +116,7 @@ fun PaymentDetails(
                     MapsComponent(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(400.dp)
+                            .height(500.dp)
                             .clip(shape = RoundedCornerShape(32.dp)),
                         hotelName = hotel.name,
                         onClick = {
@@ -121,7 +124,6 @@ fun PaymentDetails(
                         },
                     )
 
-                    Spacer(modifier = Modifier.height(20.dp))
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -144,7 +146,6 @@ fun PaymentDetails(
                             modifier = Modifier
                                 .fillMaxWidth(0.98f)
                                 .padding(bottom = 16.dp) // Replaced AppTheme.size.normal with 16.dp
-                                .padding(horizontal = 28.dp)
                         ) {
                             Text(
                                 text = "Pricing",
@@ -199,7 +200,7 @@ fun PaymentDetails(
                                     containerColor = AppTheme.colorScheme.primary,
                                     contentColor = AppTheme.colorScheme.onPrimary
                                 ),
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
                             ) {
                                 Text(
                                     text = "Next",

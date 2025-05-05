@@ -94,7 +94,6 @@ fun DialogPaymentMethod(
     ) {
         Box(
             modifier = Modifier
-                .padding(16.dp)
                 .height(400.dp)
                 .width(500.dp)
                 .clip(RoundedCornerShape(24.dp))
@@ -105,6 +104,8 @@ fun DialogPaymentMethod(
 
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
+                , modifier = Modifier
+                    .padding(30.dp)
             ) {
                 Text(
                     text = "Payment method",
@@ -206,6 +207,9 @@ fun ReviewFinalPackageSelected(
                     navController.navigate(AppScreen.OrderGraph.route) {
                         popUpTo(AppScreen.Home.route)
                     }
+                },
+                onDismissButtonClick = {
+                    showDialog = false
                 }
             )
         }
@@ -274,11 +278,12 @@ fun ReviewFinalPackageSelected(
                             DialogPaymentMethod(
                                 onDismissRequest = {dialogTrue = false} ,
                                 onDateSelected = { paymentMethod, cardNumber ->
-                                    paymentMethods = (paymentMethod ?: 0).toString()
-                                    cardNumbers = (cardNumber ?: 0).toString()
+                                    paymentMethods = (paymentMethod ?: "").toString()
+                                    cardNumbers = (cardNumber ?: "").toString()
                                 }
                             )
                         }
+
                     }
                 } else {
                     HotelInfoContent(hotelData, AppTheme.typography.largeBold)
@@ -369,8 +374,8 @@ fun ReviewFinalPackageSelected(
                         id = paymentID,
                         createDate = LocalDate.now().toString(),
                         totalAmount = totalPrice.toDoubleOrNull() ?: 0.0,
-                        paymentMethod = paymentMethod,
-                        cardNumber = cardNumber,
+                        paymentMethod = (if(isTablet) paymentMethods else paymentMethod).toString(),
+                        cardNumber = (if(isTablet) cardNumbers else cardNumber).toString(),
                         currency = "Ringgit Malaysia",
                         userID = userID.toString()
                     )
