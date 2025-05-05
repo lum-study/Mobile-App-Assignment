@@ -50,6 +50,7 @@ import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.common.enums.BookingType
 import com.bookblitzpremium.upcomingproject.common.enums.DeviceType
+import com.bookblitzpremium.upcomingproject.data.businessviewmodel.FilterViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalRecentSearchViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalTripPackageViewModel
@@ -60,6 +61,8 @@ import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 
 @Composable
 fun SearchScreen(navController: NavHostController) {
+    val filterViewModel: FilterViewModel = hiltViewModel()
+
     val recentSearchViewModel: LocalRecentSearchViewModel = hiltViewModel()
     val recentSearch by recentSearchViewModel.recentSearch.collectAsState()
     var isRecentSearchClear by remember { mutableStateOf(false) }
@@ -77,6 +80,8 @@ fun SearchScreen(navController: NavHostController) {
         remember(keyword) { hotelViewModel.getByKeyword(keyword) }.collectAsLazyPagingItems()
     val maxPrice = hotelList.itemSnapshotList.items.maxOfOrNull { it.price }
     val minPrice = hotelList.itemSnapshotList.items.minOfOrNull { it.price }
+    filterViewModel.updateStartPrice(minPrice?.toFloat() ?: 0f)
+    filterViewModel.updateEndPrice(maxPrice?.toFloat() ?: 1240f)
 
     AppTheme {
         when (deviceType) {
@@ -116,7 +121,7 @@ fun SearchScreen(navController: NavHostController) {
                             showEmptyListToast = !showEmptyListToast
                         }
                     }
-                    if (hotelList.itemCount > 0 && isRecentSearchClear) {
+                    if (hotelList.itemCount > 0 && (isRecentSearchClear || keyword.isNotEmpty())) {
                         Spacer(modifier = Modifier.height(16.dp))
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(1),
@@ -193,18 +198,51 @@ fun SearchScreen(navController: NavHostController) {
                                 navController = navController,
                                 keyword = keyword,
                                 minPrice = minPrice?.toString() ?: "27.00",
-                                maxPrice = maxPrice?.toString() ?: "1300.00",
+                                maxPrice = maxPrice?.toString() ?: "1240.00",
                                 isMobile = false,
+                                filterViewModel = filterViewModel,
+                                onApplyClick = {
+                                    filterViewModel.clearFilters()
+                                    keyword = ""
+                                },
                             )
                         }
                     }
-                    if (hotelList.itemCount > 0 && isRecentSearchClear) {
+                    if (!isRecentSearchClear && keyword.isEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 24.dp, end = 24.dp),
+                            contentAlignment = Alignment.CenterEnd
+                        ) {
+                            Text(
+                                text = "Clear",
+                                style = AppTheme.typography.mediumNormal.copy(textDecoration = TextDecoration.Underline),
+                                textAlign = TextAlign.End,
+                                color = Color.Blue,
+                                modifier = Modifier.clickable {
+                                    isRecentSearchClear = true
+                                    recentSearchViewModel.deleteAll()
+                                },
+                            )
+                        }
+                        FilteredResultScreen(navController = navController)
+                    }
+                }
+                    else if (hotelList.itemCount > 0 || keyword.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(16.dp))
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
                             verticalArrangement = Arrangement.spacedBy(16.dp),
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            modifier = Modifier.fillMaxSize().padding(top = 16.dp, end = 16.dp)
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(top = 16.dp, end = 16.dp)
                         ) {
                             items(hotelList.itemCount) { index ->
                                 val hotel = hotelList[index]
@@ -222,32 +260,17 @@ fun SearchScreen(navController: NavHostController) {
                                 )
                             }
                         }
-                    }
-                    if (!isRecentSearchClear)
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
+                    } else if (hotelList.itemCount == 0 && keyword.isNotEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 24.dp, end = 24.dp),
-                                contentAlignment = Alignment.CenterEnd
-                            ) {
-                                Text(
-                                    text = "Clear",
-                                    style = AppTheme.typography.mediumNormal.copy(textDecoration = TextDecoration.Underline),
-                                    textAlign = TextAlign.End,
-                                    color = Color.Blue,
-                                    modifier = Modifier.clickable {
-                                        isRecentSearchClear = true
-                                        recentSearchViewModel.deleteAll()
-                                    },
-                                )
-                            }
-                            FilteredResultScreen(navController = navController)
+                            Text(
+                                text = "No record found",
+                                style = AppTheme.typography.largeBold,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
                         }
+                    }
                 }
             }
 
@@ -265,7 +288,10 @@ fun SearchScreen(navController: NavHostController) {
                             keyword = it
                         },
                         onFilterButtonClick = {
-                            isFilterOpened = !isFilterOpened
+                            if (hotelList.itemCount > 1) {
+                                isFilterOpened = !isFilterOpened
+                            } else
+                                showEmptyListToast = !showEmptyListToast
                         },
                     )
 
@@ -274,9 +300,14 @@ fun SearchScreen(navController: NavHostController) {
                             navController = navController,
                             keyword = keyword,
                             minPrice = minPrice?.toString() ?: "27.00",
-                            maxPrice = maxPrice?.toString() ?: "1300.00",
+                            maxPrice = maxPrice?.toString() ?: "1240.00",
                             isMobile = false,
-                            onApplyClick = { isFilterOpened = !isFilterOpened }
+                            onApplyClick = {
+                                isFilterOpened = !isFilterOpened
+                                filterViewModel.clearFilters()
+                                keyword = ""
+                            },
+                            filterViewModel = filterViewModel,
                         )
                     }
                     if (showEmptyListToast) {
@@ -284,14 +315,34 @@ fun SearchScreen(navController: NavHostController) {
                         LaunchedEffect(Unit) {
                             Toast.makeText(
                                 context,
-                                "No record found",
+                                "Filter not available",
                                 Toast.LENGTH_LONG
                             )
                                 .show()
                             showEmptyListToast = !showEmptyListToast
                         }
                     }
-                    if (hotelList.itemCount > 0 && isRecentSearchClear) {
+                    if (!isRecentSearchClear && keyword.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(end = 24.dp),
+                            contentAlignment = Alignment.CenterEnd
+                        ) {
+                            Text(
+                                text = "Clear",
+                                style = AppTheme.typography.mediumNormal.copy(textDecoration = TextDecoration.Underline),
+                                textAlign = TextAlign.End,
+                                color = Color.Blue,
+                                modifier = Modifier.clickable {
+                                    isRecentSearchClear = true
+                                    recentSearchViewModel.deleteAll()
+                                },
+                            )
+                        }
+                        FilteredResultScreen(navController = navController)
+                    }
+                    else if (hotelList.itemCount > 0 && keyword.isNotEmpty()) {
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
                             verticalArrangement = Arrangement.spacedBy(32.dp),
@@ -313,26 +364,7 @@ fun SearchScreen(navController: NavHostController) {
                                     })
                             }
                         }
-                    } else if (!isRecentSearchClear) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(end = 24.dp),
-                            contentAlignment = Alignment.CenterEnd
-                        ) {
-                            Text(
-                                text = "Clear",
-                                style = AppTheme.typography.mediumNormal.copy(textDecoration = TextDecoration.Underline),
-                                textAlign = TextAlign.End,
-                                color = Color.Blue,
-                                modifier = Modifier.clickable {
-                                    isRecentSearchClear = true
-                                    recentSearchViewModel.deleteAll()
-                                },
-                            )
-                        }
-                        FilteredResultScreen(navController = navController)
-                    } else {
+                    } else if (hotelList.itemCount == 0 && keyword.isNotEmpty()) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                         ) {
@@ -443,8 +475,8 @@ fun FilteredResultScreen(
             rating = recentSearch?.rating ?: 0.0,
             startPrice = recentSearch?.startPrice ?: 0.0,
             endPrice = recentSearch?.endPrice ?: 0.0,
-            feature1 = features.getOrNull(0) ?: "",
-            feature2 = features.getOrNull(1) ?: ""
+            feature1 = features.getOrNull(0)?.trim() ?: "",
+            feature2 = features.getOrNull(1)?.trim() ?: ""
         )
     }.collectAsLazyPagingItems()
 

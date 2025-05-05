@@ -392,10 +392,6 @@ fun TripPackageBookingScreen(
 
         if (showDialog) {
             if (childQuantity + adultQuantity <= availableSlots) {
-                NotificationService(context).showNotification(
-                    title = tripPackageName,
-                    content = "Booking confirmed! Have a great stay."
-                )
                 TripPackageBookingDialog(
                     modifier = Modifier
                         .height(300.dp)
@@ -409,12 +405,20 @@ fun TripPackageBookingScreen(
                                 inclusive = true
                             }
                         }
+                        NotificationService(context).showNotification(
+                            title = tripPackageName,
+                            content = "Booking confirmed! Have a great stay."
+                        )
                     },
                     onViewOrderButtonClick = {
                         showDialog = it
                         navController.navigate(AppScreen.OrderGraph.route) {
                             popUpTo(AppScreen.Home.route)
                         }
+                        NotificationService(context).showNotification(
+                            title = tripPackageName,
+                            content = "Booking confirmed! Have a great stay."
+                        )
                     },
                     onDismissButtonClick = {
                         showDialog = !showDialog

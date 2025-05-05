@@ -1,6 +1,7 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.profile
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -70,9 +71,6 @@ import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun EditProfileScreen() {
-    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
-    val isTablet = windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.COMPACT
-
     val remoteUserViewModel: RemoteUserViewModel = hiltViewModel()
     val localUserViewModel: LocalUserViewModel = hiltViewModel()
     val userID = FirebaseAuth.getInstance().currentUser?.uid ?: ""
@@ -107,45 +105,34 @@ fun EditProfileScreen() {
         "Address" to address
     )
 
-    if (isTablet) {
-        TabletLayout(
-            fields = fields,
-            onUsernameChange = { username = it },
-            onEmailChange = { email = it },
-            onPhoneChange = { phone = it },
-            onDobChange = { dob = it },
-            onAddressChange = { address = it },
-            onImageChange = { iconImage = it },
-            gender = gender,
-        )
-    } else {
-        PhoneLayout(
-            fields = fields,
-            onUsernameChange = { username = it },
-            onEmailChange = { email = it },
-            onPhoneChange = { phone = it },
-            onDobChange = { dob = it },
-            onAddressChange = { address = it },
-            onImageChange = { iconImage = it },
-            iconImage = iconImage,
-            gender = gender,
-            onSaveClick = {
-                val user = User(
-                    id = userInfo!!.id,
-                    name = username,
-                    email = email,
-                    phone = phone,
-                    dateOfBirth = dob,
-                    address = address,
-                    password = userInfo!!.password,
-                    gender = userInfo!!.gender,
-                    iconImage = iconImage
-                )
-                localUserViewModel.addOrUpdateUser(user)
-                remoteUserViewModel.updateUser(user)
-            }
-        )
-    }
+    val context = LocalContext.current
+    PhoneLayout(
+        fields = fields,
+        onUsernameChange = { username = it },
+        onEmailChange = { email = it },
+        onPhoneChange = { phone = it },
+        onDobChange = { dob = it },
+        onAddressChange = { address = it },
+        onImageChange = { iconImage = it },
+        iconImage = iconImage,
+        gender = gender,
+        onSaveClick = {
+            val user = User(
+                id = userInfo!!.id,
+                name = username,
+                email = email,
+                phone = phone,
+                dateOfBirth = dob,
+                address = address,
+                password = userInfo!!.password,
+                gender = userInfo!!.gender,
+                iconImage = iconImage
+            )
+            localUserViewModel.addOrUpdateUser(user)
+            remoteUserViewModel.updateUser(user)
+            Toast.makeText(context, "Profile is updated", Toast.LENGTH_SHORT).show()
+        }
+    )
 }
 
 @Composable
@@ -215,7 +202,9 @@ private fun TabletLayout(
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = {},
+                    onClick = {
+
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
@@ -319,9 +308,11 @@ private fun PhoneLayout(
 
 @Composable
 private fun NavigationOptions() {
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(start = 16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp)
+    ) {
         Spacer(modifier = Modifier.height(24.dp))
         val navOptions = listOf(
             "Your Profile" to Icons.Outlined.Person,
@@ -362,18 +353,27 @@ private fun ProfileImageSection(
     onImageChange: (String) -> Unit,
 ) {
     val context = LocalContext.current
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
     var base64String by rememberSaveable { mutableStateOf<String?>(null) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        imageUri = uri
+    ) { uri ->
         base64String = uri?.let { uriToBase64(context, it) }
     }
 
     LaunchedEffect(base64String) {
-        onImageChange(base64String ?: "")
+        if (base64String != null) {
+            println(base64String!!.length)
+            if (base64String!!.length < 50000 && base64String!!.isNotEmpty()) {
+                onImageChange(base64String ?: "")
+            } else {
+                Toast.makeText(
+                    context,
+                    "Image too large. Please choose a smaller one.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
     }
 
     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -417,9 +417,11 @@ private fun ProfileImageSection(
 
 @Composable
 fun ProfileField(label: String, value: String, onValueChange: (String) -> Unit) {
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(vertical = 8.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

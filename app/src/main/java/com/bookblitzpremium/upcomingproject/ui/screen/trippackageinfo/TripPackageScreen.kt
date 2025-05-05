@@ -68,6 +68,7 @@ import com.bookblitzpremium.upcomingproject.model.TripPackageTabs
 import com.bookblitzpremium.upcomingproject.ui.components.Base64Image
 import com.bookblitzpremium.upcomingproject.ui.components.SkeletonLoader
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
+import com.bookblitzpremium.upcomingproject.ui.screen.booking.HotelDetailScreen
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 import java.time.LocalDate
@@ -337,10 +338,10 @@ fun TripPackageInformationTabletLayout(
                 title = "Hotel",
                 icon = Icons.Outlined.HomeWork,
                 screen = {
-                    HotelBookingScreenLayout(
+                    HotelDetailScreen(
                         navController = navController,
-                        hotelID = selectedTripPackage.hotelID,
-                        tripPackageID = selectedTripPackage.id,
+                        hotelBookingId = selectedTripPackage.hotelID,
+                        tripPackageID = selectedTripPackage.id
                     )
                 }
             ),
