@@ -1,18 +1,15 @@
 package com.bookblitzpremium.upcomingproject
 
-import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,6 +38,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.data.model.LineType
+import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
 import com.bookblitzpremium.upcomingproject.ui.utility.MapViewModel
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -57,23 +54,6 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
-import java.nio.file.WatchEvent
-
-
-@Composable
-fun LocationPermissionWrapper(content: @Composable () -> Unit) {
-    val context = LocalContext.current
-    var hasPermission by remember { mutableStateOf(checkForPermission(context)) }
-
-
-    if (!hasPermission) {
-        LocationPermissionScreen {
-            hasPermission = true
-        }
-    } else {
-        content()
-    }
-}
 
 
 fun checkForPermission(context: Context): Boolean {
@@ -86,50 +66,6 @@ fun checkForPermission(context: Context): Boolean {
                 android.Manifest.permission.ACCESS_COARSE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
 }
-
-
-@Composable
-fun LocationPermissionScreen(
-    onPermissionGranted: () -> Unit
-) {
-    val locationPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        val allGranted = permissions.values.all { it }
-        if (allGranted) {
-            onPermissionGranted()
-        }
-    }
-
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Location Permission Required",
-            fontSize = 20.sp
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = {
-                locationPermissionLauncher.launch(
-                    arrayOf(
-                        android.Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    )
-                )
-            }
-        ) {
-            Text("Grant Permission")
-        }
-    }
-}
-
-
 
 
 @RequiresApi(Build.VERSION_CODES.P)
@@ -146,7 +82,6 @@ fun MapScreen(
     var mapProperties by remember { mutableStateOf(MapProperties()) }
     var lineType by remember { mutableStateOf(LineType.SOLID) }
 
-
     // Automatically trigger getLatLngFromAddress when screen is composed
     LaunchedEffect(addressInput) {
         viewModel.getLatLngFromAddress(
@@ -156,79 +91,80 @@ fun MapScreen(
         )
     }
 
-    LocationPermissionWrapper {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top // Align to top for back button
-        ) {
-            // Back button
-            Button(
-                onClick = { navController.popBackStack() },
-                modifier = Modifier.align(Alignment.Start)
-            ) {
-                Text("Back")
-            }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top // Align to top for back button
+    ) {
+//            // Back button
+//            Button(
+//                onClick = { navController.popBackStack() },
+//                modifier = Modifier.align(Alignment.Start)
+//            ) {
+//                Text("Back")
+//            }
+//            Spacer(modifier = Modifier.height(16.dp))
+
+
+        // Loading state
+        if (loading) {
+            CheckStatusLoading()
             Spacer(modifier = Modifier.height(16.dp))
-
-
-            // Loading state
-            if (loading) {
-                CircularProgressIndicator()
+            Text(
+                text = "Loading location data...",
+                fontSize = 20.sp
+            )
+        }
+        // Error state
+        else if (error != null) {
+            Text(
+                text = error ?: "Unknown error",
+                fontSize = 20.sp,
+                color = Color.Red
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = {
+                    viewModel.getLatLngFromAddress(
+                        context = context,
+                        addressInput = addressInput,
+                        addressFilter = { addr ->
+                            addr.locality ?: addr.getAddressLine(0)
+                        }
+                    )
+                }
+            ) {
+                Text("Retry: Show Map to $addressInput")
+            }
+        }
+        // Success state
+        else if (locationResult != null) {
+            locationResult?.let { (currentLatLng, destLatLng, addressText) ->
+                MyMap(
+                    currentLatLng = currentLatLng,
+                    destLatLng = destLatLng,
+                    mapProperties = mapProperties,
+                    lineType = lineType,
+                    onChangeMapType = { mapProperties = mapProperties.copy(mapType = it) },
+                    onChangeLineType = { lineType = it }
+                )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Loading location data...",
+                    text = "Destination: ${addressText ?: "Unknown"}",
                     fontSize = 20.sp
                 )
-            }
-            // Error state
-            else if (error != null) {
-                Text(
-                    text = error ?: "Unknown error",
-                    fontSize = 20.sp,
-                    color = androidx.compose.ui.graphics.Color.Red
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = {
-                        viewModel.getLatLngFromAddress(
-                            context = context,
-                            addressInput = addressInput,
-                            addressFilter = { addr ->
-                                addr.locality ?: addr.getAddressLine(0)
-                            }
-                        )
-                    }
-                ) {
-                    Text("Retry: Show Map to $addressInput")
-                }
-            }
-            // Success state
-            else if (locationResult != null) {
-                locationResult?.let { (currentLatLng, destLatLng, addressText) ->
-                    MyMap(
-                        currentLatLng = currentLatLng,
-                        destLatLng = destLatLng,
-                        mapProperties = mapProperties,
-                        lineType = lineType,
-                        onChangeMapType = { mapProperties = mapProperties.copy(mapType = it) },
-                        onChangeLineType = { lineType = it }
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Destination: ${addressText ?: "Unknown"}",
-                        fontSize = 20.sp
-                    )
-                }
             }
         }
     }
 }
 
+
+
 @Composable
 fun BoxMaps(
+    modifier : Modifier,
     addressInput: String,
     onClick: () -> Unit,
     viewModel: MapViewModel = viewModel(),
@@ -247,13 +183,10 @@ fun BoxMaps(
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
-            .clip(shape = RoundedCornerShape(32.dp))
+        modifier = modifier
     ) {
         if (locationResult != null) {
-            val (currentLatLng, destLatLng) = locationResult!!
+            val (_, destLatLng) = locationResult!!
             val cameraPositionState = rememberCameraPositionState {
                 // Center on destination with fixed zoom
                 position = CameraPosition.fromLatLngZoom(destLatLng, 15f)
@@ -370,6 +303,8 @@ fun BoxMaps(
                     iconResourceId = R.drawable.hotel_location
                 )
             }
+        }else{
+            CheckStatusLoading(indicatorSize = 40.dp)
         }
     }
 }
@@ -386,11 +321,10 @@ fun MyMap(
     val cameraPositionState = rememberCameraPositionState {
         val midLat = (currentLatLng.latitude + destLatLng.latitude) / 2
         val midLng = (currentLatLng.longitude + destLatLng.longitude) / 2
-        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
+        position = CameraPosition.fromLatLngZoom(
             LatLng(midLat, midLng), 12f
         )
     }
-
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -433,19 +367,24 @@ fun MyMap(
             )
         }
 
-        Button(onClick = {
-            onChangeMapType(if (mapProperties.mapType == MapType.NORMAL) MapType.SATELLITE else MapType.NORMAL)
-        }) {
-            Text("Toggle Map Type")
-        }
-        Button(onClick = {
-            onChangeLineType(when (lineType) {
-                LineType.SOLID -> LineType.DASHED
-                LineType.DASHED -> LineType.NONE
-                LineType.NONE -> LineType.SOLID
-            })
-        }) {
-            Text("Toggle Line Type")
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+        ){
+            Button(onClick = {
+                onChangeMapType(if (mapProperties.mapType == MapType.NORMAL) MapType.SATELLITE else MapType.NORMAL)
+            }) {
+                Text("Toggle Map Type")
+            }
+            Button(onClick = {
+                onChangeLineType(when (lineType) {
+                    LineType.SOLID -> LineType.DASHED
+                    LineType.DASHED -> LineType.NONE
+                    LineType.NONE -> LineType.SOLID
+                })
+            }) {
+                Text("Toggle Line Type")
+            }
         }
     }
 }

@@ -32,7 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,7 +48,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.bookblitzpremium.upcomingproject.BoxMaps
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.common.enums.PaymentMethod
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
@@ -56,7 +55,6 @@ import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBook
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteHotelBookingViewModel
-import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemotePaymentViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.NotificationService
 import com.bookblitzpremium.upcomingproject.ui.components.TripPackageBookingDialog
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
@@ -96,13 +94,14 @@ fun DialogPaymentMethod(
     ) {
         Box(
             modifier = Modifier
+                .padding(16.dp)
                 .height(400.dp)
                 .width(500.dp)
                 .clip(RoundedCornerShape(24.dp))
                 .background(Color.White)
         ) {
-            var paymentMethod by rememberSaveable { mutableStateOf(PaymentMethod.DebitCard) }
-            var cardNumber by rememberSaveable { mutableStateOf("") }
+            var paymentMethod by remember { mutableStateOf(PaymentMethod.DebitCard) }
+            var cardNumber by remember { mutableStateOf("") }
 
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -172,14 +171,14 @@ fun ReviewFinalPackageSelected(
         val remoteBookingViewModel: RemoteHotelBookingViewModel = hiltViewModel()
         val loading = viewModel.loading.collectAsState()
         val hotel by viewModel.selectedHotel.collectAsState()
-        var paymentMethods by rememberSaveable { mutableStateOf<String?>(null) }
-        var cardNumbers by rememberSaveable { mutableStateOf<String?>(null) }
+        var paymentMethods by remember { mutableStateOf<String?>(null) }
+        var cardNumbers by remember { mutableStateOf<String?>(null) }
 
         //Loading
         val isLoading by remoteBookingViewModel.loading.collectAsState()
 
         //Handle Alert Dialog
-        var showDialog by rememberSaveable { mutableStateOf(false) }
+        var showDialog by remember { mutableStateOf(false) }
 
         val success by remoteBookingViewModel.success.collectAsState()
 
@@ -226,9 +225,10 @@ fun ReviewFinalPackageSelected(
             }
         } else if (hotel != null) {
             val hotelData = hotel!!
-
             val isTablet = tabletPortrait == "true"
+
             StyledImage(hotelData.imageUrl.toString(), isTablet.toString())
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -243,24 +243,30 @@ fun ReviewFinalPackageSelected(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier
                                 .weight(1f)
+                                .padding(if(isTablet) 16.dp else 0.dp)
                         ){
                             HotelInfoContent(hotelData, AppTheme.typography.largeBold)
                         }
 
-                        var dialogTrue by rememberSaveable { mutableStateOf(false) }
+                        var dialogTrue by remember { mutableStateOf(false) }
 
                         Button(
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = AppTheme.colorScheme.primary,
+                                contentColor = AppTheme.colorScheme.onSecondary
+                            ),
                             onClick ={
                                 dialogTrue = true
                             },
                             modifier = Modifier
                                 .clip(RoundedCornerShape(16.dp))
+                                .padding(16.dp)
                                 .weight(1f)
                         ) {
                             Text(
                                 text = paymentMethods ?: "Payment Method",
                                 style = AppTheme.typography.mediumBold,
-                                color = AppTheme.colorScheme.onSurface,
+                                color = AppTheme.colorScheme.onSecondary,
                             )
                         }
 
@@ -279,23 +285,18 @@ fun ReviewFinalPackageSelected(
                 }
             }
 
-            val heightSize = if((isTablet.toString() == "true")) 150.dp else 80.dp
+            val heightSize = if((isTablet.toString() == "true")) 100.dp else 80.dp
 
-            val locationName = hotelData.name
-//            BoxMaps(
-//                addressInput = locationName,
-//                onClick = {
-//                    navController.navigate("${AppScreen.Maps.route}/${locationName}")
-//                },
-//            )
-//
+//            MapsComponent(hotelData.name, onClick = { navController.navigate("${AppScreen.Maps.route}/${hotelData.name}")}, modifier = Modifier.fillMaxWidth().height(if(isTablet) 300.dp else 200.dp).background(color = Color.Black).padding(if(isTablet)16.dp else 0.dp).clip(shape = RoundedCornerShape(32.dp)),)
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(heightSize)
-                    .clip(RoundedCornerShape(12.dp))
                     .background(AppTheme.colorScheme.surface) // Use surface for background
-                    .border(1.dp, AppTheme.colorScheme.primary, RoundedCornerShape(12.dp)),
+                    .border(1.dp, AppTheme.colorScheme.primary)
+                    .clip(RoundedCornerShape(32.dp))
+                    .padding(if(isTablet) 16.dp else 0.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Check-In half
@@ -339,14 +340,13 @@ fun ReviewFinalPackageSelected(
                 }
             }
 
-
-
-            Spacer(modifier = Modifier.weight(1f))
+            if((isTablet.toString() == "false")) Spacer(modifier = Modifier.weight(1f))
 
             DetailsSection(
                 totalPrice = totalPrice,
                 totalPerson = totalPerson,
                 roomBooked = roomBooked,
+                tabletPortrait = tabletPortrait,
                 modifier = Modifier
             )
 
@@ -375,7 +375,6 @@ fun ReviewFinalPackageSelected(
                         userID = userID.toString()
                     )
 
-//                    remotePaymentViewModel.updatePaymentBoth(localPayment)
                     remoteBookingViewModel.addNewIntegratedRecord(booking,localPayment)
                     showDialog = true
 
@@ -386,6 +385,8 @@ fun ReviewFinalPackageSelected(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(if(isTablet) 16.dp else 0.dp)
+
             ) {
                 Text(
                     text = "Next",
@@ -526,13 +527,15 @@ fun DetailsSection(
     roomBooked: String,
     startDate:String = "",
     endDate:String = "",
+    tabletPortrait: String = "false",
     modifier: Modifier
 ) {
+    val isTablet = tabletPortrait == "true"
+
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp),
-//            .background(AppTheme.colorScheme.surface), // Use surface for background
+            .padding(if(isTablet) 16.dp else 0.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Row(
@@ -610,8 +613,7 @@ fun DetailsSection(
 
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp),
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
@@ -639,7 +641,6 @@ fun StyledImage(
     Card(
         elevation = CardDefaults.cardElevation(4.dp),
         modifier = Modifier
-            .padding(horizontal = 8.dp)
             .clip(RoundedCornerShape(16.dp)),
         colors = CardDefaults.cardColors(
             containerColor = AppTheme.colorScheme.surface // Use surface for card
@@ -649,6 +650,7 @@ fun StyledImage(
             imageUrl = hotelImages,
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(if(isTablet) 16.dp else 0.dp)
                 .height(imageHeight),
             contentScale = ContentScale.Crop,
         )
