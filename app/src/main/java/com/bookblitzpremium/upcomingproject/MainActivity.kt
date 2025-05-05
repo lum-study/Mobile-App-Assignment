@@ -116,7 +116,6 @@ fun App(
     val dataStoreManager: DataStoreManager = hiltViewModel<DataStoreViewModel>().manager
     LaunchedEffect(userID) {
         if (userID.isNotEmpty()) {
-            println("Enter multiple")
             dataStoreManager.setTransactionUpdated(false)
             transactionViewModel.initializeTransaction(userID)
         }
@@ -141,7 +140,7 @@ fun App(
     ) { innerPadding ->
         Row {
             if (currentScreen.hasBottomBar && (deviceType == DeviceType.TabletLandscape)) {
-                SideBar(navController = navController, username = "", deviceType = deviceType)
+                SideBar(navController = navController, deviceType = deviceType)
             }
             PermissionUtils.RequestPermissionDialog()
             AppNavigation(
@@ -258,7 +257,6 @@ fun BottomNavigationBar(navController: NavHostController) {
 @Composable
 fun SideBar(
     navController: NavHostController,
-    username: String,
     deviceType: DeviceType,
 ) {
     val navItems = BottomNavigation.entries.toTypedArray()
@@ -279,7 +277,7 @@ fun SideBar(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.padding(16.dp)
         ) {
-            GreetingProfile()
+            GreetingProfile(selectedIndex)
 
             HorizontalDivider()
 

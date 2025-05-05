@@ -93,10 +93,10 @@ private suspend fun getBase64FromUrl(url: String): String = withContext(Dispatch
 fun uriToBase64(context: Context, uri: Uri): String? {
     return try {
         val inputStream = context.contentResolver.openInputStream(uri)
-        val bytes = inputStream?.readBytes() ?: return null
+        val bytes = inputStream?.readBytes() ?: return ""
         Base64.encodeToString(bytes, Base64.DEFAULT)
     } catch (e: Exception) {
         e.printStackTrace()
-        null
+        ""
     }
 }

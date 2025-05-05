@@ -93,7 +93,7 @@ fun HomeScreen(navController: NavHostController) {
         remember { localTripPackageViewModel.getAllTripPackagesPagingFlow() }.collectAsLazyPagingItems().itemSnapshotList.items
             .filter { trip ->
                 val startDate = LocalDate.parse(trip.startDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                startDate.isAfter(today)
+                startDate.isAfter(today) && trip.slots > 0
             }
 
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
@@ -215,11 +215,11 @@ fun HomeScreen(navController: NavHostController) {
 }
 
 @Composable
-fun GreetingProfile() {
+fun GreetingProfile(selectedIndex: Int = 0) {
     val userID = FirebaseAuth.getInstance().currentUser?.uid
     val localUserViewModel: LocalUserViewModel = hiltViewModel()
     var userInfo by remember { mutableStateOf<User?>(null) }
-    LaunchedEffect(userID) {
+    LaunchedEffect(userID, selectedIndex) {
         if (userID != null) {
             userInfo = localUserViewModel.getUserByID(userID)
         }
