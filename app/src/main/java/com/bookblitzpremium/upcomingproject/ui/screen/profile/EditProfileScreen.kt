@@ -54,6 +54,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -67,10 +68,16 @@ import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalU
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.Base64Image
 import com.bookblitzpremium.upcomingproject.ui.components.uriToBase64
+import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun EditProfileScreen() {
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val configuration = LocalConfiguration.current
+    val deviceType = getDeviceType(windowSizeClass, configuration)
+    var previousDeviceType by rememberSaveable { mutableStateOf(deviceType) }
+
     val remoteUserViewModel: RemoteUserViewModel = hiltViewModel()
     val localUserViewModel: LocalUserViewModel = hiltViewModel()
     val userID = FirebaseAuth.getInstance().currentUser?.uid ?: ""
@@ -85,21 +92,23 @@ fun EditProfileScreen() {
     var gender by rememberSaveable { mutableStateOf("") }
 
     LaunchedEffect(userID) {
-        userInfo = localUserViewModel.getUserByID(userID)
-        if (userInfo != null) {
-            username = userInfo!!.name
-            email = userInfo!!.email
-            phone = userInfo!!.phone
-            dob = userInfo!!.dateOfBirth
-            address = userInfo!!.address
-            iconImage = userInfo!!.iconImage
-            gender = userInfo!!.gender
+        if (deviceType == previousDeviceType) {
+            userInfo = localUserViewModel.getUserByID(userID)
+            if (userInfo != null) {
+                username = userInfo!!.name
+                email = userInfo!!.email
+                phone = userInfo!!.phone
+                dob = userInfo!!.dateOfBirth
+                address = userInfo!!.address
+                iconImage = userInfo!!.iconImage
+                gender = userInfo!!.gender
+            }
         }
+        previousDeviceType = deviceType
     }
 
     val fields = listOf(
         "Username" to username,
-        "Email" to email,
         "Phone" to phone,
         "Date of Birth" to dob,
         "Address" to address
@@ -192,7 +201,6 @@ private fun TabletLayout(
                         ProfileField(label, value) {
                             when (label) {
                                 "Username" -> onUsernameChange(it)
-                                "Email" -> onEmailChange(it)
                                 "Phone" -> onPhoneChange(it)
                                 "Date of Birth" -> onDobChange(it)
                                 "Address" -> onAddressChange(it)
@@ -267,7 +275,6 @@ private fun PhoneLayout(
                             {
                                 when (label) {
                                     "Username" -> onUsernameChange(it)
-                                    "Email" -> onEmailChange(it)
                                     "Phone" -> onPhoneChange(it)
                                     "Date of Birth" -> onDobChange(it)
                                     "Address" -> onAddressChange(it)

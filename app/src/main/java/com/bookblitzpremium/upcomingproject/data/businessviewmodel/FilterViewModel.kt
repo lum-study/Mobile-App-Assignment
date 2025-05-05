@@ -15,8 +15,10 @@ import javax.inject.Inject
 
 data class FilterState(
     val selectedOption: BookingType = BookingType.Hotel,
-    val startPrice: Float = 0f,
-    val endPrice: Float = 1240f,
+    val hotelStartPrice: Float = 0f,
+    val hotelEndPrice: Float = 1240f,
+    val tpStartPrice: Float = 600f,
+    val tpEndPrice: Float = 2500f,
     val selectedRating: Rating = Rating.Rate1,
     val selectedFeature: SnapshotStateList<Feature> = mutableStateListOf(),
     val selectedDeparture: FlightStation = FlightStation.KualaLumpur,
@@ -37,12 +39,20 @@ class FilterViewModel @Inject constructor(): ViewModel() {
         _filterState.value = _filterState.value.copy(selectedOption = option)
     }
 
-    fun updateStartPrice(startPrice: Float){
-        _filterState.value = _filterState.value.copy(startPrice = startPrice)
+    fun updateHotelStartPrice(startPrice: Float){
+        _filterState.value = _filterState.value.copy(hotelStartPrice = startPrice)
     }
 
-    fun updateEndPrice(endPrice: Float){
-        _filterState.value = _filterState.value.copy(endPrice = endPrice)
+    fun updateHotelEndPrice(endPrice: Float){
+        _filterState.value = _filterState.value.copy(hotelEndPrice = endPrice)
+    }
+
+    fun updateTPStartPrice(startPrice: Float){
+        _filterState.value = _filterState.value.copy(tpStartPrice = startPrice)
+    }
+
+    fun updateTPEndPrice(endPrice: Float){
+        _filterState.value = _filterState.value.copy(tpEndPrice = endPrice)
     }
 
     fun updateRating(rating: Rating){

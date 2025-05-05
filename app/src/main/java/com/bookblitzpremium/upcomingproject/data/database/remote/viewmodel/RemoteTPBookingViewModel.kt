@@ -167,8 +167,8 @@ class RemoteTPBookingViewModel @Inject constructor(
             try {
                 val tripPackage = remoteTripPackageRepository.getTripPackageByID(id)
                 if (tripPackage != null) {
-                    remoteTripPackageRepository.updateTripPackage(tripPackage.copy(slots = slots))
-                    localTripPackageRepository.addOrUpdateTripPackage(tripPackage.copy(slots = slots))
+                    remoteTripPackageRepository.updateTripPackage(tripPackage.copy(slots = slots + tripPackage.slots))
+                    localTripPackageRepository.addOrUpdateTripPackage(tripPackage.copy(slots = slots + tripPackage.slots))
                 }
             } catch (e: Exception) {
                 _error.value = "Failed to update package slot: ${e.localizedMessage}"

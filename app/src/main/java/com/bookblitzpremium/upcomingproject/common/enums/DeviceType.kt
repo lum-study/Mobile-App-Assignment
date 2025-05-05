@@ -1,6 +1,8 @@
 package com.bookblitzpremium.upcomingproject.common.enums
 
-enum class DeviceType {
+import java.io.Serializable
+
+enum class DeviceType: Serializable{
     TabletLandscape,
     TabletPortrait,
     MobilePortrait,

@@ -80,8 +80,8 @@ fun SearchScreen(navController: NavHostController) {
         remember(keyword) { hotelViewModel.getByKeyword(keyword) }.collectAsLazyPagingItems()
     val maxPrice = hotelList.itemSnapshotList.items.maxOfOrNull { it.price }
     val minPrice = hotelList.itemSnapshotList.items.minOfOrNull { it.price }
-    filterViewModel.updateStartPrice(minPrice?.toFloat() ?: 0f)
-    filterViewModel.updateEndPrice(maxPrice?.toFloat() ?: 1240f)
+    filterViewModel.updateHotelStartPrice(minPrice?.toFloat() ?: 0f)
+    filterViewModel.updateHotelEndPrice(maxPrice?.toFloat() ?: 1240f)
 
     AppTheme {
         when (deviceType) {

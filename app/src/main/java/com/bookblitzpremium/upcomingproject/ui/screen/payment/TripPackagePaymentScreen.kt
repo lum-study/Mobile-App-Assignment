@@ -41,6 +41,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.PaymentMethod
+import com.bookblitzpremium.upcomingproject.ui.screen.booking.isValidPhoneNumber
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 700)
@@ -217,8 +218,16 @@ fun PaymentOptionScreen(
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     maxLines = 1,
-                    modifier = Modifier.fillMaxWidth(.8f)
+                    modifier = Modifier.fillMaxWidth(.8f),
+                    isError = cardNumber.length != 16,
                 )
+                if (cardNumber.length != 16) {
+                    Text(
+                        text = "Card number must be exactly 16 digits",
+                        color = AppTheme.colorScheme.error,
+                        style = AppTheme.typography.smallRegular,
+                    )
+                }
             }
             if (option == PaymentMethod.CreditCard && selectedPaymentMethod == PaymentMethod.CreditCard) {
                 OutlinedTextField(
@@ -238,8 +247,16 @@ fun PaymentOptionScreen(
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     maxLines = 1,
-                    modifier = Modifier.fillMaxWidth(.8f)
+                    modifier = Modifier.fillMaxWidth(.8f),
+                    isError = cardNumber.length != 16,
                 )
+                if (cardNumber.length != 16) {
+                    Text(
+                        text = "Card number must be exactly 16 digits",
+                        color = AppTheme.colorScheme.error,
+                        style = AppTheme.typography.smallRegular,
+                    )
+                }
             }
             if (option == PaymentMethod.EWallet && selectedPaymentMethod == PaymentMethod.EWallet) {
                 OutlinedTextField(
@@ -259,8 +276,16 @@ fun PaymentOptionScreen(
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     maxLines = 1,
-                    modifier = Modifier.fillMaxWidth(.8f)
+                    modifier = Modifier.fillMaxWidth(.8f),
+                    isError = !isValidPhoneNumber(cardNumber, selectedPaymentMethod),
                 )
+                if (!isValidPhoneNumber(cardNumber, selectedPaymentMethod)) {
+                    Text(
+                        text = "Invalid phone number",
+                        color = AppTheme.colorScheme.error,
+                        style = AppTheme.typography.smallRegular,
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
 

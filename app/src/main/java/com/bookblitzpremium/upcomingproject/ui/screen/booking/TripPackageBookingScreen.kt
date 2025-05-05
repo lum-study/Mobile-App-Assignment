@@ -29,6 +29,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -67,6 +68,7 @@ fun TripPackageBookingScreen(
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val configuration = LocalConfiguration.current
     val deviceType = getDeviceType(windowSizeClass, configuration)
+    var previousDeviceType by rememberSaveable { mutableStateOf(deviceType) }
 
     val remoteTPBookingViewModel: RemoteTPBookingViewModel = hiltViewModel()
     val currentUser = FirebaseAuth.getInstance().currentUser
@@ -81,12 +83,14 @@ fun TripPackageBookingScreen(
     var paymentMethod by rememberSaveable { mutableStateOf(PaymentMethod.DebitCard) }
     var cardNumber by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(paymentMethod) {
-        cardNumber = ""
+        if (deviceType == previousDeviceType) {
+            cardNumber = ""
+        }
+        previousDeviceType = deviceType
     }
     //Loading
     val isLoading by remoteTPBookingViewModel.loading.collectAsState()
     val hasError by remoteTPBookingViewModel.error.collectAsState()
-
 
     //Handle Alert Dialog
     var showDialog by rememberSaveable { mutableStateOf(false) }
@@ -110,7 +114,7 @@ fun TripPackageBookingScreen(
                             label = "Adult",
                             description = "18+ years",
                             quantity = adultQuantity,
-                            onDecrement = { if (it >= 0) adultQuantity = it },
+                            onDecrement = { if (it >= 1) adultQuantity = it },
                             onIncrement = { adultQuantity = it }
                         )
                         TripPackageCount(
@@ -213,7 +217,7 @@ fun TripPackageBookingScreen(
                                 label = "Adult",
                                 description = "18+ years",
                                 quantity = adultQuantity,
-                                onDecrement = { if (it >= 0) adultQuantity = it },
+                                onDecrement = { if (it >= 1) adultQuantity = it },
                                 onIncrement = { adultQuantity = it }
                             )
                             TripPackageCount(
@@ -312,7 +316,7 @@ fun TripPackageBookingScreen(
                             label = "Adult",
                             description = "18+ years",
                             quantity = adultQuantity,
-                            onDecrement = { if (it >= 0) adultQuantity = it },
+                            onDecrement = { if (it >= 1) adultQuantity = it },
                             onIncrement = { adultQuantity = it }
                         )
                         TripPackageCount(
@@ -498,9 +502,12 @@ fun isValidCardNumber(cardNumber: String, selectedPaymentMethod: PaymentMethod):
 }
 
 fun isValidPhoneNumber(cardNumber: String, selectedPaymentMethod: PaymentMethod): Boolean {
-    if (cardNumber.startsWith("011") && cardNumber.length == 11 && selectedPaymentMethod == PaymentMethod.EWallet)
-        return true
-    else if (cardNumber.startsWith("01") && cardNumber.length == 10 && selectedPaymentMethod == PaymentMethod.EWallet)
-        return true
+    if (selectedPaymentMethod == PaymentMethod.EWallet) {
+        return when {
+            cardNumber.startsWith("011") -> cardNumber.length == 11
+            cardNumber.startsWith("01") -> cardNumber.length == 10
+            else -> false
+        }
+    }
     return false
 }

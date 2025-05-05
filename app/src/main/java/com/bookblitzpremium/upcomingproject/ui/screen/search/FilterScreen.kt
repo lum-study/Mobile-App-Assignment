@@ -58,7 +58,6 @@ import com.bookblitzpremium.upcomingproject.data.database.local.entity.RecentSea
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalRecentSearchViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.CustomDatePickerDialog
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 
@@ -75,7 +74,8 @@ fun FilterScreen(
     val filterState by filterViewModel.filterState.collectAsState()
     val localRecentSearchViewModel: LocalRecentSearchViewModel = hiltViewModel()
     val selectedOption = filterState.selectedOption
-    val selectedPriceRange = filterState.startPrice .. filterState.endPrice
+    val hotelPriceRange = filterState.hotelStartPrice .. filterState.hotelEndPrice
+    val tpPriceRange = filterState.tpStartPrice .. filterState.tpEndPrice
     //hotel
     val selectedRating = filterState.selectedRating
     val selectedFeature = filterState.selectedFeature
@@ -90,8 +90,8 @@ fun FilterScreen(
     val dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
 
     if (isMobile && !isUpdated){
-        filterViewModel.updateStartPrice(minPrice.toFloat())
-        filterViewModel.updateEndPrice(maxPrice.toFloat())
+        filterViewModel.updateHotelStartPrice(minPrice.toFloat())
+        filterViewModel.updateHotelEndPrice(maxPrice.toFloat())
         filterViewModel.updateState(true)
     }
     AppTheme {
@@ -106,17 +106,29 @@ fun FilterScreen(
                 selectedOption = selectedOption,
                 onOptionChange = {
                     filterViewModel.updateOption(it)
-                    filterViewModel.updateStartPrice(if (it == BookingType.Hotel) minPrice.toFloat() else 600f)
-                    filterViewModel.updateEndPrice(if (it == BookingType.Hotel) maxPrice.toFloat() else 2500f)
+                    if(it == BookingType.Hotel) {
+                        filterViewModel.updateHotelStartPrice(minPrice.toFloat())
+                        filterViewModel.updateHotelEndPrice(maxPrice.toFloat())
+                    }
+                    else{
+                        filterViewModel.updateTPStartPrice(600f)
+                        filterViewModel.updateTPEndPrice(2500f)
+                    }
                 }
             )
             HorizontalDivider()
             //Price Range
             PriceRangeSlider(
-                selectedPriceRange = selectedPriceRange,
+                selectedPriceRange = if(selectedOption == BookingType.Hotel)hotelPriceRange else tpPriceRange,
                 onValueChange = {
-                    filterViewModel.updateStartPrice(it.start.roundToInt().toFloat())
-                    filterViewModel.updateEndPrice(it.endInclusive.roundToInt().toFloat())
+                    if(selectedOption == BookingType.Hotel) {
+                        filterViewModel.updateHotelStartPrice(it.start.roundToInt().toFloat())
+                        filterViewModel.updateHotelEndPrice(it.endInclusive.roundToInt().toFloat())
+                    }
+                    else{
+                        filterViewModel.updateTPStartPrice(it.start.roundToInt().toFloat())
+                        filterViewModel.updateTPEndPrice(it.endInclusive.roundToInt().toFloat())
+                    }
                 },
                 valueRange = if (selectedOption == BookingType.Hotel) minPrice.toFloat()..maxPrice.toFloat() else 300f..2800f
             )
@@ -261,8 +273,8 @@ fun FilterScreen(
                         val recentSearch = RecentSearch(
                             keyword = keyword,
                             option = selectedOption.title,
-                            startPrice = selectedPriceRange.start.toDouble(),
-                            endPrice = selectedPriceRange.endInclusive.toDouble(),
+                            startPrice = hotelPriceRange.start.toDouble(),
+                            endPrice = hotelPriceRange.endInclusive.toDouble(),
                             rating = selectedRating.rate,
                             feature = selectedFeature.joinToString { feature -> feature.title })
                         localRecentSearchViewModel.addOrUpdateRecentSearch(recentSearch)
@@ -270,8 +282,8 @@ fun FilterScreen(
                         val recentSearch = RecentSearch(
                             keyword = keyword,
                             option = selectedOption.title,
-                            startPrice = selectedPriceRange.start.toDouble(),
-                            endPrice = selectedPriceRange.endInclusive.toDouble(),
+                            startPrice = tpPriceRange.start.toDouble(),
+                            endPrice = tpPriceRange.endInclusive.toDouble(),
                             departureStation = selectedDeparture.title,
                             arrivalStation = selectedArrival.title,
                             startDate = startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
