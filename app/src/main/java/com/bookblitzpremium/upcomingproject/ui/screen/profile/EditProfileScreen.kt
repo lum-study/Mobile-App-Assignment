@@ -59,6 +59,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -66,6 +67,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.window.core.layout.WindowWidthSizeClass
+import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.Gender
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
@@ -440,7 +442,7 @@ private fun ProfileImageSection(
             )
         } else {
             Image(
-                imageVector = if (gender == Gender.Male.title) Icons.Default.Male else Icons.Default.Female,
+                painter = painterResource(if (gender == Gender.Male.title) R.drawable.male else R.drawable.female),
                 contentDescription = "Profile Image",
                 modifier = Modifier
                     .size(if (isPhone) 120.dp else 200.dp)
