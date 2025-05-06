@@ -71,7 +71,9 @@ class AuthViewModel @Inject constructor(
         _user.value = _user.value.copy(password = password)
     }
 
-
+    fun clearEmailPassword(){
+        _user.value = User()
+    }
 
     init {
 //        auth.signOut()

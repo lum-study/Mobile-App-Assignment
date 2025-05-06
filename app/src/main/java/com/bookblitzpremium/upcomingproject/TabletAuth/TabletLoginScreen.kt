@@ -525,6 +525,7 @@ fun LoginWelcomeScreen(
                     Button(
                         onClick = {
                             navController.navigate(AppScreen.Home.route)
+                            viewModel.clearEmailPassword()
                         },
                         modifier = Modifier
                             .fillMaxWidth()
