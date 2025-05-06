@@ -44,11 +44,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.common.enums.DeviceType
 import com.bookblitzpremium.upcomingproject.common.enums.Gender
@@ -222,7 +224,7 @@ fun ProfileHeader(tabletMode: Boolean = false, userInfo: User?, onBackClick: () 
             )
         } else {
             Image(
-                imageVector = if (gender == Gender.Male.title) Icons.Default.Male else Icons.Default.Female,
+                painter = painterResource(if (userInfo?.gender == Gender.Male.title) R.drawable.male else R.drawable.female),
                 contentDescription = "Profile picture",
                 modifier = Modifier
                     .size(if (tabletMode) 150.dp else 100.dp)

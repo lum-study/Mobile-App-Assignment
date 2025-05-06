@@ -53,6 +53,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -254,7 +255,7 @@ fun GreetingProfile(selectedIndex: Int = 0) {
             )
         } else {
             Image(
-                imageVector = if (userInfo!!.gender == Gender.Male.title) Icons.Default.Male else Icons.Default.Female,
+                painter = painterResource(if (userInfo!!.gender == Gender.Male.title) R.drawable.male else R.drawable.female),
                 contentDescription = stringResource(R.string.profile_image),
                 modifier = Modifier
                     .size(80.dp)
