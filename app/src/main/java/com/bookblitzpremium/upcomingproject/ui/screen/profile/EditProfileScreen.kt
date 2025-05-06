@@ -44,6 +44,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -91,6 +92,7 @@ fun EditProfileScreen() {
     var iconImage by rememberSaveable { mutableStateOf("") }
     var gender by rememberSaveable { mutableStateOf("") }
 
+    val hasError by remoteUserViewModel.error.collectAsState()
     LaunchedEffect(userID) {
         if (deviceType == previousDeviceType) {
             userInfo = localUserViewModel.getUserByID(userID)
@@ -137,9 +139,13 @@ fun EditProfileScreen() {
                 gender = userInfo!!.gender,
                 iconImage = iconImage
             )
-            localUserViewModel.addOrUpdateUser(user)
             remoteUserViewModel.updateUser(user)
-            Toast.makeText(context, "Profile is updated", Toast.LENGTH_SHORT).show()
+            if (hasError == null) {
+                localUserViewModel.addOrUpdateUser(user)
+                Toast.makeText(context, "Profile is updated", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "Failed to update profile", Toast.LENGTH_SHORT).show()
+            }
         }
     )
 }

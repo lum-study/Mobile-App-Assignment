@@ -9,10 +9,12 @@ import com.bookblitzpremium.upcomingproject.data.database.local.repository.Local
 import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteHotelBookingRepository
 import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteRatingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,19 +38,25 @@ class BusinessRatingViewModel @Inject constructor(
             _loading.value = true
             _error.value = null
             try {
-                val id = remoteRatingRepository.addRating(rating)
-                if (id.isNotEmpty()) {
-                    localRatingRepository.addOrUpdateRating(rating.copy(id = id))
-                    val bookingList = remoteHotelBookingRepository.getHotelBookingByID(bookingID)
-                    val booking = bookingList.firstOrNull()
-                    println(bookingList)
-                    if (booking != null) {
-                        val updatedBooking = booking.copy(status = BookingStatus.Completed.title)
-                        println(updatedBooking)
-                        remoteHotelBookingRepository.updateHotelBooking(updatedBooking)
-                        localHotelBookingRepository.upsertHotelBooking(updatedBooking)
+                withTimeout(5000) {
+                    val id = remoteRatingRepository.addRating(rating)
+                    if (id.isNotEmpty()) {
+                        localRatingRepository.addOrUpdateRating(rating.copy(id = id))
+                        val bookingList =
+                            remoteHotelBookingRepository.getHotelBookingByID(bookingID)
+                        val booking = bookingList.firstOrNull()
+                        println(bookingList)
+                        if (booking != null) {
+                            val updatedBooking =
+                                booking.copy(status = BookingStatus.Completed.title)
+                            println(updatedBooking)
+                            remoteHotelBookingRepository.updateHotelBooking(updatedBooking)
+                            localHotelBookingRepository.upsertHotelBooking(updatedBooking)
+                        }
                     }
                 }
+            } catch (e: TimeoutCancellationException) {
+                _error.value = "Request timed out"
             } catch (e: Exception) {
                 _error.value = "Failed to add rating: ${e.localizedMessage}"
             } finally {
