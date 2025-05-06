@@ -3,6 +3,10 @@ package com.bookblitzpremium.upcomingproject
 
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
@@ -22,6 +26,9 @@ fun WelcomeRegristerSizeLayout(
     val configuration = LocalConfiguration.current
     val deviceType = getDeviceType(windowSizeClass, configuration)
 
+    var savedEmail by rememberSaveable { mutableStateOf(email) }
+    var savedPassword by rememberSaveable { mutableStateOf(password) }
+
     when (deviceType){
         DeviceType.TabletLandscape -> {
 
@@ -33,7 +40,6 @@ fun WelcomeRegristerSizeLayout(
                 genderSelected = genderSelected,
             )
         }
-
         else -> {
             WelcomeRegristerScreen(
                 navController = navController,

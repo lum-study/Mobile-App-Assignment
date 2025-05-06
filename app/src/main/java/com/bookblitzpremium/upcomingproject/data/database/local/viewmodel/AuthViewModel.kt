@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bookblitzpremium.upcomingproject.HotelDetails
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteUserRepository
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
@@ -32,6 +33,11 @@ import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 
+data class User(
+    val email: String,
+    val password:String,
+)
+
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val auth: FirebaseAuth,
@@ -42,9 +48,7 @@ class AuthViewModel @Inject constructor(
     private val _authState = MutableStateFlow<AuthState>(AuthState.Unauthenticated)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
-    // User details
-    private val _user = MutableStateFlow<User?>(null)
-    val userDetails: StateFlow<User?> = _user.asStateFlow()
+
 
     // Navigation command
     private val _newNavigationCommand = MutableStateFlow<Boolean>(false)
@@ -53,6 +57,20 @@ class AuthViewModel @Inject constructor(
     fun getUserId(): String {
         return auth.currentUser?.uid ?: ""
     }
+
+
+    // User details
+    private val _user = MutableStateFlow(User())
+    val userDetails: StateFlow<User> = _user.asStateFlow()
+
+    fun updateEmails(email: String) {
+        _user.value = _user.value.copy(email = email)
+    }
+
+    fun updatePassword(password: String) {
+        _user.value = _user.value.copy(password = password)
+    }
+
 
 
     init {

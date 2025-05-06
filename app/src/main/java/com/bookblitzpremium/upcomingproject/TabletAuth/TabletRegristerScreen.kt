@@ -61,17 +61,14 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
 
 
-fun String.encodeToUris(): String = this.toUri().toString().substringAfterLast("/")
-
-
 @Composable
 fun RegristerTabletScreen(
     navController: NavController,
     tabletScreen: Boolean,
     email: String = "",
-    password: String = ""
+    password: String = "",
+    viewModel: AuthViewModel
 ) {
-
     var email by rememberSaveable { mutableStateOf(email) }
     var password by rememberSaveable { mutableStateOf(password) }
     var confirmPassword by rememberSaveable { mutableStateOf(password) }
@@ -85,6 +82,12 @@ fun RegristerTabletScreen(
             toastMessage = null
         }
     }
+
+    LaunchedEffect(email,password) {
+        viewModel.updateEmails(email)
+        viewModel.updatePassword(password)
+    }
+
 
     val valueVertical = if(tabletScreen) 60.dp else 100.dp
 
@@ -520,19 +523,19 @@ fun WelcomeRegristerScreen(
             }
 
             Spacer(modifier = Modifier.height(valueVertical))
+        }
+    }
 
-            if (signupState is SignupState.Loading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(AppTheme.colorScheme.surface.copy(alpha = 0.5f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = AppTheme.colorScheme.primary
-                    )
-                }
-            }
+    if (signupState is SignupState.Loading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(AppTheme.colorScheme.surface.copy(alpha = 0.5f)),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                color = AppTheme.colorScheme.primary
+            )
         }
     }
 }
@@ -643,68 +646,68 @@ fun calculatePositionInRow(itemIndex: Int): Int {
     return 0
 }
 
-@Composable
-fun EntryPage() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.content),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Bottom,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Button(
-                onClick = {
-                    // Sign up action
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = AppTheme.colorScheme.primary
-                ),
-                shape = RoundedCornerShape(24.dp)
-            ) {
-                Text(
-                    text = "Sign up a account",
-                    style = AppTheme.typography.mediumBold,
-                    color = AppTheme.colorScheme.onPrimary
-                )
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Button(
-                onClick = {
-                    // Next action
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = AppTheme.colorScheme.primary
-                ),
-                shape = RoundedCornerShape(24.dp)
-            ) {
-                Text(
-                    text = "Next",
-                    style = AppTheme.typography.mediumBold,
-                    color = AppTheme.colorScheme.onPrimary
-                )
-            }
-        }
-    }
-}
+//@Composable
+//fun EntryPage() {
+//    Box(
+//        modifier = Modifier
+//            .fillMaxSize()
+//    ) {
+//        Image(
+//            painter = painterResource(id = R.drawable.content),
+//            contentDescription = null,
+//            contentScale = ContentScale.Crop,
+//            modifier = Modifier.fillMaxSize()
+//        )
+//
+//        Column(
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .padding(24.dp),
+//            verticalArrangement = Arrangement.Bottom,
+//            horizontalAlignment = Alignment.CenterHorizontally
+//        ) {
+//            Button(
+//                onClick = {
+//                    // Sign up action
+//                },
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(48.dp),
+//                colors = ButtonDefaults.buttonColors(
+//                    containerColor = AppTheme.colorScheme.primary
+//                ),
+//                shape = RoundedCornerShape(24.dp)
+//            ) {
+//                Text(
+//                    text = "Sign up a account",
+//                    style = AppTheme.typography.mediumBold,
+//                    color = AppTheme.colorScheme.onPrimary
+//                )
+//            }
+//
+//            Spacer(modifier = Modifier.height(10.dp))
+//
+//            Button(
+//                onClick = {
+//                    // Next action
+//                },
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(48.dp),
+//                colors = ButtonDefaults.buttonColors(
+//                    containerColor = AppTheme.colorScheme.primary
+//                ),
+//                shape = RoundedCornerShape(24.dp)
+//            ) {
+//                Text(
+//                    text = "Next",
+//                    style = AppTheme.typography.mediumBold,
+//                    color = AppTheme.colorScheme.onPrimary
+//                )
+//            }
+//        }
+//    }
+//}
 //@Composable
 //fun GenderSelectionScreen(
 //    remoteUserViewModel: RemoteUserViewModel = hiltViewModel(),
