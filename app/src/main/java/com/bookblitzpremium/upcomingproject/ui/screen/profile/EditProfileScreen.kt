@@ -23,6 +23,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -35,6 +36,7 @@ import androidx.compose.material.icons.outlined.AddCard
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Task
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
@@ -58,6 +60,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -68,9 +71,13 @@ import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.Base64Image
+import com.bookblitzpremium.upcomingproject.ui.components.CustomDatePickerDialog
 import com.bookblitzpremium.upcomingproject.ui.components.uriToBase64
+import com.bookblitzpremium.upcomingproject.ui.screen.booking.isValidPhoneNumber
 import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 import com.google.firebase.auth.FirebaseAuth
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun EditProfileScreen() {
@@ -128,6 +135,10 @@ fun EditProfileScreen() {
         iconImage = iconImage,
         gender = gender,
         onSaveClick = {
+            if (!isValidPhoneNumber(phone)) {
+                Toast.makeText(context, "Invalid phone number", Toast.LENGTH_SHORT).show()
+                return@PhoneLayout
+            }
             val user = User(
                 id = userInfo!!.id,
                 name = username,
@@ -248,6 +259,7 @@ private fun PhoneLayout(
     gender: String,
     onSaveClick: () -> Unit,
 ) {
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -271,26 +283,40 @@ private fun PhoneLayout(
             ) {
                 fields.forEach { (label, value) ->
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(label, style = MaterialTheme.typography.bodyMedium)
-                        BasicTextField(
-                            value,
-                            {
-                                when (label) {
-                                    "Username" -> onUsernameChange(it)
-                                    "Phone" -> onPhoneChange(it)
-                                    "Date of Birth" -> onDobChange(it)
-                                    "Address" -> onAddressChange(it)
-                                }
-                            },
-                            textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.End),
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(start = 16.dp)
-                        )
+                        if (label == "Date of Birth") {
+                            Text(
+                                text = value,
+                                style = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.End),
+                                modifier = Modifier
+                                    .clickable { showDatePicker = true }
+                                    .weight(1f)
+                                    .padding(start = 16.dp)
+                            )
+                        } else {
+                            BasicTextField(
+                                value = value,
+                                onValueChange = {
+                                    when (label) {
+                                        "Username" -> onUsernameChange(it)
+                                        "Phone" -> onPhoneChange(it)
+                                        "Address" -> onAddressChange(it)
+                                    }
+                                },
+                                textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.End),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 16.dp),
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = if (label == "Phone") KeyboardType.Phone else KeyboardType.Text
+                                ),
+                            )
+                        }
                     }
                     HorizontalDivider(
                         thickness = 1.dp,
@@ -314,6 +340,20 @@ private fun PhoneLayout(
             Text(
                 "Save Changes",
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+            )
+        }
+
+        if (showDatePicker) {
+            val context = LocalContext.current
+            CustomDatePickerDialog(
+                onDateChange = {
+                    if (it.isBefore(LocalDate.now())) {
+                        onDobChange(it.format(DateTimeFormatter.ofPattern("dd MMM yyyy")))
+                        showDatePicker = false
+                    } else {
+                        Toast.makeText(context, "Invalid Date", Toast.LENGTH_SHORT).show()
+                    }
+                },
             )
         }
     }

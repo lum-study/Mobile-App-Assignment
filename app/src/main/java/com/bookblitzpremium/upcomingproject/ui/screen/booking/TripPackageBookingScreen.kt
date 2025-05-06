@@ -501,7 +501,7 @@ fun isValidCardNumber(cardNumber: String, selectedPaymentMethod: PaymentMethod):
     return cardNumber.length == 16 && selectedPaymentMethod != PaymentMethod.EWallet
 }
 
-fun isValidPhoneNumber(cardNumber: String, selectedPaymentMethod: PaymentMethod): Boolean {
+fun isValidPhoneNumber(cardNumber: String, selectedPaymentMethod: PaymentMethod = PaymentMethod.EWallet): Boolean {
     if (selectedPaymentMethod == PaymentMethod.EWallet) {
         return when {
             cardNumber.startsWith("011") -> cardNumber.length == 11
