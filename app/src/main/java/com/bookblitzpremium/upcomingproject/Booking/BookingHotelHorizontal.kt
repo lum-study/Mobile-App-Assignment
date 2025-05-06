@@ -2,7 +2,6 @@ package com.bookblitzpremium.upcomingproject.Booking
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,19 +16,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,18 +32,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.bookblitzpremium.upcomingproject.HandleRotateState
+import com.bookblitzpremium.upcomingproject.HotelDetails
 import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
@@ -61,6 +56,7 @@ import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
+import java.net.URLEncoder
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -69,36 +65,42 @@ import java.time.temporal.TemporalAdjusters
 
 @Composable
 fun HotelBookingHorizontalScreen(
-    hotelID: String,
     navController: NavController,
+    hotelID: String,
+    saveData: HandleRotateState,
+    isOrder: String = "false",
     viewModel: LocalHotelViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
+
+    val hotelDetails by saveData.hotelDetails.collectAsState()
+
     LaunchedEffect(Unit) {
         viewModel.getHotelByID(hotelID)
     }
 
-    var roomCount: Int? by remember { mutableStateOf(1) }
-    var adultCount: Int? by remember { mutableStateOf(4) }
+    var roomCount by remember { mutableStateOf(if (hotelDetails.roomBooked.isNotEmpty()) hotelDetails.roomBooked.toIntOrNull() ?: 1 else hotelDetails.roomBooked.toIntOrNull() ?: 1) }
+    var adultCount by remember { mutableStateOf(if (hotelDetails.totalPerson.isNotEmpty()) hotelDetails.totalPerson.toIntOrNull() ?: 4 else hotelDetails.totalPerson.toIntOrNull() ?: 4) }
 
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     val today = LocalDate.now()
     val nextFriday = today.with(TemporalAdjusters.next(DayOfWeek.FRIDAY))
 
-    var startDate by remember { mutableStateOf(today.format(formatter)) }
-    var endDate by remember { mutableStateOf(nextFriday.format(formatter)) }
+    var startDate by remember { mutableStateOf( if(hotelDetails.startDate.isEmpty()) today.format(formatter) else hotelDetails.startDate) }
+    var endDate by remember { mutableStateOf(if(hotelDetails.endDate.isEmpty()) nextFriday.format(formatter) else hotelDetails.endDate )}
 
     // Dialog states
     var showFigureDialog by remember { mutableStateOf(false) }
     var showDateDialog by remember { mutableStateOf(false) }
+
     val hotel by viewModel.selectedHotel.collectAsState()
 
-    var rede by remember { mutableStateOf(false) }
-
-    if (hotel != null) {
+    if (hotel!=null) {
         val hotelData = hotel!!
-
-        Row(modifier = modifier.fillMaxSize()) {
+        Row(
+            modifier = modifier.fillMaxSize()
+                .padding(horizontal = 16.dp)
+        ) {
             Row(
                 modifier = modifier.fillMaxSize()
             ) {
@@ -115,15 +117,16 @@ fun HotelBookingHorizontalScreen(
                         contentScale = ContentScale.Crop
                     )
 
-                    if (rede) {
-
-                    } else {
+                    val isOrderBoolean = isOrder == "true"
+                    if(isOrderBoolean){
+                        //display empty for order
+                    }else{
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(Color.Transparent)
                                 .align(Alignment.BottomEnd)
-                                .padding(horizontal = 16.dp, vertical = 30.dp),
+                                .padding(horizontal = 16.dp, vertical = 16.dp),
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             Button(
@@ -157,36 +160,55 @@ fun HotelBookingHorizontalScreen(
                                     color = AppTheme.colorScheme.onPrimary
                                 )
                             }
-                        }
 
-                        if (showFigureDialog) {
-                            DialogFigure(
-                                onDismissRequest = { showFigureDialog = false },
-                                onDateSelected = { room, figure ->
-                                    roomCount = room ?: 0
-                                    adultCount = figure ?: 0
-                                }
-                            )
-                        }
+                            val coroutineScope = rememberCoroutineScope()
 
-                        if (showDateDialog) {
-                            DialogDate(
-                                navController = navController,
-                                onDismissRequest = { showDateDialog = false },
-                                onDateSelected = { start, end ->
-                                    startDate = start.toString()
-                                    endDate = end.toString()
-                                }
-                            )
+                            if (showFigureDialog) {
+                                DialogFigure(
+                                    onDismissRequest = {
+                                        if (roomCount >= 0 && adultCount >= 0) {
+                                            coroutineScope.launch {
+                                                saveData.updateRoomCount(roomCount.toString())
+                                                saveData.updateAdultCount(adultCount.toString())
+                                            }
+                                        }
+
+                                        showFigureDialog = false
+                                    },
+                                    onDateSelected = { figure, room ->
+                                        adultCount = figure ?: 0
+                                        roomCount = room ?: 0
+                                    }
+                                )
+                            }
+
+                            if (showDateDialog) {
+                                DialogDate(
+                                    navController = navController,
+                                    onDismissRequest = {
+                                        if(startDate.isNotEmpty() && endDate.isNotEmpty()){
+                                            coroutineScope.launch {
+                                                saveData.updateStartDateDetails(startDate)
+                                                saveData.updateEndDateDetails(endDate)
+                                            }
+                                        }
+                                        showDateDialog = false },
+                                    onDateSelected = { start, end ->
+                                        startDate = start.toString()
+                                        endDate = end.toString()
+                                    }
+                                )
+                            }
                         }
                     }
+
                 }
 
                 var copyPaymentID by remember { mutableStateOf("") }
                 val paymentViewModel: RemotePaymentViewModel = hiltViewModel()
                 val coroutineScope = rememberCoroutineScope()
 
-                val totalPrice = (roomCount ?: 0).toDouble() * hotelData.price
+                val totalPrice = adultCount.toDouble() * hotelData.price
 
                 val payment = remember(copyPaymentID) {
                     Payment(
@@ -199,77 +221,65 @@ fun HotelBookingHorizontalScreen(
                     ).copy(id = copyPaymentID) // Update paymentID reactively
                 }
 
-                val paymentDetails = HotelDetails(
-                    totalPrice = totalPrice.toString(),
-                    totalPerson = (adultCount ?: 0).toString(),
-                    roomBooked = (roomCount ?: 0).toString(),
-                    startDate = startDate.toString(),
-                    endDate = endDate.toString(),
-                    paymentID = copyPaymentID
-                )
-
                 Column(
                     modifier = modifier
                         .weight(1f)
+                        .padding(16.dp)
                         .fillMaxHeight()
                         .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
                         .background(AppTheme.colorScheme.background)
                 ) {
-
-                    if (rede) {
-                        Column(
-                            modifier = Modifier
-                                .padding(horizontal = 24.dp)
-                        ){
-                            PaymentDetails(
+                    LazyColumn {
+                        item {
+                            HotelInfoSection(
+                                showBackButton = 2,
+                                modifier = Modifier,
                                 navController = navController,
-                                payment = paymentDetails,
-                                hotel = hotelData,
-                                modifier = Modifier
+                                hotel = hotelData
                             )
                         }
-                    } else {
-                        LazyColumn {
-                            item {
-                                HotelInfoSection(
-                                    showBackButton = 2,
-                                    modifier = Modifier,
-                                    navController = navController,
-                                    hotel = hotelData
+
+                        item {
+                            Column(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                            ){
+                                FeatureDisplay(
+                                    hotel = hotelData.feature,
+                                    rating = hotelData.rating,
+                                    tabletScreen = true,
                                 )
                             }
+                        }
 
-                            item {
-                                Column(
-                                    modifier = Modifier
-                                        .padding(16.dp)
-                                ){
-                                    FeatureDisplay(
-                                        hotel = hotelData.feature,
-                                        rating = hotelData.rating,
-                                        tabletScreen = true,
-                                    )
-                                }
-                            }
+                        item {
+                            BookingSummaryTable(
+                                startDate = startDate.toString(),
+                                endDate = endDate.toString(),
+                                roomCount = roomCount.toString(),
+                                adultCount = adultCount.toString()
+                            )
+                        }
 
-                            item {
-                                BookingSummaryTable(
-                                    startDate = startDate.toString(),
-                                    endDate = endDate.toString(),
-                                    roomCount = roomCount.toString(),
-                                    adultCount = adultCount.toString()
-                                )
-                            }
+                        item {
+                            HotelReviewsSection(
+                                showBackButton = 1,
+                                modifier = Modifier,
+                                hotelID = hotelData.id
+                            )
+                        }
 
-                            item {
-                                HotelReviewsSection(
-                                    showBackButton = 1,
-                                    modifier = Modifier,
-                                    hotelID = hotelData.id
-                                )
-                            }
+                        val hotelID = hotelID
+                        val totalPerson = adultCount
+                        val roomBooked = roomCount
+                        val paymentMethod = payment.paymentMethod
 
+                        val isOrderBoolean = isOrder == "true"
+                        if(isOrderBoolean){
+                            //display empty for order
+                        }else{
                             item {
+                                val cardNumber = ""
                                 Button(
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = AppTheme.colorScheme.primary,
@@ -279,13 +289,26 @@ fun HotelBookingHorizontalScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(16.dp),
-                                    enabled = startDate != null && endDate != null && roomCount != null && adultCount != null,
+                                    enabled = startDate != null && endDate != null &&  roomCount!= 0 && adultCount != 0,
                                     onClick = {
                                         coroutineScope.launch {
+
+                                            if (roomCount >= 0 && adultCount >= 0) {
+                                                saveData.updateRoomCount(roomCount.toString())
+                                                saveData.updateAdultCount(adultCount.toString())
+                                            }
+                                            if(startDate.isNotEmpty() && endDate.isNotEmpty()){
+                                                saveData.updateStartDateDetails(startDate)
+                                                saveData.updateEndDateDetails(endDate)
+                                            }
+                                            saveData.updateTotalPrice(totalPrice.toString())
                                             val paymentID = paymentViewModel.addReturnIDPayment(payment)
                                             if (paymentID.isNotEmpty()) {
-                                                copyPaymentID = paymentID
-                                                rede = true
+                                                val encodedPaymentID = URLEncoder.encode(paymentID, "UTF-8")
+                                                saveData.updatePaymentId(paymentID)
+                                                navController.navigate(
+                                                    "${AppScreen.BookingReview.route}/$hotelID/$startDate/$endDate/$totalPerson/$roomBooked/$totalPrice/$paymentMethod/$cardNumber/$encodedPaymentID"
+                                                )
                                             }
                                         }
                                     }
@@ -297,7 +320,6 @@ fun HotelBookingHorizontalScreen(
                                     )
                                 }
                             }
-//                            item { Spacer(modifier = Modifier.height(100.dp)) }
                         }
                     }
                 }
@@ -311,143 +333,143 @@ fun HotelBookingHorizontalScreen(
     }
 }
 
-@Composable
-fun PaymentImageReview(hotelImageUrl: String) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(AppTheme.colorScheme.background),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Packet",
-            style = AppTheme.typography.titleLarge,
-            color = AppTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(bottom = 20.dp)
-        )
+//@Composable
+//fun PaymentImageReview(hotelImageUrl: String) {
+//    Column(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .background(AppTheme.colorScheme.background),
+//        horizontalAlignment = Alignment.CenterHorizontally
+//    ) {
+//        Text(
+//            text = "Packet",
+//            style = AppTheme.typography.titleLarge,
+//            color = AppTheme.colorScheme.onBackground,
+//            modifier = Modifier.padding(bottom = 20.dp)
+//        )
+//
+//        UrlImage(
+//            imageUrl = hotelImageUrl,
+//            modifier = Modifier
+//                .width(350.dp)
+//                .height(250.dp)
+//                .clip(RoundedCornerShape(8.dp)),
+//            contentScale = ContentScale.Crop,
+//        )
+//    }
+//}
 
-        UrlImage(
-            imageUrl = hotelImageUrl,
-            modifier = Modifier
-                .width(350.dp)
-                .height(250.dp)
-                .clip(RoundedCornerShape(8.dp)),
-            contentScale = ContentScale.Crop,
-        )
-    }
-}
-
-@Composable
-fun HotelInfoCard(
-    hotel: Hotel,
-    reviewCount: Int,
-    navController: NavController,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(8.dp),
-        colors = CardDefaults.cardColors(containerColor = AppTheme.colorScheme.background)
-    ) {
-        Column {
-            // 1) Hotel image with name overlay
-            Box {
-                UrlImage(
-                    imageUrl = hotel.imageUrl,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                )
-                // Gradient based on theme
-                Box(
-                    Modifier
-                        .matchParentSize()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, AppTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)),
-                                startY = 100f
-                            )
-                        )
-                )
-                Text(
-                    text = hotel.name,
-                    style = AppTheme.typography.largeBold,
-                    color = AppTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(16.dp)
-                )
-            }
-
-            Spacer(Modifier.height(12.dp))
-
-            // 2) Location & price row
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-
-                    IconButton(
-                        onClick = {
-
-                        }
-                    ) {
-                        Icon(
-                            Icons.Default.LocationOn,
-                            null,
-                            tint = AppTheme.colorScheme.primary
-                        )
-                    }
-                    Spacer(Modifier.width(4.dp))
-                    Text(
-                        hotel.address,
-                        style = AppTheme.typography.labelMedium,
-                        color = AppTheme.colorScheme.secondary
-                    )
-                }
-                Text(
-                    text = "$${"%.2f".format(hotel.price)}/night",
-                    style = AppTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                    color = AppTheme.colorScheme.primary
-                )
-            }
-
-            Spacer(Modifier.height(12.dp))
-
-            // 3) Rating chips
-            Row(
-                modifier = Modifier
-                    .horizontalScroll(rememberScrollState())
-                    .padding(start = 16.dp, bottom = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // star rating chip
-                AssistChip(
-                    onClick = { },
-                    label = { Text("${hotel.rating} ★", style = AppTheme.typography.labelMedium, color = AppTheme.colorScheme.onSurface) }
-                )
-                // review count chip
-                AssistChip(
-                    onClick = { },
-                    label = { Text("$reviewCount reviews", style = AppTheme.typography.labelMedium, color = AppTheme.colorScheme.onSurface) }
-                )
-                // feature chip
-                AssistChip(
-                    onClick = { },
-                    label = { Text(hotel.feature, style = AppTheme.typography.labelMedium, color = AppTheme.colorScheme.onSurface) }
-                )
-            }
-        }
-    }
-}
+//@Composable
+//fun HotelInfoCard(
+//    hotel: Hotel,
+//    reviewCount: Int,
+//    navController: NavController,
+//    modifier: Modifier = Modifier
+//) {
+//    Card(
+//        modifier = modifier
+//            .fillMaxWidth()
+//            .padding(16.dp),
+//        shape = RoundedCornerShape(16.dp),
+//        elevation = CardDefaults.cardElevation(8.dp),
+//        colors = CardDefaults.cardColors(containerColor = AppTheme.colorScheme.background)
+//    ) {
+//        Column {
+//            // 1) Hotel image with name overlay
+//            Box {
+//                UrlImage(
+//                    imageUrl = hotel.imageUrl,
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(200.dp)
+//                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+//                )
+//                // Gradient based on theme
+//                Box(
+//                    Modifier
+//                        .matchParentSize()
+//                        .background(
+//                            Brush.verticalGradient(
+//                                colors = listOf(Color.Transparent, AppTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)),
+//                                startY = 100f
+//                            )
+//                        )
+//                )
+//                Text(
+//                    text = hotel.name,
+//                    style = AppTheme.typography.largeBold,
+//                    color = AppTheme.colorScheme.onPrimary,
+//                    modifier = Modifier
+//                        .align(Alignment.BottomStart)
+//                        .padding(16.dp)
+//                )
+//            }
+//
+//            Spacer(Modifier.height(12.dp))
+//
+//            // 2) Location & price row
+//            Row(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(horizontal = 16.dp),
+//                verticalAlignment = Alignment.CenterVertically,
+//                horizontalArrangement = Arrangement.SpaceBetween
+//            ) {
+//                Row(verticalAlignment = Alignment.CenterVertically) {
+//
+//                    IconButton(
+//                        onClick = {
+//
+//                        }
+//                    ) {
+//                        Icon(
+//                            Icons.Default.LocationOn,
+//                            null,
+//                            tint = AppTheme.colorScheme.primary
+//                        )
+//                    }
+//                    Spacer(Modifier.width(4.dp))
+//                    Text(
+//                        hotel.address,
+//                        style = AppTheme.typography.labelMedium,
+//                        color = AppTheme.colorScheme.secondary
+//                    )
+//                }
+//                Text(
+//                    text = "$${"%.2f".format(hotel.price)}/night",
+//                    style = AppTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+//                    color = AppTheme.colorScheme.primary
+//                )
+//            }
+//
+//            Spacer(Modifier.height(12.dp))
+//
+//            // 3) Rating chips
+//            Row(
+//                modifier = Modifier
+//                    .horizontalScroll(rememberScrollState())
+//                    .padding(start = 16.dp, bottom = 12.dp),
+//                horizontalArrangement = Arrangement.spacedBy(8.dp)
+//            ) {
+//                // star rating chip
+//                AssistChip(
+//                    onClick = { },
+//                    label = { Text("${hotel.rating} ★", style = AppTheme.typography.labelMedium, color = AppTheme.colorScheme.onSurface) }
+//                )
+//                // review count chip
+//                AssistChip(
+//                    onClick = { },
+//                    label = { Text("$reviewCount reviews", style = AppTheme.typography.labelMedium, color = AppTheme.colorScheme.onSurface) }
+//                )
+//                // feature chip
+//                AssistChip(
+//                    onClick = { },
+//                    label = { Text(hotel.feature, style = AppTheme.typography.labelMedium, color = AppTheme.colorScheme.onSurface) }
+//                )
+//            }
+//        }
+//    }
+//}
 
 @Composable
 fun HotelInfoSection(
@@ -457,7 +479,6 @@ fun HotelInfoSection(
     hotel: Hotel
 ) {
     val textOffset = 24.dp
-    val rangeBetweenLocation = 150.dp
 
     Column(
         modifier = Modifier
@@ -482,11 +503,11 @@ fun HotelInfoSection(
                         modifier = Modifier
                     )
 
-                    Spacer(modifier = Modifier.width(250.dp))
+                    Spacer(modifier = Modifier.weight(1f))
 
                     Box(
                         modifier = Modifier
-                            .offset(x = rangeBetweenLocation)
+                            .offset(x = -50.dp)
                             .size(48.dp)
                             .background(AppTheme.colorScheme.surfaceVariant, RoundedCornerShape(16.dp))
                             .clickable { /* Handle location click */ },

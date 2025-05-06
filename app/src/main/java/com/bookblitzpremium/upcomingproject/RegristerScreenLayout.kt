@@ -2,6 +2,8 @@ package com.bookblitzpremium.upcomingproject
 
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.TabletAuth.RegristerTabletScreen
@@ -21,6 +23,7 @@ fun RegristerSizeLayout(
     val configuration = LocalConfiguration.current
     val deviceType = getDeviceType(windowSizeClass, configuration)
 
+    val userData by viewModel.userDetails.collectAsState()
 
     when (deviceType){
         DeviceType.MobilePortrait -> {
@@ -34,8 +37,9 @@ fun RegristerSizeLayout(
             RegristerTabletScreen(
                 navController,
                 tabletScreen = true,
-                email = email,
-                password = password
+                email = userData.email,
+                password = userData.password,
+                viewModel = viewModel
             )
         }
 
@@ -43,8 +47,9 @@ fun RegristerSizeLayout(
             RegristerTabletScreen(
                 navController,
                 tabletScreen = false,
-                email = email,
-                password = password
+                email = userData.email,
+                password = userData.password,
+                viewModel = viewModel
             )
         }
     }

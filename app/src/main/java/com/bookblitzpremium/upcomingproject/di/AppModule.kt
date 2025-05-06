@@ -1,6 +1,7 @@
 package com.bookblitzpremium.upcomingproject.di
 
 import android.content.Context
+import com.bookblitzpremium.upcomingproject.HandleRotateState
 import com.bookblitzpremium.upcomingproject.data.datastore.DataStoreManager
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
@@ -24,4 +25,5 @@ object AppModule {
     fun provideDataStoreManager(@ApplicationContext context: Context): DataStoreManager {
         return DataStoreManager(context)
     }
+
 }

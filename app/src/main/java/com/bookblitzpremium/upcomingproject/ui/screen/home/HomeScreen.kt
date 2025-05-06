@@ -486,6 +486,7 @@ fun HotelSection(
     modifier: Modifier = Modifier,
     isMobile: Boolean = true,
     isPortrait: Boolean = false,
+    isOrder : String = "false",
     navController: NavHostController,
 ) {
     Column(
@@ -507,7 +508,7 @@ fun HotelSection(
                         hotel = hotel,
                         modifier = Modifier.width(200.dp),
                         onClick = {
-                            navController.navigate(AppScreen.Hotel.passData(hotel!!.id, ""))
+                            navController.navigate(AppScreen.Hotel.passData(hotel!!.id, "",  isOrder))
                         })
                 }
             }
@@ -529,7 +530,8 @@ fun HotelSection(
                             navController.navigate(
                                 AppScreen.Hotel.passData(
                                     hotel!!.id,
-                                    ""
+                                    "",
+                                    isOrder
                                 )
                             )
                         })
@@ -548,7 +550,7 @@ fun HotelSection(
                         hotel = hotel,
                         modifier = Modifier.height(300.dp),
                         onClick = {
-                            navController.navigate(AppScreen.Hotel.passData(hotel!!.id, ""))
+                            navController.navigate(AppScreen.Hotel.passData(hotel!!.id, "", isOrder))
                         })
                 }
             }

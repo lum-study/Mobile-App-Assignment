@@ -69,14 +69,7 @@ import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import java.time.LocalDate
 
 
-data class HotelDetails(
-    val totalPrice : String ,
-    val totalPerson : String ,
-    val roomBooked : String ,
-    val startDate : String,
-    val endDate : String ,
-    val paymentID: String
-)
+
 
 
 //fun generateHotelDescription(hotelName: String, rating: Double): String {
@@ -517,7 +510,6 @@ fun SelectFigure(
         "20 Person - 5 Room",
         "24 Person - 6 Room",
     )
-
 
     Column(
         modifier = modifier.padding(16.dp),

@@ -230,7 +230,8 @@ fun OrderScreen(navController: NavHostController) {
                             navController.navigate(
                                 AppScreen.Hotel.passData(
                                     booking.hotelID,
-                                    booking.id
+                                    booking.id,
+                                    "true"
                                 )
                             )
                         },

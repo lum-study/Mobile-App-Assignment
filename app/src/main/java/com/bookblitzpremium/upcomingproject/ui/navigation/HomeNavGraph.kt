@@ -1,12 +1,15 @@
 package com.bookblitzpremium.upcomingproject.ui.navigation
 
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
+import com.bookblitzpremium.upcomingproject.HandleRotateState
 import com.bookblitzpremium.upcomingproject.HotelBookingScreenLayout
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.ui.screen.booking.HotelBookingListScreen
@@ -19,22 +22,24 @@ import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.ScheduleSc
 import com.bookblitzpremium.upcomingproject.ui.screen.trippackageinfo.TripPackageScreen
 import java.net.URLDecoder
 
-fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
+fun NavGraphBuilder.homeNavGraph(navController: NavHostController, saveData: HandleRotateState) {
     navigation(
         startDestination = AppScreen.Home.route,
         route = AppScreen.HomeGraph.route
     ) {
 
         composable(
-            "${AppScreen.Hotel.route}/{hotelID}/{tripPackageID}",
+            "${AppScreen.Hotel.route}/{hotelID}/{tripPackageID}/{isOrder}",
         ){ backStackEntry ->
             val hotelID = backStackEntry.arguments?.getString("hotelID") ?: ""
             val tripPackageID = backStackEntry.arguments?.getString("tripPackageID") ?: ""
-
+            val isOrder = backStackEntry.arguments?.getString("isOrder") ?: "false"
             HotelBookingScreenLayout(
                 navController = navController,
                 hotelID = hotelID,
+                isOrder = isOrder,
                 tripPackageID = tripPackageID,
+                saveData = saveData
             )
         }
 

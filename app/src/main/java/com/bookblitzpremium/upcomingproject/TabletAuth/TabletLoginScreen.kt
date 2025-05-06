@@ -78,7 +78,7 @@ fun TabletLoginScreen(
     tabletScreen: Boolean,
     email: String = "",
     password: String = "",
-    viewModel: AuthViewModel = hiltViewModel()
+    viewModel: AuthViewModel
 ) {
     var email by rememberSaveable { mutableStateOf(email) }
     var password by rememberSaveable { mutableStateOf(password) }
@@ -97,6 +97,11 @@ fun TabletLoginScreen(
             }
             else -> {}
         }
+    }
+
+    LaunchedEffect(email,password) {
+        viewModel.updateEmails(email)
+        viewModel.updatePassword(password)
     }
 
     LaunchedEffect(toastMessage, toastTrigger) {
@@ -410,7 +415,7 @@ fun LoginWelcomeScreen(
     navController: NavController,
     tabletScreen: Boolean,
     email: String = "",
-    password: String = ""
+    password: String = "",
 ) {
     val viewModel: AuthViewModel = hiltViewModel()
     val authState by viewModel.authState.collectAsState()

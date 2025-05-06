@@ -110,6 +110,7 @@ class RemoteHotelBookingViewModel @Inject constructor(
                 remoteHotelBookingRepository.updateHotelBooking(hotelBooking)
                 localHotelBookingRepository.upsertHotelBooking(hotelBooking)
                 _success.value = true
+                delay(2500L)
             } catch (e: SQLiteException) {
                 _error.value = "Database error: ${e.localizedMessage}"
             } catch (e: Exception) {

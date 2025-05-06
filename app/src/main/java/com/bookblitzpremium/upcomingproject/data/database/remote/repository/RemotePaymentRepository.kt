@@ -4,6 +4,7 @@ import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBook
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalPaymentRepository
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -20,11 +21,17 @@ class RemotePaymentRepository @Inject constructor(
     }
 
     suspend fun addPayment(payment: Payment): String {
-        val docRef = paymentRef.document()
+        val docRef = if (payment.id.isNotBlank()) {
+            paymentRef.document(payment.id)
+        } else {
+            paymentRef.document()
+        }
+
         val newPayment = payment.copy(id = docRef.id)
         docRef.set(newPayment).await()
         return docRef.id
     }
+
 
     suspend fun getAllPayment(): List<Payment> = try {
         paymentRef.get().await().toObjects(Payment::class.java)
