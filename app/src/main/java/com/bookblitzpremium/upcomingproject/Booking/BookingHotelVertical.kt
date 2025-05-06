@@ -50,6 +50,7 @@ import com.bookblitzpremium.upcomingproject.HandleRotateState
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemotePaymentViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.HeaderDetails
@@ -70,9 +71,14 @@ fun HotelBookingVerticalScreen(
     maxSize: Dp,
     hotelID: String,
     isOrder: String = "false",
+    bookingID:String = "",
+    numberOfRoom :String = "",
+    numberOFClient :String = "",
+    startDate :String = "",
+    endDate :String = "",
     navController: NavController,
     saveData: HandleRotateState,
-    viewModel: LocalHotelViewModel = hiltViewModel()
+    hotelViewModel: LocalHotelViewModel = hiltViewModel(),
 ) {
     var topHeight by remember { mutableStateOf(defaultSize) }
     val minHeight = 100.dp
@@ -82,7 +88,7 @@ fun HotelBookingVerticalScreen(
     val hotelDetails by saveData.hotelDetails.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.getHotelByID(hotelID)
+        hotelViewModel.getHotelByID(hotelID)
     }
 
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
@@ -97,24 +103,38 @@ fun HotelBookingVerticalScreen(
         previousDeviceType = deviceType
     }
 
-    var roomCount by remember { mutableStateOf(if (hotelDetails.roomBooked.isNotEmpty()) hotelDetails.roomBooked.toIntOrNull() ?: 1 else hotelDetails.roomBooked.toIntOrNull() ?: 1) }
-    var adultCount by remember { mutableStateOf(if (hotelDetails.totalPerson.isNotEmpty()) hotelDetails.totalPerson.toIntOrNull() ?: 4 else hotelDetails.totalPerson.toIntOrNull() ?: 4) }
+    val initialRoomCount: Int = if (bookingID.isNotEmpty()) {
+        numberOfRoom.toIntOrNull() ?: 1
+    } else {
+        hotelDetails.numberOfRoom.toIntOrNull() ?: 1
+    }
+
+    val initialClientCount: Int = if (bookingID.isNotEmpty()) {
+        numberOFClient.toIntOrNull() ?: 1
+    } else {
+        hotelDetails.numberOFClient.toIntOrNull() ?: 1
+    }
+
+    var numberOfRoom by remember { mutableStateOf(initialRoomCount) }
+    var numberOFClient by remember { mutableStateOf(initialClientCount ) }
 
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     val today = LocalDate.now()
     val nextFriday = today.with(TemporalAdjusters.next(DayOfWeek.FRIDAY))
 
-    var startDate by remember { mutableStateOf( if(hotelDetails.startDate.isNotEmpty()) hotelDetails.startDate else today.format(formatter).toString()) }
-    var endDate by remember { mutableStateOf(if(hotelDetails.endDate.isNotEmpty()) hotelDetails.endDate else nextFriday.format(formatter).toString()) }
+    var startDate by remember { mutableStateOf(if(bookingID.isNotEmpty()) startDate else if(hotelDetails.startDate.isNotEmpty()) hotelDetails.startDate else today.format(formatter).toString()) }
+    var endDate by remember { mutableStateOf( if(bookingID.isNotEmpty()) endDate else if(hotelDetails.endDate.isNotEmpty()) hotelDetails.endDate else nextFriday.format(formatter).toString()) }
 
     var showFigureDialog by remember { mutableStateOf(false) }
     var showDateDialog by remember { mutableStateOf(false) }
 
-    val hotel by viewModel.selectedHotel.collectAsState()
+    val hotel by hotelViewModel.selectedHotel.collectAsState()
 
     LaunchedEffect(startDate,endDate) {
         saveData.updateStartDateDetails(startDate)
         saveData.updateEndDateDetails(endDate)
+        saveData.updateRoomCount(numberOfRoom.toString())
+        saveData.updateAdultCount(numberOFClient.toString())
     }
 
     if (hotel!=null) {
@@ -187,16 +207,16 @@ fun HotelBookingVerticalScreen(
                 if (showFigureDialog) {
                     DialogFigure(
                         onDismissRequest = {
-                            if (roomCount >= 0 && adultCount >= 0) {
+                            if (numberOfRoom >= 0 && numberOFClient >= 0) {
                                 coroutineScope.launch {
-                                    saveData.updateRoomCount(roomCount.toString())
-                                    saveData.updateAdultCount(adultCount.toString())
+                                    saveData.updateRoomCount(numberOfRoom.toString())
+                                    saveData.updateAdultCount(numberOFClient.toString())
                                 }
                             }
                             showFigureDialog = false },
                         onDateSelected = { figure,room  ->
-                            adultCount = figure ?: 1
-                            roomCount = room ?: 1
+                            numberOFClient = figure ?: 1
+                            numberOfRoom = room ?: 1
                         }
                     )
                 }
@@ -230,8 +250,8 @@ fun HotelBookingVerticalScreen(
                 hotel = hotelData,
                 startDate = startDate,
                 endDate = endDate,
-                adultCount = adultCount,
-                roomBooked = roomCount,
+                adultCount = numberOFClient,
+                roomBooked = numberOfRoom,
                 isOrder = isOrder,
                 saveData = saveData,
                 navController = navController

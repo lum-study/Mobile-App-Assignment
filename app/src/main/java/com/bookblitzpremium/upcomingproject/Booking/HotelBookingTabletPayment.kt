@@ -190,8 +190,8 @@ fun PaymentDetails(
 
                             DetailsSection(
                                 totalPrice = dataOnChange.totalPrice,
-                                totalPerson = dataOnChange.totalPerson,
-                                roomBooked = dataOnChange.roomBooked,
+                                totalPerson = dataOnChange.numberOFClient,
+                                roomBooked = dataOnChange.numberOfRoom,
                                 startDate = dataOnChange.startDate,
                                 endDate = dataOnChange.endDate,
                                 modifier = Modifier
@@ -216,16 +216,16 @@ fun PaymentDetails(
                                     println("Debug - startDate from dataOnChange: $startDate")
                                     val endDate = dataOnChange.endDate
                                     println("Debug - endDate from dataOnChange: $endDate")
-                                    val totalPersonInt = dataOnChange.totalPerson.toIntOrNull()
+                                    val totalPersonInt = dataOnChange.numberOFClient.toIntOrNull()
                                     if (totalPersonInt == null) {
-                                        println("Debug - Warning: totalPerson '${dataOnChange.totalPerson}' is not a valid integer, defaulting to 1")
+                                        println("Debug - Warning: totalPerson '${dataOnChange.numberOFClient}' is not a valid integer, defaulting to 1")
                                     } else {
                                         println("Debug - totalPerson converted to: $totalPersonInt")
                                     }
                                     val numberOfClient = totalPersonInt ?: 1
-                                    val roomBookedInt = dataOnChange.roomBooked.toIntOrNull()
+                                    val roomBookedInt = dataOnChange.numberOfRoom.toIntOrNull()
                                     if (roomBookedInt == null) {
-                                        println("Debug - Warning: roomBooked '${dataOnChange.roomBooked}' is not a valid integer, defaulting to 1")
+                                        println("Debug - Warning: roomBooked '${dataOnChange.numberOfRoom}' is not a valid integer, defaulting to 1")
                                     } else {
                                         println("Debug - roomBooked converted to: $roomBookedInt")
                                     }

@@ -231,7 +231,11 @@ fun OrderScreen(navController: NavHostController) {
                                 AppScreen.Hotel.passData(
                                     booking.hotelID,
                                     booking.id,
-                                    "true"
+                                    "true",
+                                    booking.numberOfRoom.toString(),
+                                    booking.numberOFClient.toString(),
+                                    booking.startDate,
+                                    booking.endDate,
                                 )
                             )
                         },

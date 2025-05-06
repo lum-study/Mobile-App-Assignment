@@ -128,7 +128,7 @@ class LocalHotelBookingViewModel @Inject constructor(
         }
     }
 
-    fun fetchHotelBookingAndHotelID(){
+    fun fetchByHotelBookingID(bookingID:String){
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
@@ -147,12 +147,12 @@ class LocalHotelBookingViewModel @Inject constructor(
 
 
 
-    fun fetchHotelBookingsById(hotelId: String){
+    fun fetchHotelBookingsById(bookingID: String){
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
             try {
-                val bookings = localHotelBookingRepo.getHotelBookingsByHotelId(hotelId)
+                val bookings = localHotelBookingRepo.getHotelBookingsByBookingID(bookingID)
                 _hotelBookingHistory.value = bookings
             } catch (e: SQLiteException) {
                 _error.value = "Database error: ${e.localizedMessage}"

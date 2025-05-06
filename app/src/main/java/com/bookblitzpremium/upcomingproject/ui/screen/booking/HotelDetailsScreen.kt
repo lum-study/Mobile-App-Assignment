@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.bookblitzpremium.upcomingproject.Booking.BookingSummaryTable
 import com.bookblitzpremium.upcomingproject.Booking.FeatureDisplay
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
@@ -61,6 +62,10 @@ fun HotelDetailScreen(
     navController: NavController,
     hotelBookingId: String,
     tripPackageID: String = "",
+    numberOfRoom :String = "",
+    numberOFClient :String = "",
+    startDate :String = "",
+    endDate :String = "",
     viewModel: LocalHotelViewModel = hiltViewModel(),
 ) {
     LaunchedEffect(hotelBookingId) {
@@ -87,6 +92,10 @@ fun HotelDetailScreen(
                 )
             },
             tripPackageID = tripPackageID,
+            numberOfRoom = numberOfRoom,
+            numberOFClient = numberOFClient,
+            startDate = startDate,
+            endDate = endDate,
             navController = navController
         )
     }
@@ -98,6 +107,10 @@ private fun HotelDetailContent(
     hotel: Hotel,
     onBook: (String) -> Unit,
     tripPackageID: String,
+    numberOfRoom :String = "",
+    numberOFClient :String = "",
+    startDate :String = "",
+    endDate :String = "",
     navController: NavController
 ) {
     Column(
@@ -111,6 +124,21 @@ private fun HotelDetailContent(
         HotelInfoSection(hotel.name, hotel.address, hotel.rating, navController, hotel.feature)
         Spacer(Modifier.height(16.dp))
         AboutSection(hotel.name, hotel.rating)
+        if(tripPackageID.isNotEmpty()){
+            Spacer(Modifier.height(16.dp))
+            BookingSummaryTable(
+                startDate = startDate.toString(),
+                endDate = endDate.toString(),
+                roomCount = numberOfRoom.toString(),
+                adultCount = numberOFClient.toString(),
+
+            )
+            println("Hello bye")
+            println(startDate)
+            println(endDate)
+            println(numberOfRoom)
+            println(numberOFClient)
+        }
         Spacer(Modifier.weight(1f))
         if (tripPackageID == "") {
             BookNowButton(price = hotel.price.toString(), onBook = onBook)

@@ -16,8 +16,13 @@ import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 fun HotelBookingScreenLayout(
     navController: NavController,
     hotelID: String,
+    bookingID:String = "",
     tripPackageID: String = "",
     isOrder : String = "false",
+    numberOfRoom :String = "",
+    numberOFClient :String = "",
+    startDate :String = "",
+    endDate :String = "",
     saveData: HandleRotateState
 ) {
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
@@ -31,7 +36,11 @@ fun HotelBookingScreenLayout(
             HotelDetailScreen(
                 navController = navController,
                 hotelBookingId = hotelID,
-                tripPackageID = tripPackageID
+                tripPackageID = tripPackageID,
+                numberOfRoom =numberOfRoom,
+                numberOFClient = numberOFClient,
+                startDate =startDate,
+                endDate = endDate,
             )
         }
         DeviceType.TabletLandscape -> {
@@ -46,9 +55,14 @@ fun HotelBookingScreenLayout(
         else -> {
             HotelBookingVerticalScreen(
                 defaultSize = 500.dp,
+                bookingID = bookingID,
                 maxSize = 800.dp,
                 hotelID = hotelID,
                 isOrder = isOrder,
+                numberOfRoom =numberOfRoom,
+                numberOFClient = numberOFClient,
+                startDate =startDate,
+                endDate = endDate,
                 navController = navController,
                 saveData = saveData,
             )

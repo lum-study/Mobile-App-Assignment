@@ -38,6 +38,32 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController, saveData: Han
                 navController = navController,
                 hotelID = hotelID,
                 isOrder = isOrder,
+                bookingID = tripPackageID,
+                tripPackageID = tripPackageID,
+                saveData = saveData
+            )
+        }
+
+
+        composable(
+            "${AppScreen.Hotel.route}/{hotelID}/{tripPackageID}/{isOrder}/{numberOfRoom}/{numberOFClient}/{startDate}/{endDate}",
+        ){ backStackEntry ->
+            val hotelID = backStackEntry.arguments?.getString("hotelID") ?: ""
+            val tripPackageID = backStackEntry.arguments?.getString("tripPackageID") ?: ""
+            val isOrder = backStackEntry.arguments?.getString("isOrder") ?: "false"
+            val numberOfRoom = backStackEntry.arguments?.getString("numberOfRoom") ?: ""
+            val numberOFClient = backStackEntry.arguments?.getString("numberOFClient") ?: ""
+            val startDate = backStackEntry.arguments?.getString("startDate") ?: ""
+            val endDate = backStackEntry.arguments?.getString("endDate") ?: ""
+            HotelBookingScreenLayout(
+                navController = navController,
+                hotelID = hotelID,
+                isOrder = isOrder,
+                bookingID = tripPackageID,
+                numberOfRoom =numberOfRoom,
+                numberOFClient = numberOFClient,
+                startDate =startDate,
+                endDate = endDate,
                 tripPackageID = tripPackageID,
                 saveData = saveData
             )

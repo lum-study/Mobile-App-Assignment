@@ -54,6 +54,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -93,7 +94,8 @@ fun BookingSummaryTable(
     startDate: String,
     endDate: String,
     roomCount: String,
-    adultCount: String
+    adultCount: String,
+    sizeHeight: Dp = 100.dp
 ) {
     Column(
         modifier = Modifier
@@ -104,7 +106,7 @@ fun BookingSummaryTable(
             .padding(16.dp)
     ) {
         // First row: Check-In / Check-Out
-        Row(Modifier.height(100.dp)) {
+        Row(Modifier.height(sizeHeight)) {
             TableCell(
                 icon = Icons.Filled.CalendarToday,
                 iconDesc = "Check-In",
@@ -123,7 +125,7 @@ fun BookingSummaryTable(
         }
         HorizontalDivider()
         // Second row: Room / Figure
-        Row(Modifier.height(100.dp)) {
+        Row(Modifier.height(sizeHeight)) {
             TableCell(
                 icon = Icons.Filled.Hotel,
                 iconDesc = "Room",
