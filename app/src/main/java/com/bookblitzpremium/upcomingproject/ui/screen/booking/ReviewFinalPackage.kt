@@ -51,6 +51,7 @@ import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.HandleRotateState
 import com.bookblitzpremium.upcomingproject.HotelDetails
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.common.enums.BookingStatus
 import com.bookblitzpremium.upcomingproject.common.enums.PaymentMethod
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
@@ -385,13 +386,14 @@ fun ReviewFinalPackageSelected(
                     println("Debug - cardNumber: $cardNumber")
 
                     val booking = HotelBooking(
-                        startDate = hotelOnChange.startDate,
-                        endDate = hotelOnChange.endDate,
-                        numberOFClient = hotelOnChange.totalPerson.toIntOrNull() ?: 0,
-                        numberOfRoom = hotelOnChange.roomBooked.toIntOrNull() ?: 0,
-                        hotelID = hotelID,
-                        userid = userID,
-                        paymentID = hotelOnChange.paymentID
+                        startDate = startDate,
+                        endDate = endDate,
+                        numberOFClient = totalPerson.toIntOrNull() ?: 1,
+                        numberOfRoom = roomBooked.toIntOrNull() ?: 1,
+                        hotelID = hotelData.id,
+                        userid = userID.toString(), // Add real user ID if available
+                        paymentID = paymentID,
+                        status = BookingStatus.Confirmed.title
                     )
 
                     val localPayment = Payment(

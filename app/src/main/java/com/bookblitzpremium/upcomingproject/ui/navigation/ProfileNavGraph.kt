@@ -43,7 +43,6 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController, userViewMo
         composable(route = AppScreen.Profile.route) {
             ProfileScreen(
                 navController = navController,
-                userName = "John Doe",
                 onBackClick = { navController.popBackStack() },
                 onMenuItemClick = { menuItem ->
                     when (menuItem) {
@@ -59,7 +58,8 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController, userViewMo
 
                         else -> {}
                     }
-                }
+                },
+                authViewModel = userViewModel
             )
         }
     }

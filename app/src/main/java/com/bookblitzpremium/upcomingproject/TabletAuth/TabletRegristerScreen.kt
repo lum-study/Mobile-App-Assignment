@@ -381,8 +381,10 @@ fun WelcomeRegristerScreen(
         when (signupState) {
             is SignupState.Success -> {
                 withContext(Dispatchers.Main) {
-                    navController.navigate(AppScreen.Home.route) {
-                        popUpTo(AppScreen.Register.route) { inclusive = true }
+                    navController.navigate(AppScreen.Home.route){
+                        popUpTo(AppScreen.Login.route){
+                            inclusive = true
+                        }
                     }
                 }
                 viewModel.clearSignUpState()

@@ -1,7 +1,9 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.profile
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,7 +19,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Female
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Logout
@@ -27,13 +28,14 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Task
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,30 +45,31 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
+import com.bookblitzpremium.upcomingproject.common.enums.DeviceType
 import com.bookblitzpremium.upcomingproject.common.enums.Gender
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalUserViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.Base64Image
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun ProfileScreen(
     navController: NavHostController,
-    userName: String,
     onBackClick: () -> Unit = {},
     onMenuItemClick: (String) -> Unit = {},
+    authViewModel: AuthViewModel,
 ) {
-    val hotelId = "hotel123"
-    val windowSizeClass = LocalConfiguration.current.screenWidthDp
-    val isTabletPortrait = windowSizeClass in 601..1279
-    val isTabletLandscape = windowSizeClass >= 1280
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val configuration = LocalConfiguration.current
+    val deviceType = getDeviceType(windowSizeClass = windowSizeClass, configuration = configuration)
 
     val localUserViewModel: LocalUserViewModel = hiltViewModel()
     val userID = FirebaseAuth.getInstance().currentUser?.uid ?: ""
@@ -76,31 +79,23 @@ fun ProfileScreen(
     }
 
     AppTheme {
-        when {
-            isTabletLandscape -> TabletProfileScreen(
-                navController,
-                userName,
+        when (deviceType) {
+            DeviceType.MobilePortrait -> PhoneProfileScreen(
                 onBackClick,
                 onMenuItemClick,
-                hotelId,
                 userInfo
             )
 
-            isTabletPortrait -> TabletProfileScreen(
+            DeviceType.TabletLandscape -> TabletProfileScreen(
                 navController,
-                userName,
                 onBackClick,
-                onMenuItemClick,
-                hotelId,
-                userInfo
+                userInfo,
+                authViewModel,
             )
 
             else -> PhoneProfileScreen(
-                navController,
-                userName,
                 onBackClick,
                 onMenuItemClick,
-                hotelId,
                 userInfo
             )
         }
@@ -110,12 +105,13 @@ fun ProfileScreen(
 @Composable
 fun TabletProfileScreen(
     navController: NavHostController,
-    userName: String,
     onBackClick: () -> Unit,
-    onMenuItemClick: (String) -> Unit,
-    hotelId: String,
     userInfo: User?,
+    userViewModel: AuthViewModel,
 ) {
+    var showEditProfile by rememberSaveable { mutableStateOf(true) }
+    var showRatingRecord by rememberSaveable { mutableStateOf(false) }
+
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -127,17 +123,34 @@ fun TabletProfileScreen(
                 .padding(16.dp)
         ) {
             Column {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.Black
-                    )
-                }
+                ProfileMenuItems(
+                    onMenuItemClick = {
+                        when (it) {
+                            "Edit Profile" -> {
+                                if (!showEditProfile) {
+                                    showEditProfile = true
+                                    showRatingRecord = false
+                                }
+                            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                            "My Orders" -> navController.navigate(AppScreen.MyOrders.route)
+                            "Ratings" -> {
+                                if (!showRatingRecord) {
+                                    showEditProfile = false
+                                    showRatingRecord = true
+                                }
+                            }
 
-                ProfileMenuItems(onMenuItemClick, hotelId, navController)
+                            "Log out" -> {
+                                userViewModel.signOut()
+                                navController.navigate(AppScreen.AuthGraph.route) {
+                                    popUpTo(AppScreen.Home.route) { inclusive = true }
+                                }
+                            }
+                        }
+                    },
+                    isMobile = false
+                )
             }
         }
 
@@ -152,21 +165,21 @@ fun TabletProfileScreen(
             modifier = Modifier
                 .weight(2f)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState())
         ) {
-            Box(modifier = Modifier.height(50.dp))
-            ProfileHeader(tabletMode = true, userInfo = userInfo, onBackClick = onBackClick)
+            if (showEditProfile) {
+                EditProfileScreen()
+            }
+            if (showRatingRecord) {
+                RatingRecordsScreen()
+            }
         }
     }
 }
 
 @Composable
 fun PhoneProfileScreen(
-    navController: NavHostController,
-    userName: String,
     onBackClick: () -> Unit,
     onMenuItemClick: (String) -> Unit,
-    hotelId: String,
     userInfo: User?,
 ) {
     Column(
@@ -176,7 +189,7 @@ fun PhoneProfileScreen(
             .verticalScroll(rememberScrollState())
     ) {
         ProfileHeader(userInfo = userInfo, onBackClick = onBackClick)
-        ProfileMenuItems(onMenuItemClick, hotelId, navController)
+        ProfileMenuItems(onMenuItemClick, isMobile = true)
     }
 }
 
@@ -233,9 +246,10 @@ fun ProfileHeader(tabletMode: Boolean = false, userInfo: User?, onBackClick: () 
 @Composable
 fun ProfileMenuItems(
     onMenuItemClick: (String) -> Unit,
-    hotelId: String,
-    navController: NavHostController,
+    isMobile: Boolean,
 ) {
+    var selectedItem by remember { mutableStateOf("Edit Profile") }
+
     val menuItems = listOf(
         "Edit Profile" to Icons.Outlined.Person,
         "My Orders" to Icons.Outlined.Task,
@@ -243,14 +257,16 @@ fun ProfileMenuItems(
         "Log out" to Icons.Default.Logout
     )
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         menuItems.forEach { (item, iconRes) ->
             ProfileMenuItem(
                 text = item,
                 iconRes = iconRes,
                 onClick = {
+                    selectedItem = item
                     onMenuItemClick(item)
-                }
+                },
+                isSelected = selectedItem == item && !isMobile
             )
             Divider(
                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -266,68 +282,69 @@ fun ProfileMenuItem(
     text: String,
     iconRes: ImageVector,
     onClick: () -> Unit,
+    isSelected: Boolean,
 ) {
-    Row(
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 12.dp, horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .background(
+                color = if (isSelected) Color.LightGray else Color.Transparent,
+                shape = RoundedCornerShape(12.dp)
+            )
     ) {
-        Icon(
-            imageVector = iconRes,
-            contentDescription = null,
-            modifier = Modifier.size(20.dp),
-            tint = Color.Gray
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = text,
-            fontSize = 16.sp,
-            modifier = Modifier.weight(1f)
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(vertical = 12.dp, horizontal = 16.dp)
+                .clip(RoundedCornerShape(12.dp)),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = iconRes,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = Color.Gray
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = text,
+                fontSize = 16.sp,
+                modifier = Modifier.weight(1f)
+            )
 
-        Icon(
-            imageVector = Icons.Default.KeyboardArrowRight,
-            contentDescription = null,
-            modifier = Modifier.size(20.dp),
-            tint = Color.Gray
-        )
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowRight,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = Color.Gray
+            )
+        }
     }
 }
 
-@Preview(showBackground = true, device = "spec:width=411dp,height=891dp")
-@Composable
-fun PhoneProfilePreview() {
-    val navController = rememberNavController()
-    ProfileScreen(
-        navController = navController,
-        userName = "John Doe",
-        onBackClick = {},
-        onMenuItemClick = {}
-    )
-}
-
-@Preview(showBackground = true, device = "spec:width=800dp,height=1280dp")
-@Composable
-fun TabletPortraitProfilePreview() {
-    val navController = rememberNavController()
-    ProfileScreen(
-        navController = navController,
-        userName = "John Doe",
-        onBackClick = {},
-        onMenuItemClick = {}
-    )
-}
-
-@Preview(showBackground = true, device = "spec:width=1280dp,height=800dp")
-@Composable
-fun TabletLandscapeProfilePreview() {
-    val navController = rememberNavController()
-    ProfileScreen(
-        navController = navController,
-        userName = "John Doe",
-        onBackClick = {},
-        onMenuItemClick = {}
-    )
-}
+//@Preview(showBackground = true, device = "spec:width=411dp,height=891dp")
+//@Composable
+//fun PhoneProfilePreview() {
+//    ProfileScreen(
+//        onBackClick = {},
+//        onMenuItemClick = {}
+//    )
+//}
+//
+//@Preview(showBackground = true, device = "spec:width=800dp,height=1280dp")
+//@Composable
+//fun TabletPortraitProfilePreview() {
+//    ProfileScreen(
+//        onBackClick = {},
+//        onMenuItemClick = {}
+//    )
+//}
+//
+//@Preview(showBackground = true, device = "spec:width=1280dp,height=800dp")
+//@Composable
+//fun TabletLandscapeProfilePreview() {
+//    ProfileScreen(
+//        onBackClick = {},
+//        onMenuItemClick = {}
+//    )
+//}

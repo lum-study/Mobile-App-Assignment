@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -24,6 +25,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,9 +52,14 @@ import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.common.enums.BookingStatus
 import com.bookblitzpremium.upcomingproject.common.enums.BookingType
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.TPBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalTPBookingViewModel
+import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteTPBookingViewModel
+import com.bookblitzpremium.upcomingproject.data.model.TPBookingInformation
 import com.bookblitzpremium.upcomingproject.ui.components.Base64Image
+import com.bookblitzpremium.upcomingproject.ui.components.CancelBookingDialog
+import com.bookblitzpremium.upcomingproject.ui.components.NotificationService
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.google.firebase.auth.FirebaseAuth
@@ -72,21 +80,34 @@ fun OrderScreen(navController: NavHostController) {
     val localHotelBookingViewModel: LocalHotelBookingViewModel = hiltViewModel()
     val hotelBookingList =
         remember { localHotelBookingViewModel.getHotelBookingInformationByUserID(userID) }.collectAsLazyPagingItems().itemSnapshotList.items
-            .sortedWith { a, b ->
-                val aDate = LocalDate.parse(a.startDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                val bDate = LocalDate.parse(b.startDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-
-                when {
-                    !aDate.isBefore(today) && !bDate.isBefore(today) -> aDate.compareTo(bDate)
-                    aDate.isBefore(today) && bDate.isBefore(today) -> bDate.compareTo(aDate)
-                    aDate.isBefore(today) -> 1
-                    else -> -1
+            .sortedWith(compareBy(
+                { booking ->
+                    when (booking.status) {
+                        BookingStatus.Cancelled.title -> 3
+                        BookingStatus.Completed.title -> 2
+                        BookingStatus.Confirmed.title -> 1
+                        BookingStatus.ToReview.title -> 0
+                        else -> 1
+                    }
+                },
+                { booking ->
+                    val date = LocalDate.parse(
+                        booking.startDate,
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                    )
+                    if (date.isBefore(today)) LocalDate.MAX.minusDays(date.toEpochDay()) else date
                 }
-            }
+            ))
 
     val tripPackageBookingList =
         remember { localTPBookingViewModel.getTPBookingByUserID(userID) }.collectAsLazyPagingItems().itemSnapshotList.items
             .sortedWith { a, b ->
+                val aCancelled = a.status == BookingStatus.Cancelled.title
+                val bCancelled = b.status == BookingStatus.Cancelled.title
+
+                if (aCancelled && !bCancelled) return@sortedWith 1
+                if (!aCancelled && bCancelled) return@sortedWith -1
+
                 val aDate = LocalDate.parse(
                     a.tripPackageStartDate,
                     DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -105,6 +126,10 @@ fun OrderScreen(navController: NavHostController) {
 
     val bookingType = BookingType.entries
     var selectedBookingType by rememberSaveable { mutableStateOf(BookingType.TripPackage) }
+    var showCancelBookingDialog by rememberSaveable { mutableStateOf(false) }
+    var updatedBookingInfo by remember { mutableStateOf(TPBooking()) }
+    var selectedBookingInfo by remember { mutableStateOf(TPBookingInformation()) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -168,7 +193,19 @@ fun OrderScreen(navController: NavHostController) {
                         },
                         onRatingClick = { navController.navigate(AppScreen.Ratings.passData(booking.tripPackageID)) },
                         isMobile = isMobile,
-                        isTripPackage = true
+                        isTripPackage = true,
+                        onEditClick = {
+                            showCancelBookingDialog = true
+                            updatedBookingInfo = TPBooking(
+                                id = booking.id,
+                                purchaseCount = booking.purchaseCount,
+                                paymentID = booking.paymentID,
+                                tripPackageID = booking.tripPackageID,
+                                userID = booking.userID,
+                                status = BookingStatus.Cancelled.title
+                            )
+                            selectedBookingInfo = booking
+                        }
                     )
                 }
             }
@@ -183,7 +220,7 @@ fun OrderScreen(navController: NavHostController) {
                         quantity = booking.numberOfRoom.toString(),
                         name = booking.hotelName,
                         status = getBookingStatus(
-                            booking.endDate,
+                            booking.startDate,
                             booking.status,
                             isTripPackage = false
                         ),
@@ -227,6 +264,27 @@ fun OrderScreen(navController: NavHostController) {
                 )
             }
         }
+    }
+
+    if (showCancelBookingDialog) {
+        val remoteTPBookingViewModel: RemoteTPBookingViewModel = hiltViewModel()
+        val context = LocalContext.current
+        CancelBookingDialog(
+            onDeleteClick = {
+                remoteTPBookingViewModel.updateTPBooking(updatedBookingInfo)
+                localTPBookingViewModel.addOrUpdateTPBooking(updatedBookingInfo)
+                remoteTPBookingViewModel.updatePackageSlot(
+                    selectedBookingInfo.tripPackageID,
+                    selectedBookingInfo.purchaseCount
+                )
+                NotificationService(context).showNotification(
+                    title = "Booking cancelled.",
+                    content = "We're sorry to see you go. Let us know if you need help booking again!"
+                )
+                showCancelBookingDialog = false
+            },
+            onDismissButtonClick = { showCancelBookingDialog = false }
+        )
     }
 }
 
@@ -333,10 +391,21 @@ fun BookingCard(
                 }
             }
         }
-        if (!isTripPackage) {
+        if (!isTripPackage && status == BookingStatus.Confirmed.title) {
             Icon(
                 imageVector = Icons.Default.Edit,
                 contentDescription = "Edit",
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(end = 8.dp, top = 8.dp)
+                    .size(20.dp)
+                    .clickable { onEditClick() }
+            )
+        }
+        if (isTripPackage && status == BookingStatus.Confirmed.title) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "Delete",
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(end = 8.dp, top = 8.dp)

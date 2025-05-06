@@ -279,7 +279,11 @@ fun TabletLoginScreen(
                 onDismissRequest = { showDialog = false },
                 onNextClick = {
                     showDialog = false
-                    navController.navigate(AppScreen.Home.route)
+                    navController.navigate(AppScreen.Home.route){
+                        popUpTo(AppScreen.Login.route){
+                            inclusive = true
+                        }
+                    }
                 },
                 state = state,
                 focusRequesters = focusRequesters,
@@ -524,7 +528,11 @@ fun LoginWelcomeScreen(
 
                     Button(
                         onClick = {
-                            navController.navigate(AppScreen.Home.route)
+                            navController.navigate(AppScreen.Home.route){
+                                popUpTo(AppScreen.Login.route){
+                                    inclusive = true
+                                }
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()

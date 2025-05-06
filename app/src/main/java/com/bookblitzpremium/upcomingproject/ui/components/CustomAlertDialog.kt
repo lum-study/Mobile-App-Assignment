@@ -2,6 +2,7 @@ package com.bookblitzpremium.upcomingproject.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -19,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -222,6 +225,60 @@ fun RatingSuccessDialog(
                             }
                         }
                     }
+                }
+            }
+        },
+        modifier = modifier
+    )
+}
+
+@Composable
+fun CancelBookingDialog(
+    modifier: Modifier = Modifier,
+    onDeleteClick: () -> Unit = {},
+    onDismissButtonClick: () -> Unit = {},
+) {
+    AlertDialog(
+        onDismissRequest = { onDismissButtonClick() },
+        dismissButton = {
+            Button(
+                onClick = { onDismissButtonClick() },
+            ) {
+                Text(
+                    text = "Cancel",
+                    style = AppTheme.typography.smallSemiBold
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onDeleteClick() },
+            ) {
+                Text(
+                    text = "Confirm",
+                    style = AppTheme.typography.smallSemiBold
+                )
+            }
+        },
+        text = {
+            AppTheme {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = Color(0xFFFF0000),
+                        modifier = Modifier.size(80.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Are you sure to cancel the booking?",
+                        style = AppTheme.typography.mediumBold,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         },

@@ -6,15 +6,13 @@ import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.local.repository.LocalUserRepository
 import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteUserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
-
-
-//remote
-//local
 
 @HiltViewModel
 class RemoteUserViewModel @Inject constructor(
@@ -66,7 +64,11 @@ class RemoteUserViewModel @Inject constructor(
             _error.value = null
 
             try {
-                remoteUserRepository.updateUser(user)
+                withTimeout(5000){
+                    remoteUserRepository.updateUser(user)
+                }
+            } catch (e: TimeoutCancellationException) {
+                _error.value = "Request timed out"
             } catch (e: Exception) {
                 _error.value = e.localizedMessage ?: "Failed to update user"
             } finally {
