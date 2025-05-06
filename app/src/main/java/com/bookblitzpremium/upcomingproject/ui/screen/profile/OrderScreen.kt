@@ -80,17 +80,24 @@ fun OrderScreen(navController: NavHostController) {
     val localHotelBookingViewModel: LocalHotelBookingViewModel = hiltViewModel()
     val hotelBookingList =
         remember { localHotelBookingViewModel.getHotelBookingInformationByUserID(userID) }.collectAsLazyPagingItems().itemSnapshotList.items
-            .sortedWith { a, b ->
-                val aDate = LocalDate.parse(a.startDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                val bDate = LocalDate.parse(b.startDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-
-                when {
-                    !aDate.isBefore(today) && !bDate.isBefore(today) -> aDate.compareTo(bDate)
-                    aDate.isBefore(today) && bDate.isBefore(today) -> bDate.compareTo(aDate)
-                    aDate.isBefore(today) -> 1
-                    else -> -1
+            .sortedWith(compareBy(
+                { booking ->
+                    when (booking.status) {
+                        BookingStatus.Cancelled.title -> 3
+                        BookingStatus.Completed.title -> 2
+                        BookingStatus.Confirmed.title -> 1
+                        BookingStatus.ToReview.title -> 0
+                        else -> 1
+                    }
+                },
+                { booking ->
+                    val date = LocalDate.parse(
+                        booking.startDate,
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                    )
+                    if (date.isBefore(today)) LocalDate.MAX.minusDays(date.toEpochDay()) else date
                 }
-            }
+            ))
 
     val tripPackageBookingList =
         remember { localTPBookingViewModel.getTPBookingByUserID(userID) }.collectAsLazyPagingItems().itemSnapshotList.items

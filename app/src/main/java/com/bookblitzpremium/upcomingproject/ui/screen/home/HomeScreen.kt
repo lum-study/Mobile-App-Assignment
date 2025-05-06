@@ -301,6 +301,10 @@ fun TripPackageSection(
                 }
             }
         } else if (!isPortrait) {
+            Text(
+                text = stringResource(R.string.home_package_title),
+                style = AppTheme.typography.mediumSemiBold
+            )
             LazyHorizontalGrid(
                 rows = GridCells.Fixed(1),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
