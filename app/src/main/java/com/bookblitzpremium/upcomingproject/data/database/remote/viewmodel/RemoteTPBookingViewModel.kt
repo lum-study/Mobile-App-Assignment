@@ -159,4 +159,22 @@ class RemoteTPBookingViewModel @Inject constructor(
         }
     }
 
+    fun updatePackageSlot(id: String, slots: Int) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+
+            try {
+                val tripPackage = remoteTripPackageRepository.getTripPackageByID(id)
+                if (tripPackage != null) {
+                    remoteTripPackageRepository.updateTripPackage(tripPackage.copy(slots = slots + tripPackage.slots))
+                    localTripPackageRepository.addOrUpdateTripPackage(tripPackage.copy(slots = slots + tripPackage.slots))
+                }
+            } catch (e: Exception) {
+                _error.value = "Failed to update package slot: ${e.localizedMessage}"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
 }

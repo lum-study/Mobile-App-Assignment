@@ -383,8 +383,10 @@ fun WelcomeRegristerScreen(
             is SignupState.Success -> {
                 viewModel.clearEmailPassword()
                 withContext(Dispatchers.Main) {
-                    navController.navigate(AppScreen.Home.route) {
-                        popUpTo(AppScreen.Register.route) { inclusive = true }
+                    navController.navigate(AppScreen.Home.route){
+                        popUpTo(AppScreen.Login.route){
+                            inclusive = true
+                        }
                     }
                 }
                 viewModel.clearSignUpState()

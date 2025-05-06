@@ -92,7 +92,7 @@ fun GenderMobileVersion(
             is SignupState.Success -> {
                 withContext(Dispatchers.Main) {
                     navController.navigate(AppScreen.Home.route) {
-                        popUpTo(AppScreen.Register.route) { inclusive = true }
+                        popUpTo(AppScreen.Login.route) { inclusive = true }
                     }
                 }
                 viewModel.clearSignUpState()
