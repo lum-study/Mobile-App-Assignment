@@ -386,13 +386,13 @@ fun ReviewFinalPackageSelected(
                     println("Debug - cardNumber: $cardNumber")
 
                     val booking = HotelBooking(
-                        startDate = startDate,
-                        endDate = endDate,
-                        numberOFClient = totalPerson.toIntOrNull() ?: 1,
-                        numberOfRoom = roomBooked.toIntOrNull() ?: 1,
+                        startDate = hotelOnChange.startDate,
+                        endDate = hotelOnChange.endDate,
+                        numberOFClient = hotelOnChange.totalPerson.toIntOrNull() ?: 1,
+                        numberOfRoom = hotelOnChange.roomBooked.toIntOrNull() ?: 1,
                         hotelID = hotelData.id,
                         userid = userID.toString(), // Add real user ID if available
-                        paymentID = paymentID,
+                        paymentID = hotelOnChange.paymentID,
                         status = BookingStatus.Confirmed.title
                     )
 
