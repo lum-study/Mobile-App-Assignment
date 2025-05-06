@@ -160,7 +160,6 @@ fun GenderSelectionScreen(
             )
         }
 
-        println("Hello" + selectedGender)
         val coroutine = rememberCoroutineScope()
 
         // Next Button

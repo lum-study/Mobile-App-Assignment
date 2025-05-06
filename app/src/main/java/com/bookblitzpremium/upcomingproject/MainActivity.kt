@@ -130,11 +130,6 @@ fun App(
         }
     }
 
-    LaunchedEffect(Unit) {
-        userViewModel.clearEmailPassword()
-        saveData.clearHotelDetails()
-    }
-
     Scaffold(
         topBar = {
             if (currentScreen.hasTopBar) {

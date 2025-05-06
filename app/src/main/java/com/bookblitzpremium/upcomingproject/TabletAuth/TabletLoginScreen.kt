@@ -330,7 +330,8 @@ fun TabletLoginScreen(
                         if(isFormValid()){
                             viewModel.login(email, password, onClick = {
                                 navController.navigate("${AppScreen.WelcomeLoginScreen.route}/${email.encodeToUri()}/${password.encodeToUri()}")
-                            })
+                                viewModel.clearEmailPassword()
+                            },true)
                         }
                     },
                     modifier = Modifier
@@ -378,7 +379,8 @@ fun TabletLoginScreen(
                         if(isFormValid()){
                             viewModel.login(email, password, onClick = {
                                 navController.navigate("${AppScreen.WelcomeLoginScreen.route}/${email.encodeToUri()}/${password.encodeToUri()}")
-                            })
+                                viewModel.clearEmailPassword()
+                            },true)
                         }
                     },
                     modifier = Modifier
@@ -399,6 +401,7 @@ fun TabletLoginScreen(
             }
         }
     }
+
     CheckStatusLoading(
         isLoading = authState is AuthState.Loading,
         backgroundAlpha = 0.5f,
@@ -415,6 +418,8 @@ fun LoginWelcomeScreen(
 ) {
     val viewModel: AuthViewModel = hiltViewModel()
     val authState by viewModel.authState.collectAsState()
+
+
 
     Box(
         modifier = Modifier
@@ -437,7 +442,6 @@ fun LoginWelcomeScreen(
         ) {
             val valueVertical = if (tabletScreen) 60.dp else 40.dp
             Spacer(modifier = Modifier.height(valueVertical))
-
             Spacer(modifier = Modifier.weight(1f))
 
             Card(
