@@ -49,13 +49,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.common.enums.BottomNavigation
 import com.bookblitzpremium.upcomingproject.common.enums.DeviceType
+import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
+import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
 import com.bookblitzpremium.upcomingproject.data.datastore.DataStoreManager
 import com.bookblitzpremium.upcomingproject.data.datastore.DataStoreViewModel
 import com.bookblitzpremium.upcomingproject.ui.navigation.AppNavigation
@@ -104,6 +109,8 @@ fun App(
     val userViewModel: AuthViewModel = hiltViewModel()
     val navigationRoute by userViewModel.newNavigationCommand.collectAsState()
 
+    val saveData : HandleRotateState = hiltViewModel()
+
     val startDestination =
         if (navigationRoute) AppScreen.HomeGraph.route else AppScreen.AuthGraph.route
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -148,7 +155,8 @@ fun App(
                 navController,
                 startDestination,
                 Modifier.padding(innerPadding),
-                userViewModel
+                userViewModel,
+                saveData = saveData
             )
         }
     }

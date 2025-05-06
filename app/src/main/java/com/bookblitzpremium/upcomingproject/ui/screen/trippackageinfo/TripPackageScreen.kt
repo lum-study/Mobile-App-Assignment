@@ -337,11 +337,11 @@ fun TripPackageInformationTabletLayout(
                 title = "Hotel",
                 icon = Icons.Outlined.HomeWork,
                 screen = {
-                    HotelBookingScreenLayout(
-                        navController = navController,
-                        hotelID = selectedTripPackage.hotelID,
-                        tripPackageID = selectedTripPackage.id,
-                    )
+//                    HotelBookingScreenLayout(
+//                        navController = navController,
+//                        hotelID = selectedTripPackage.hotelID,
+//                        tripPackageID = selectedTripPackage.id,
+//                    )
                 }
             ),
         )

@@ -188,13 +188,15 @@ fun ModifyHotelBooking(
 
     val success by remoteHotelBooking.success.collectAsState()
 
+    val context = LocalContext.current
+
     LaunchedEffect(success) {
         if (success) {
             navController.popBackStack()
+            ToastUtils.showSingleToast(context, "Successfully change the date")
             remoteHotelBooking.clearSuccess() // Reset success after navigation
         }
     }
-
 
     booking?.let {
         if (hotelData != null) {
@@ -336,14 +338,14 @@ fun ModifyHotelBooking(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     // — BOOKING RANGE DROPDOWN: full width —
                     BookingDaySelector(
                         startDate = booking.startDate.toString(),
                         maxRange = maxRange,
                         onBookingRangeSelected = onBookingRangeSelected,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp)
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
@@ -366,6 +368,8 @@ fun ModifyHotelBooking(
                             ToastUtils.showSingleToast(context, error)
                         }
                     }
+
+                    Spacer(modifier = Modifier.weight(1f))
 
                     // — NEXT BUTTON: fixed at bottom, centered horizontally —
                     Button(
@@ -391,7 +395,7 @@ fun ModifyHotelBooking(
                             contentColor = AppTheme.colorScheme.background
                         )
                     ) {
-                        Text("Next")
+                        Text("Change Date")
                     }
                 }
             }

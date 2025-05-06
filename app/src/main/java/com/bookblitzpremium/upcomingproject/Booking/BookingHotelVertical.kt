@@ -16,13 +16,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.bookblitzpremium.upcomingproject.HandleRotateState
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
@@ -53,14 +54,19 @@ import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import java.net.URLEncoder
+import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAdjusters
 
 @Composable
 fun HotelBookingVerticalScreen(
     defaultSize: Dp,
     maxSize: Dp,
     hotelID: String,
+    isOrder: String = "false",
     navController: NavController,
+    saveData: HandleRotateState,
     viewModel: LocalHotelViewModel = hiltViewModel()
 ) {
     var topHeight by remember { mutableStateOf(defaultSize) }
@@ -68,21 +74,33 @@ fun HotelBookingVerticalScreen(
     val maxHeight = maxSize
     val dragSpeedFactor = 0.3f
 
+    val hotelDetails by saveData.hotelDetails.collectAsState()
+
     LaunchedEffect(Unit) {
         viewModel.getHotelByID(hotelID)
     }
 
-    var roomCount by remember { mutableStateOf(1) }
-    var adultCount by remember { mutableStateOf(4) }
+    var roomCount by remember { mutableStateOf(if (hotelDetails.roomBooked.isNotEmpty()) hotelDetails.roomBooked.toIntOrNull() ?: 1 else hotelDetails.roomBooked.toIntOrNull() ?: 1) }
+    var adultCount by remember { mutableStateOf(if (hotelDetails.totalPerson.isNotEmpty()) hotelDetails.totalPerson.toIntOrNull() ?: 4 else hotelDetails.totalPerson.toIntOrNull() ?: 4) }
 
-    var startDate by remember { mutableStateOf("") }
-    var endDate by remember { mutableStateOf("") }
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val today = LocalDate.now()
+    val nextFriday = today.with(TemporalAdjusters.next(DayOfWeek.FRIDAY))
+
+    var startDate by remember { mutableStateOf( if(hotelDetails.startDate.isNotEmpty()) hotelDetails.startDate else today.format(formatter).toString()) }
+    var endDate by remember { mutableStateOf(if(hotelDetails.endDate.isNotEmpty()) hotelDetails.endDate else nextFriday.format(formatter).toString()) }
 
     var showFigureDialog by remember { mutableStateOf(false) }
     var showDateDialog by remember { mutableStateOf(false) }
 
     val hotel by viewModel.selectedHotel.collectAsState()
-    if (hotel != null) {
+
+    LaunchedEffect(startDate,endDate) {
+        saveData.updateStartDateDetails(startDate)
+        saveData.updateEndDateDetails(endDate)
+    }
+
+    if (hotel!=null) {
         val hotelData = hotel!!
         Column(modifier = Modifier.fillMaxSize()) {
             // Top Image Section
@@ -108,45 +126,60 @@ fun HotelBookingVerticalScreen(
                         .padding(horizontal = 16.dp, vertical = 30.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Button(
-                        onClick = { showDateDialog = true },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = AppTheme.colorScheme.primary,
-                            contentColor = AppTheme.colorScheme.onPrimary
-                        ),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = "Pick Dates",
-                            style = AppTheme.typography.mediumBold,
-                            color = AppTheme.colorScheme.onPrimary
-                        )
-                    }
 
-                    Button(
-                        onClick = { showFigureDialog = true },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = AppTheme.colorScheme.primary,
-                            contentColor = AppTheme.colorScheme.onPrimary
-                        ),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = "Select Guests",
-                            style = AppTheme.typography.mediumBold,
-                            color = AppTheme.colorScheme.onPrimary
-                        )
+                    val isOrderBoolean = isOrder == "true"
+                    if(isOrderBoolean){
+                        //dispaly empty for order
+                    }else{
+                        Button(
+                            onClick = { showDateDialog = true },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = AppTheme.colorScheme.primary,
+                                contentColor = AppTheme.colorScheme.onPrimary
+                            ),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = "Pick Dates",
+                                style = AppTheme.typography.mediumBold,
+                                color = AppTheme.colorScheme.onPrimary
+                            )
+                        }
+
+                        Button(
+                            onClick = { showFigureDialog = true },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = AppTheme.colorScheme.primary,
+                                contentColor = AppTheme.colorScheme.onPrimary
+                            ),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = "Select Guests",
+                                style = AppTheme.typography.mediumBold,
+                                color = AppTheme.colorScheme.onPrimary
+                            )
+                        }
                     }
                 }
 
+                val coroutineScope = rememberCoroutineScope()
+
                 if (showFigureDialog) {
                     DialogFigure(
-                        onDismissRequest = { showFigureDialog = false },
-                        onDateSelected = { room, figure ->
-                            roomCount = room ?: 1
+                        onDismissRequest = {
+                            if (roomCount >= 0 && adultCount >= 0) {
+                                coroutineScope.launch {
+                                    saveData.updateRoomCount(roomCount.toString())
+                                    saveData.updateAdultCount(adultCount.toString())
+                                }
+                            }
+                            showFigureDialog = false },
+                        onDateSelected = { figure,room  ->
                             adultCount = figure ?: 1
+                            roomCount = room ?: 1
                         }
                     )
                 }
@@ -154,7 +187,14 @@ fun HotelBookingVerticalScreen(
                 if (showDateDialog) {
                     DialogDate(
                         navController = navController,
-                        onDismissRequest = { showDateDialog = false },
+                        onDismissRequest = {
+                            if(startDate.isNotEmpty() && endDate.isNotEmpty()){
+                                coroutineScope.launch {
+                                    saveData.updateStartDateDetails(startDate)
+                                    saveData.updateEndDateDetails(endDate)
+                                }
+                            }
+                            showDateDialog = false },
                         onDateSelected = { start, end ->
                             startDate = start?.toString() ?: ""
                             endDate = end?.toString() ?: ""
@@ -175,6 +215,8 @@ fun HotelBookingVerticalScreen(
                 endDate = endDate,
                 adultCount = adultCount,
                 roomBooked = roomCount,
+                isOrder = isOrder,
+                saveData = saveData,
                 navController = navController
             )
         }
@@ -189,6 +231,8 @@ fun DraggableObject(
     endDate: String,
     roomBooked: Int,
     adultCount: Int,
+    isOrder: String = "false",
+    saveData: HandleRotateState,
     navController: NavController
 ) {
     val textOffset = 24.dp
@@ -201,51 +245,56 @@ fun DraggableObject(
             .padding(top = 10.dp)
             .background(AppTheme.colorScheme.background, RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
     ) {
-        Divider(
+        HorizontalDivider(
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .fillMaxWidth(0.5f)
                 .height(6.dp)
                 .clip(RoundedCornerShape(32.dp))
-                .background(AppTheme.colorScheme.surfaceVariant)
                 .draggable(
                     orientation = Orientation.Vertical,
-                    state = rememberDraggableState { delta ->
-                        onDrag(delta)
-                    }
-                )
+                    state = rememberDraggableState { delta -> onDrag(delta) }
+                ),
+            color = AppTheme.colorScheme.surfaceVariant,
+            thickness = 6.dp
         )
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth() // Ensures the row can push to the end
+        ) {
             HeaderDetails(
                 hotel.name,
                 textOffset,
                 modifier = Modifier.padding(top = 2.dp)
             )
 
-            Spacer(modifier = Modifier.width(550.dp))
+            Spacer(modifier = Modifier.weight(1f)) // Pushes the icon to the end
+
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .background(AppTheme.colorScheme.surfaceVariant, RoundedCornerShape(16.dp))
-                ,
+                    .offset(x = -50.dp)
+                    .background(AppTheme.colorScheme.surfaceVariant, RoundedCornerShape(16.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.LocationOn,
                     contentDescription = "Location",
                     tint = AppTheme.colorScheme.onBackground,
-                    modifier = Modifier.size(28.dp).clickable {
-                        navController.navigate("${AppScreen.Maps.route}/${hotel.name}")
-                    }
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clickable {
+                            navController.navigate("${AppScreen.Maps.route}/${hotel.name}")
+                        }
                 )
             }
         }
 
-        Divider(
-            color = AppTheme.colorScheme.onSurface,
+        HorizontalDivider(
+            modifier = Modifier.padding(vertical = 8.dp),
             thickness = 2.dp,
-            modifier = Modifier.padding(vertical = 8.dp)
+            color = AppTheme.colorScheme.onSurface
         )
 
         Text(
@@ -298,41 +347,53 @@ fun DraggableObject(
         val totalPerson = adultCount.toString()
         val totalPrice = (hotel.price * roomBooked).toString()
 
-        // Encode parameters
-        val hotelID = URLEncoder.encode(hotel.id, "UTF-8")
-        val startDate = URLEncoder.encode(startDate, "UTF-8")
-        val endDate = URLEncoder.encode(endDate, "UTF-8")
+        val hotelID = hotel.id
+        val startDate = startDate
+        val endDate = endDate
         val paymentMethod = payment.paymentMethod.toString()
         val cardNumber = payment.cardNumber.toString()
-        val tabletPortrait = "true"
 
-        Button(
-            colors = ButtonDefaults.buttonColors(
-                containerColor = AppTheme.colorScheme.primary,
-                contentColor = AppTheme.colorScheme.onPrimary
-            ),
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            enabled = startDate.isNotEmpty() && endDate.isNotEmpty() && roomBooked != 0 && adultCount != 0,
-            onClick = {
-                coroutineScope.launch {
-                    val paymentID = paymentViewModel.addReturnIDPayment(payment)
-                    if (paymentID.isNotEmpty()) {
-                        val encodedPaymentID = URLEncoder.encode(paymentID, "UTF-8")
-                        val baseRoute =
-                            "${AppScreen.BookingReview.route}/$hotelID/$startDate/$endDate/$totalPerson/$roomBooked/$totalPrice/$paymentMethod/$cardNumber/$encodedPaymentID/$tabletPortrait"
-                        navController.navigate(baseRoute)
+        val isOrderBoolean = isOrder == "true"
+        if(isOrderBoolean){ //display empty for order
+        } else{
+            Button(
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = AppTheme.colorScheme.primary,
+                    contentColor = AppTheme.colorScheme.onPrimary
+                ),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                enabled = startDate.isNotEmpty() && endDate.isNotEmpty() && roomBooked != 0 && adultCount != 0,
+                onClick = {
+                    coroutineScope.launch {
+                        if (roomBooked >= 0 && adultCount >= 0) {
+                            saveData.updateRoomCount(roomBooked.toString())
+                            saveData.updateAdultCount(adultCount.toString())
+                        }
+                        if(startDate.isNotEmpty() && endDate.isNotEmpty()){
+                            saveData.updateStartDateDetails(startDate)
+                            saveData.updateEndDateDetails(endDate)
+                        }
+                        saveData.updateTotalPrice(totalPrice)
+                        val paymentID = paymentViewModel.addReturnIDPayment(payment)
+                        if (paymentID.isNotEmpty()) {
+                            saveData.updatePaymentId(paymentID)
+                            val encodedPaymentID = URLEncoder.encode(paymentID, "UTF-8")
+                            val baseRoute =
+                                "${AppScreen.BookingReview.route}/$hotelID/$startDate/$endDate/$totalPerson/$roomBooked/$totalPrice/$paymentMethod/$cardNumber/$encodedPaymentID"
+                            navController.navigate(baseRoute)
+                        }
                     }
                 }
+            ) {
+                Text(
+                    text = "Next",
+                    style = AppTheme.typography.mediumBold,
+                    color = AppTheme.colorScheme.onPrimary
+                )
             }
-        ) {
-            Text(
-                text = "Next",
-                style = AppTheme.typography.mediumBold,
-                color = AppTheme.colorScheme.onPrimary
-            )
         }
     }
 }

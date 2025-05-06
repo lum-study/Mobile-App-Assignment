@@ -2,11 +2,12 @@ package com.bookblitzpremium.upcomingproject.Booking
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Arrangement.spacedBy
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -21,42 +22,62 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.bookblitzpremium.upcomingproject.BoxMaps
+import com.bookblitzpremium.upcomingproject.HandleRotateState
+import com.bookblitzpremium.upcomingproject.HotelDetails
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.common.enums.BookingStatus
 import com.bookblitzpremium.upcomingproject.common.enums.PaymentMethod
-import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteHotelBookingViewModel
-import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemotePaymentViewModel
 import com.bookblitzpremium.upcomingproject.ui.components.MapsComponent
 import com.bookblitzpremium.upcomingproject.ui.components.NotificationService
 import com.bookblitzpremium.upcomingproject.ui.components.TripPackageBookingDialog
+import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
 import com.bookblitzpremium.upcomingproject.ui.screen.booking.DetailsSection
 import com.bookblitzpremium.upcomingproject.ui.screen.payment.PaymentOptionScreen
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.google.firebase.auth.FirebaseAuth
 import java.time.LocalDate
 
+
+
 @Composable
 fun PaymentDetails(
     navController: NavController,
-    payment: HotelDetails,
-    hotel: Hotel,
-    modifier: Modifier
+//    hotelDetail: HotelDetails,
+    saveData: HandleRotateState,
+    hotelID: String,
+    modifier: Modifier = Modifier
 ) {
-    var paymentMethod by remember { mutableStateOf(PaymentMethod.DebitCard) }
-    var cardNumber by remember { mutableStateOf("") }
-    val remoteBookingViewModel: RemoteHotelBookingViewModel = hiltViewModel()
+    val dataOnChange by saveData.hotelDetails.collectAsState()
+
+    var paymentMethod by remember {
+        mutableStateOf<PaymentMethod>(
+            if (dataOnChange.paymentMethod != PaymentMethod.NotSelected) {
+                dataOnChange.paymentMethod
+            } else {
+                PaymentMethod.NotSelected
+            }
+        )
+    }
+
+    var cardNumber by rememberSaveable {
+        mutableStateOf(
+            if (dataOnChange.cardNumber.isNotEmpty()) dataOnChange.cardNumber else ""
+        )
+    }
+
+    val remoteBookingViewModel: RemoteHotelBookingViewModel = hiltViewModel() // Ensure proper scoping
 
     // Loading and Error States
     val isLoading by remoteBookingViewModel.loading.collectAsState()
@@ -71,18 +92,25 @@ fun PaymentDetails(
         if (success) {
             val notificationService = NotificationService(context)
             notificationService.showNotification("Booking Successfully", "Thank you for supporting us")
+            saveData.clearHotelDetails()
         }
     }
 
+    LaunchedEffect(paymentMethod, cardNumber) {
+        saveData.updatePaymentMethodEnum(paymentMethod)
+        saveData.updatePaymentMethod(paymentMethod.title)
+        saveData.updateCardNumber(cardNumber)
+    }
+
+    val error by remoteBookingViewModel.error.collectAsState()
     if (showDialog) {
         TripPackageBookingDialog(
             isLoading = isLoading,
+            hasError = error ?: "",
             onHomeButtonClick = {
                 showDialog = it
                 navController.navigate(AppScreen.Home.route) {
-                    popUpTo(AppScreen.Home.route) {
-                        inclusive = true
-                    }
+                    popUpTo(AppScreen.Home.route) { inclusive = true }
                 }
             },
             onViewOrderButtonClick = {
@@ -91,111 +119,160 @@ fun PaymentDetails(
                     popUpTo(AppScreen.Home.route)
                 }
             },
-            onDismissButtonClick = {
-                showDialog = false
-            }
+            onDismissButtonClick = { showDialog = false }
         )
     }
 
     Column(
         modifier = Modifier
             .fillMaxHeight()
+            .padding(16.dp)
             .background(AppTheme.colorScheme.background)
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth(),
-            verticalArrangement = spacedBy(16.dp)
+        Row(
+            modifier = modifier.fillMaxSize()
         ) {
-            item {
-                Column(
-                    verticalArrangement = spacedBy(4.dp),
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+            ) {
+                UrlImage(
+                    imageUrl = dataOnChange.hotel.imageUrl,
                     modifier = Modifier
-                        .padding(16.dp)
-                ) {
-                    MapsComponent(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(500.dp)
-                            .clip(shape = RoundedCornerShape(32.dp)),
-                        hotelName = hotel.name,
-                        onClick = {
-                            navController.navigate("${AppScreen.Maps.route}/${hotel.name}")
-                        },
-                    )
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(16.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            }
 
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                item {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.padding(16.dp)
                     ) {
-                        Text(
-                            text = "Payment method",
-                            style = AppTheme.typography.mediumBold,
-                            color = AppTheme.colorScheme.onSurface
-                        )
-
-                        PaymentOptionScreen(
-                            selectedPaymentMethod = paymentMethod,
-                            onPaymentMethodChange = { paymentMethod = it },
-                            cardNumber = cardNumber,
-                            onCardNumberChange = { cardNumber = it.filter { it.isDigit() } }
-                        )
-
-                        Row(
+                        Column(
                             modifier = Modifier
-                                .fillMaxWidth(0.98f)
-                                .padding(bottom = 16.dp) // Replaced AppTheme.size.normal with 16.dp
+                                .fillMaxWidth()
+                                .padding(16.dp)
                         ) {
                             Text(
-                                text = "Pricing",
-                                style = AppTheme.typography.titleLarge,
-                                color = AppTheme.colorScheme.onBackground
+                                text = "Payment method",
+                                style = AppTheme.typography.mediumBold,
+                                color = AppTheme.colorScheme.onSurface
                             )
-                        }
 
-                        DetailsSection(
-                            totalPrice = payment.totalPrice,
-                            totalPerson = payment.totalPerson,
-                            roomBooked = payment.roomBooked,
-                            startDate = payment.startDate,
-                            endDate = payment.endDate,
-                            modifier = Modifier
-                        )
+                            PaymentOptionScreen(
+                                selectedPaymentMethod = paymentMethod,
+                                onPaymentMethodChange = { paymentMethod = it },
+                                cardNumber = cardNumber,
+                                onCardNumberChange = { cardNumber = it.filter { it.isDigit() } }
+                            )
 
-                        val currentUser = FirebaseAuth.getInstance().currentUser
-                        val userID = currentUser?.uid.toString()
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth(0.98f)
+                                    .padding(bottom = 16.dp)
+                            ) {
+                                Text(
+                                    text = "Pricing",
+                                    style = AppTheme.typography.titleLarge,
+                                    color = AppTheme.colorScheme.onBackground
+                                )
+                            }
 
-                        Row {
+                            DetailsSection(
+                                totalPrice = dataOnChange.totalPrice,
+                                totalPerson = dataOnChange.totalPerson,
+                                roomBooked = dataOnChange.roomBooked,
+                                startDate = dataOnChange.startDate,
+                                endDate = dataOnChange.endDate,
+                                modifier = Modifier
+                            )
+
+                            val currentUser = FirebaseAuth.getInstance().currentUser
+                            val userID = currentUser?.uid.toString()
+                            println("Debug - Firebase currentUser: $currentUser, userID: $userID")
+
                             Button(
                                 onClick = {
+                                    // Log initial state and enabled condition
+                                    println("Debug - Button clicked, enabled: ${cardNumber.isNotEmpty() && paymentMethod != PaymentMethod.NotSelected}")
+                                    println("Debug - hotelDetail (dataOnChange): $dataOnChange")
+                                    println("Debug - hotelID: $hotelID")
+                                    println("Debug - userID: $userID")
+                                    println("Debug - paymentMethod: $paymentMethod")
+                                    println("Debug - cardNumber: $cardNumber")
+
+                                    // Validate and convert fields
+                                    val startDate = dataOnChange.startDate
+                                    println("Debug - startDate from dataOnChange: $startDate")
+                                    val endDate = dataOnChange.endDate
+                                    println("Debug - endDate from dataOnChange: $endDate")
+                                    val totalPersonInt = dataOnChange.totalPerson.toIntOrNull()
+                                    if (totalPersonInt == null) {
+                                        println("Debug - Warning: totalPerson '${dataOnChange.totalPerson}' is not a valid integer, defaulting to 1")
+                                    } else {
+                                        println("Debug - totalPerson converted to: $totalPersonInt")
+                                    }
+                                    val numberOfClient = totalPersonInt ?: 1
+                                    val roomBookedInt = dataOnChange.roomBooked.toIntOrNull()
+                                    if (roomBookedInt == null) {
+                                        println("Debug - Warning: roomBooked '${dataOnChange.roomBooked}' is not a valid integer, defaulting to 1")
+                                    } else {
+                                        println("Debug - roomBooked converted to: $roomBookedInt")
+                                    }
+                                    val numberOfRoom = roomBookedInt ?: 1
+                                    val paymentID = dataOnChange.paymentID
+                                    println("Debug - paymentID from dataOnChange: $paymentID")
+                                    val totalPriceDouble = dataOnChange.totalPrice.toDoubleOrNull()
+                                    if (totalPriceDouble == null) {
+                                        println("Debug - Warning: totalPrice '${dataOnChange.totalPrice}' is not a valid double, defaulting to 0.0")
+                                    } else {
+                                        println("Debug - totalPrice converted to: $totalPriceDouble")
+                                    }
+
+                                    // Create HotelBooking object
                                     val booking = HotelBooking(
-                                        startDate = payment.startDate,
-                                        endDate = payment.endDate,
-                                        numberOFClient = payment.totalPerson.toIntOrNull() ?: 1,
-                                        numberOfRoom = payment.roomBooked.toIntOrNull() ?: 1,
-                                        hotelID = hotel.id,
+                                        startDate = startDate,
+                                        endDate = endDate,
+                                        numberOFClient = numberOfClient,
+                                        numberOfRoom = numberOfRoom,
+                                        hotelID = hotelID,
                                         userid = userID,
-                                        paymentID = payment.paymentID,
+                                        paymentID = paymentID,
                                         status = BookingStatus.Confirmed.title
                                     )
+                                    println("Debug - Created HotelBooking: $booking")
 
+                                    // Create Payment object
                                     val localPayment = Payment(
-                                        id = payment.paymentID,
+                                        id = paymentID,
                                         createDate = LocalDate.now().toString(),
-                                        totalAmount = payment.totalPrice.toDoubleOrNull() ?: 0.0,
-                                        paymentMethod = paymentMethod.toString(),
+                                        totalAmount = totalPriceDouble ?: 0.0,
+                                        paymentMethod = paymentMethod.title,
                                         cardNumber = cardNumber,
                                         currency = "Ringgit Malaysia",
                                         userID = userID
                                     )
+                                    println("Debug - Created Payment: $localPayment")
 
-//                                    remotePaymentViewModel.updatePaymentBoth(localPayment)
-                                    remoteBookingViewModel.addNewIntegratedRecord(booking,localPayment)
+                                    // Log and call ViewModel
+                                    println("Debug - Calling addNewIntegratedRecord with booking: $booking, payment: $localPayment")
+                                    remoteBookingViewModel.addNewIntegratedRecord(booking, localPayment)
+                                    println("Debug - addNewIntegratedRecord called, awaiting result")
+
+                                    // Log dialog state change
                                     showDialog = true
-
+                                    println("Debug - showDialog set to true")
                                 },
-                                enabled = cardNumber.isNotEmpty() && paymentMethod.title.isNotEmpty(),
+                                enabled = cardNumber.isNotEmpty() && paymentMethod != PaymentMethod.NotSelected,
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = AppTheme.colorScheme.primary,
                                     contentColor = AppTheme.colorScheme.onPrimary
@@ -208,34 +285,9 @@ fun PaymentDetails(
                                     color = AppTheme.colorScheme.onPrimary
                                 )
                             }
-
                             Spacer(modifier = Modifier.height(100.dp))
                         }
                     }
-                }
-
-                if (showDialog) {
-                    val context = LocalContext.current
-                    val noticationService = NotificationService(context)
-                    noticationService.showNotification("Booking Successfully", "Thank you for supporting us")
-
-                    val error by remoteBookingViewModel.error.collectAsState() // Add error state
-                    TripPackageBookingDialog(
-                        isLoading = isLoading,
-                        hasError = error ?: "",
-                        onHomeButtonClick = {
-                            showDialog = it
-                            navController.navigate(AppScreen.Home.route) {
-                                popUpTo(AppScreen.Home.route) { inclusive = true }
-                            }
-                        },
-                        onViewOrderButtonClick = {
-                            showDialog = it
-                            navController.navigate(AppScreen.OrderGraph.route) {
-                                popUpTo(AppScreen.Home.route)
-                            }
-                        }
-                    )
                 }
             }
         }
