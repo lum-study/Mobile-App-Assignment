@@ -163,7 +163,6 @@ fun GuestSection(
                 .padding(start = 12.dp)
         )
 
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -203,7 +202,7 @@ fun GuestSection(
 
         Button(
             onClick = {
-                val totalPerson = selectedAdult
+                var totalPerson = selectedAdult
                 val totalPrice = (price.toDoubleOrNull() ?: 0.0) * roomBooked
                 val hotelID = URLEncoder.encode(hotelID, "UTF-8")
                 val startDate = URLEncoder.encode(startDate, "UTF-8")
@@ -233,6 +232,7 @@ fun GuestSection(
                     }
                 }
             },
+            enabled = paymentMethod.title.isNotEmpty() && selectedAdult.toString().isNotEmpty() && roomBooked.toString().isNotEmpty(),
             colors = ButtonDefaults.buttonColors(
                 containerColor = AppTheme.colorScheme.primary, // Use primary for button
                 contentColor = AppTheme.colorScheme.onPrimary // Text/icon on primary

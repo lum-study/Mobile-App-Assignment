@@ -171,7 +171,6 @@ fun ReviewFinalPackageSelected(
     saveData: HandleRotateState,
     navController: NavController,
     modifier: Modifier,
-    hotelDetail: HotelDetails = HotelDetails(),
     tabletPortrait: String = "false"
 ) {
     Column(
@@ -369,8 +368,8 @@ fun ReviewFinalPackageSelected(
 
             DetailsSection(
                 totalPrice = hotelOnChange.totalPrice,
-                totalPerson = hotelOnChange.totalPerson,
-                roomBooked = hotelOnChange.roomBooked,
+                totalPerson = hotelOnChange.numberOFClient,
+                roomBooked = hotelOnChange.numberOfRoom,
                 tabletPortrait = tabletPortrait,
                 modifier = Modifier
             )
@@ -389,8 +388,8 @@ fun ReviewFinalPackageSelected(
                     val booking = HotelBooking(
                         startDate = hotelOnChange.startDate,
                         endDate = hotelOnChange.endDate,
-                        numberOFClient = hotelOnChange.totalPerson.toIntOrNull() ?: 1,
-                        numberOfRoom = hotelOnChange.roomBooked.toIntOrNull() ?: 1,
+                        numberOFClient = hotelOnChange.numberOFClient.toIntOrNull() ?: 1,
+                        numberOfRoom = hotelOnChange.numberOfRoom.toIntOrNull() ?: 1,
                         hotelID = hotelData.id,
                         userid = userID.toString(), // Add real user ID if available
                         paymentID = hotelOnChange.paymentID,
@@ -401,7 +400,7 @@ fun ReviewFinalPackageSelected(
                         id = booking.paymentID,
                         createDate = LocalDate.now().toString(),
                         totalAmount = hotelOnChange.totalPrice.toDoubleOrNull() ?: 0.0,
-                        paymentMethod = paymentMethod.title,
+                        paymentMethod = if(isTablet) paymentMethod.title else hotelOnChange.paymentMethodString,
                         cardNumber = hotelOnChange.cardNumber,
                         currency = "Ringgit Malaysia",
                         userID = userID
@@ -414,7 +413,7 @@ fun ReviewFinalPackageSelected(
                     containerColor = AppTheme.colorScheme.primary,
                     contentColor = AppTheme.colorScheme.onPrimary
                 ),
-                enabled = cardNumber.isNotEmpty() && paymentMethod != PaymentMethod.NotSelected,
+                enabled = if(isTablet) cardNumber.isNotEmpty() && paymentMethod != PaymentMethod.NotSelected else true,
                 modifier = Modifier.fillMaxWidth().padding(if (isTablet) 16.dp else 0.dp)
             ) {
                 Text(text = "Next", color = AppTheme.colorScheme.onPrimary)

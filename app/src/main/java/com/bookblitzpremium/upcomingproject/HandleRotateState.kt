@@ -15,8 +15,8 @@ data class HotelDetails(
     val totalPrice: String = "",
     val startDate: String = "",
     val endDate: String = "",
-    val totalPerson: String = "",
-    val roomBooked: String = "",
+    val numberOFClient: String = "",
+    val numberOfRoom: String = "",
     val paymentID: String = "",
     val paymentMethodString: String = "",
     val paymentMethod: PaymentMethod = PaymentMethod.NotSelected,
@@ -34,11 +34,11 @@ class HandleRotateState @Inject constructor() : ViewModel() {
     }
 
     fun updateRoomCount(roomCount: String) {
-        _hotelDetails.value = _hotelDetails.value.copy(roomBooked = roomCount)
+        _hotelDetails.value = _hotelDetails.value.copy(numberOfRoom = roomCount)
     }
 
     fun updateAdultCount(adultCount: String) {
-        _hotelDetails.value = _hotelDetails.value.copy(totalPerson = adultCount)
+        _hotelDetails.value = _hotelDetails.value.copy(numberOFClient = adultCount)
     }
 
     fun updateEndDateDetails(endDate: String) {

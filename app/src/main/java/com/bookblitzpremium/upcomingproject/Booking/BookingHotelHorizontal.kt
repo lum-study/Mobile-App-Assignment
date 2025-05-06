@@ -91,15 +91,14 @@ fun HotelBookingHorizontalScreen(
         previousDeviceType = deviceType
     }
 
-
-    var roomCount by remember { mutableStateOf(if (hotelDetails.roomBooked.isNotEmpty()) hotelDetails.roomBooked.toIntOrNull() ?: 1 else hotelDetails.roomBooked.toIntOrNull() ?: 1) }
-    var adultCount by remember { mutableStateOf(if (hotelDetails.totalPerson.isNotEmpty()) hotelDetails.totalPerson.toIntOrNull() ?: 4 else hotelDetails.totalPerson.toIntOrNull() ?: 4) }
+    var roomCount by remember { mutableStateOf( hotelDetails.numberOfRoom.toIntOrNull() ?: 1) }
+    var adultCount by remember { mutableStateOf( hotelDetails.numberOFClient.toIntOrNull() ?: 4) }
 
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     val today = LocalDate.now()
     val nextFriday = today.with(TemporalAdjusters.next(DayOfWeek.FRIDAY))
 
-    var startDate by remember { mutableStateOf( if(hotelDetails.startDate.isEmpty()) today.format(formatter) else hotelDetails.startDate) }
+    var startDate by remember { mutableStateOf(if(hotelDetails.startDate.isEmpty()) today.format(formatter) else hotelDetails.startDate) }
     var endDate by remember { mutableStateOf(if(hotelDetails.endDate.isEmpty()) nextFriday.format(formatter) else hotelDetails.endDate )}
 
     // Dialog states
@@ -107,6 +106,13 @@ fun HotelBookingHorizontalScreen(
     var showDateDialog by remember { mutableStateOf(false) }
 
     val hotel by viewModel.selectedHotel.collectAsState()
+
+    LaunchedEffect(startDate,endDate) {
+        saveData.updateStartDateDetails(startDate)
+        saveData.updateEndDateDetails(endDate)
+        saveData.updateRoomCount(roomCount.toString())
+        saveData.updateAdultCount(adultCount.toString())
+    }
 
     if (hotel!=null) {
         val hotelData = hotel!!

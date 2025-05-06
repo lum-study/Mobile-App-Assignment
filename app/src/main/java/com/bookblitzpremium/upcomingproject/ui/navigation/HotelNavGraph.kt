@@ -120,7 +120,6 @@ fun NavGraphBuilder.hotelNavGraph(navController: NavController, saveData: Handle
 
     }
 
-
     composable(
         "${AppScreen.BookingReview.route}/{hotelID}/{startDate}/{endDate}/{totalPerson}/{roomBooked}/{totalPrice}/{paymentMethod}/{cardNumber}/{encodedPaymentID}"
     ) { backStackEntry ->

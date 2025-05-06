@@ -29,7 +29,7 @@ class LocalHotelBookingRepo @Inject constructor(
         hotelBookingDao.updateHotelBooking(booking)
     }
 
-    suspend fun getHotelBookingsByHotelId(id: String): List<HotelBooking> {
+    suspend fun getHotelBookingsByBookingID(id: String): List<HotelBooking> {
         return hotelBookingDao.getHotelBookingsByBookingId(id)
     }
 
