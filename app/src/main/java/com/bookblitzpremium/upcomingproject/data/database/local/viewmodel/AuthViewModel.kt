@@ -2,13 +2,10 @@ package com.bookblitzpremium.upcomingproject.data.database.local.viewmodel
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bookblitzpremium.upcomingproject.HotelDetails
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.User
 import com.bookblitzpremium.upcomingproject.data.database.remote.repository.RemoteUserRepository
-import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
 import com.bookblitzpremium.upcomingproject.data.model.AuthState
 import com.bookblitzpremium.upcomingproject.data.model.OtpAction
 import com.bookblitzpremium.upcomingproject.data.model.OtpState
@@ -48,8 +45,6 @@ class AuthViewModel @Inject constructor(
     private val _authState = MutableStateFlow<AuthState>(AuthState.Unauthenticated)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
-
-
     // Navigation command
     private val _newNavigationCommand = MutableStateFlow<Boolean>(false)
     val newNavigationCommand: StateFlow<Boolean> = _newNavigationCommand.asStateFlow()
@@ -57,7 +52,6 @@ class AuthViewModel @Inject constructor(
     fun getUserId(): String {
         return auth.currentUser?.uid ?: ""
     }
-
 
     // User details
     private val _user = MutableStateFlow(User())
@@ -71,7 +65,9 @@ class AuthViewModel @Inject constructor(
         _user.value = _user.value.copy(password = password)
     }
 
-
+    fun clearEmailPassword(){
+        _user.value = User()
+    }
 
     init {
 //        auth.signOut()
@@ -80,6 +76,7 @@ class AuthViewModel @Inject constructor(
 
     fun signOut() {
         auth.signOut()
+        clearEmailPassword()
         clearAuthenticatedState()
         clearSignUpState()
         clearNavigationCommand()
@@ -105,18 +102,21 @@ class AuthViewModel @Inject constructor(
     private val _authError = MutableStateFlow<String?>(null)
     val authError = _authError.asStateFlow()
 
-    fun login(email: String, password: String, onClick: () -> Unit) {
+
+    fun login(email: String, password: String, onClick: () -> Unit, isTablet: Boolean = false) {
         viewModelScope.launch {
-            _authState.value = AuthState.Loading
             _authError.value = null
             try {
                 val authResult = auth.signInWithEmailAndPassword(email, password).await()
                 val userId = authResult.user?.uid
                     ?: throw IllegalStateException("Failed to authenticate user")
                 _authState.value = AuthState.Authenticated
-                _newNavigationCommand.value = true
+                if(isTablet){
+                    onClick()
+                }else{
+                    _newNavigationCommand.value = true
+                }
                 _authState.value = AuthState.Triggerable
-                onClick()
             } catch (e: FirebaseAuthInvalidCredentialsException) {
                 _authError.value = "Invalid email or password"
                 _authState.value = AuthState.Error("Invalid email or password")
@@ -151,8 +151,6 @@ class AuthViewModel @Inject constructor(
                 if (customId.isEmpty()) {
                     throw Exception("Signup failed: Empty user ID")
                 }
-
-                // Second portion: Add user and update gender
                 val username = email.substringBefore("@")
                 val user = User(id = customId, name = username, email = email, password = password, gender = gender)
                 remoteUserViewModel.addUserSpecila(customId, user)

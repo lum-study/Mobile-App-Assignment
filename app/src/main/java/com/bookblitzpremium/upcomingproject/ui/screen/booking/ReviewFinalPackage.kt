@@ -240,6 +240,7 @@ fun ReviewFinalPackageSelected(
                 hasError = error ?: "",
                 onHomeButtonClick = {
                     showDialog = it
+                    saveData.clearHotelDetails()
                     navController.navigate(AppScreen.Home.route) {
                         popUpTo(AppScreen.Home.route) { inclusive = true }
                     }

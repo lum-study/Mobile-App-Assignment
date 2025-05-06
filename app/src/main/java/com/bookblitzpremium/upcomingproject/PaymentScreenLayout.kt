@@ -40,8 +40,6 @@ fun PaymentSizeLayout(
     val configuration = LocalConfiguration.current
     val deviceType = getDeviceType(windowSizeClass, configuration)
 
-    println("$windowSizeClass + $deviceType")
-
     val payment = HotelDetails(
         totalPrice = totalPrice,
         startDate = startDate,

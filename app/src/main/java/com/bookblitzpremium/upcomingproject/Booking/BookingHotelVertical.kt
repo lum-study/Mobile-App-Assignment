@@ -25,6 +25,7 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -32,12 +33,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -51,6 +55,7 @@ import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.Remot
 import com.bookblitzpremium.upcomingproject.ui.components.HeaderDetails
 import com.bookblitzpremium.upcomingproject.ui.components.UrlImage
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
+import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import java.net.URLEncoder
@@ -78,6 +83,18 @@ fun HotelBookingVerticalScreen(
 
     LaunchedEffect(Unit) {
         viewModel.getHotelByID(hotelID)
+    }
+
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val configuration = LocalConfiguration.current
+    val deviceType = getDeviceType(windowSizeClass, configuration)
+    var previousDeviceType by rememberSaveable { mutableStateOf(deviceType) }
+
+    LaunchedEffect(Unit) {
+        if (deviceType == previousDeviceType) {
+            saveData.clearHotelDetails()
+        }
+        previousDeviceType = deviceType
     }
 
     var roomCount by remember { mutableStateOf(if (hotelDetails.roomBooked.isNotEmpty()) hotelDetails.roomBooked.toIntOrNull() ?: 1 else hotelDetails.roomBooked.toIntOrNull() ?: 1) }

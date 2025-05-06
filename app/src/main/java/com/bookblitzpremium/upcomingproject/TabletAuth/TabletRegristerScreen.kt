@@ -53,6 +53,7 @@ import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
 import com.bookblitzpremium.upcomingproject.data.model.SignupState
+import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextFieldPassword
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
@@ -380,6 +381,7 @@ fun WelcomeRegristerScreen(
 
         when (signupState) {
             is SignupState.Success -> {
+                viewModel.clearEmailPassword()
                 withContext(Dispatchers.Main) {
                     navController.navigate(AppScreen.Home.route){
                         popUpTo(AppScreen.Login.route){
@@ -535,9 +537,7 @@ fun WelcomeRegristerScreen(
                 .background(AppTheme.colorScheme.surface.copy(alpha = 0.5f)),
             contentAlignment = Alignment.Center
         ) {
-            CircularProgressIndicator(
-                color = AppTheme.colorScheme.primary
-            )
+            CheckStatusLoading()
         }
     }
 }
