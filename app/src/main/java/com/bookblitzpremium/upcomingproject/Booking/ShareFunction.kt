@@ -266,7 +266,6 @@ fun HotelReviewsSection(
                             description = rating.description,
                             rating = rating.rating,
                             icon = rating.icon,
-                            hotelID = rating.hotelID
                         )
                     }
                 }
@@ -282,12 +281,12 @@ fun ReviewItem(
     description : String,
     rating : Int,
     icon:String,
-    hotelID:String,
     modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier
-            .width(300.dp) // Fixed width for horizontal scrolling
+            .width(300.dp)
+            .height(180.dp)
             .padding(vertical = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(16.dp),
@@ -299,7 +298,6 @@ fun ReviewItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.Top
         ) {
-            // Reviewer avatar
             UrlImage(
                 imageUrl = icon,
                 modifier = Modifier
@@ -314,7 +312,6 @@ fun ReviewItem(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = spacedBy(4.dp)
             ) {
-                // Name and date
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -326,10 +323,8 @@ fun ReviewItem(
                     )
                 }
 
-
                 // Star rating
                 StarRating(rating = rating)
-
 
                 // Review text
                 Text(
