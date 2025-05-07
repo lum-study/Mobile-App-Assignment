@@ -53,14 +53,15 @@ import java.net.URLEncoder
 @Composable
 fun PreviewScreen() {
     val navController = rememberNavController()
-    HotelDetailScreen(navController, hotelBookingId = "dgdf")
+    HotelDetailScreen(navController, hotelID = "dgdf")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HotelDetailScreen(
     navController: NavController,
-    hotelBookingId: String,
+    bookingID: String = "",
+    hotelID: String = "",
     tripPackageID: String = "",
     numberOfRoom :String = "",
     numberOFClient :String = "",
@@ -68,8 +69,8 @@ fun HotelDetailScreen(
     endDate :String = "",
     viewModel: LocalHotelViewModel = hiltViewModel(),
 ) {
-    LaunchedEffect(hotelBookingId) {
-        viewModel.getHotelByID(hotelBookingId)
+    LaunchedEffect(hotelID) {
+        viewModel.getHotelByID(hotelID)
     }
 
     val hotel by viewModel.selectedHotel.collectAsState()
@@ -91,6 +92,7 @@ fun HotelDetailScreen(
                     "${AppScreen.BookingDate.route}/$hotelID/$hotelPrice"
                 )
             },
+            bookingID = bookingID,
             tripPackageID = tripPackageID,
             numberOfRoom = numberOfRoom,
             numberOFClient = numberOFClient,
@@ -106,6 +108,7 @@ fun HotelDetailScreen(
 private fun HotelDetailContent(
     hotel: Hotel,
     onBook: (String) -> Unit,
+    bookingID: String = "",
     tripPackageID: String,
     numberOfRoom :String = "",
     numberOFClient :String = "",
@@ -124,7 +127,7 @@ private fun HotelDetailContent(
         HotelInfoSection(hotel.name, hotel.address, hotel.rating, navController, hotel.feature)
         Spacer(Modifier.height(16.dp))
         AboutSection(hotel.name, hotel.rating)
-        if(tripPackageID.isNotEmpty()){
+        if(bookingID.isNotEmpty()){
             Spacer(Modifier.height(16.dp))
             BookingSummaryTable(
                 startDate = startDate.toString(),
@@ -140,7 +143,7 @@ private fun HotelDetailContent(
             println(numberOFClient)
         }
         Spacer(Modifier.weight(1f))
-        if (tripPackageID == "") {
+        if (tripPackageID.isEmpty() && bookingID.isEmpty()) {
             BookNowButton(price = hotel.price.toString(), onBook = onBook)
         }
     }

@@ -229,8 +229,9 @@ fun OrderScreen(navController: NavHostController) {
                         onColumnClick = {
                             navController.navigate(
                                 AppScreen.Hotel.passData(
-                                    booking.hotelID,
                                     booking.id,
+                                    booking.hotelID,
+                                    "",
                                     "true",
                                     booking.numberOfRoom.toString(),
                                     booking.numberOFClient.toString(),

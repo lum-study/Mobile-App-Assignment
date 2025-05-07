@@ -261,7 +261,7 @@ fun PaymentOptionScreen(
             if (option == PaymentMethod.EWallet && selectedPaymentMethod == PaymentMethod.EWallet) {
                 OutlinedTextField(
                     value = cardNumber,
-                    onValueChange = { onCardNumberChange(if (it.length < 12) it else cardNumber) },
+                    onValueChange = { onCardNumberChange(if (it.length <= 16) it else cardNumber) },
                     label = {
                         Text(
                             text = "Phone number",

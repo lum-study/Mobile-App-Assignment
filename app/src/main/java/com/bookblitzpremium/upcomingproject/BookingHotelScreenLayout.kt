@@ -35,7 +35,8 @@ fun HotelBookingScreenLayout(
         DeviceType.MobilePortrait -> {
             HotelDetailScreen(
                 navController = navController,
-                hotelBookingId = hotelID,
+                bookingID = bookingID,
+                hotelID = hotelID,
                 tripPackageID = tripPackageID,
                 numberOfRoom =numberOfRoom,
                 numberOFClient = numberOFClient,

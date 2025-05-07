@@ -138,7 +138,8 @@ fun SearchScreen(navController: NavHostController) {
                                         navController.navigate(
                                             AppScreen.Hotel.passData(
                                                 hotel!!.id,
-                                                ""
+                                                "",
+                                                "true"
                                             )
                                         )
                                     })
@@ -253,7 +254,8 @@ fun SearchScreen(navController: NavHostController) {
                                         navController.navigate(
                                             AppScreen.Hotel.passData(
                                                 hotel!!.id,
-                                                ""
+                                                "",
+                                                "true"
                                             )
                                         )
                                     }
@@ -358,7 +360,8 @@ fun SearchScreen(navController: NavHostController) {
                                         navController.navigate(
                                             AppScreen.Hotel.passData(
                                                 hotel!!.id,
-                                                ""
+                                                "",
+                                                "true"
                                             )
                                         )
                                     })
@@ -520,7 +523,7 @@ fun FilteredResultScreen(
                     hotel,
                     modifier = Modifier.height(if (deviceType == DeviceType.MobilePortrait) 250.dp else 300.dp),
                     onClick = {
-                        navController.navigate(AppScreen.Hotel.passData(hotel!!.id, ""))
+                        navController.navigate(AppScreen.Hotel.passData(hotel!!.id, "", "true"))
                     })
             }
         }
