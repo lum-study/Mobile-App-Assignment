@@ -82,7 +82,7 @@ fun OrderScreen(navController: NavHostController) {
         remember { localHotelBookingViewModel.getHotelBookingInformationByUserID(userID) }.collectAsLazyPagingItems().itemSnapshotList.items
             .sortedWith(compareBy(
                 { booking ->
-                    when (booking.status) {
+                    when (getBookingStatus(bookingStatus = booking.status, date = booking.startDate, isTripPackage = false)) {
                         BookingStatus.Cancelled.title -> 3
                         BookingStatus.Completed.title -> 2
                         BookingStatus.Confirmed.title -> 1

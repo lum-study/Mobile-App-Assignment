@@ -139,7 +139,7 @@ fun SearchScreen(navController: NavHostController) {
                                             AppScreen.Hotel.passData(
                                                 hotel!!.id,
                                                 "",
-                                                "true"
+                                                "false"
                                             )
                                         )
                                     })
@@ -255,7 +255,7 @@ fun SearchScreen(navController: NavHostController) {
                                             AppScreen.Hotel.passData(
                                                 hotel!!.id,
                                                 "",
-                                                "true"
+                                                "false"
                                             )
                                         )
                                     }
@@ -361,7 +361,7 @@ fun SearchScreen(navController: NavHostController) {
                                             AppScreen.Hotel.passData(
                                                 hotel!!.id,
                                                 "",
-                                                "true"
+                                                "false"
                                             )
                                         )
                                     })
@@ -523,7 +523,7 @@ fun FilteredResultScreen(
                     hotel,
                     modifier = Modifier.height(if (deviceType == DeviceType.MobilePortrait) 250.dp else 300.dp),
                     onClick = {
-                        navController.navigate(AppScreen.Hotel.passData(hotel!!.id, "", "true"))
+                        navController.navigate(AppScreen.Hotel.passData(hotel!!.id, "", "false"))
                     })
             }
         }
