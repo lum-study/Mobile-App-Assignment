@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -50,6 +51,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.HandleRotateState
 import com.bookblitzpremium.upcomingproject.HotelDetails
+import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.common.enums.BookingStatus
 import com.bookblitzpremium.upcomingproject.common.enums.PaymentMethod
@@ -646,7 +648,7 @@ fun DetailsSection(
                 color = AppTheme.colorScheme.onSurface // Text on surface
             )
             Text(
-                text = "RM $totalPrice",
+                text = stringResource(R.string.price, totalPrice.toFloatOrNull() ?: 0f),
                 style = AppTheme.typography.largeBold,
                 color = AppTheme.colorScheme.onSurface // Text on surface
             )

@@ -87,7 +87,7 @@ fun TravelHeaderTable(
                 screen = {
                     HotelDetailScreen(
                         navController = navController,
-                        hotelBookingId = selectedTripPackage.hotelID,
+                        hotelID = selectedTripPackage.hotelID,
                         tripPackageID = selectedTripPackage.id
                     )
                 }

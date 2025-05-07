@@ -260,7 +260,8 @@ fun TripPackageInformationPhoneLayout(
                         navController.navigate(
                             AppScreen.Hotel.passData(
                                 selectedTripPackage.hotelID,
-                                selectedTripPackage.id
+                                selectedTripPackage.id,
+                                "false"
                             )
                         )
                     }
@@ -340,7 +341,7 @@ fun TripPackageInformationTabletLayout(
                 screen = {
                     HotelDetailScreen(
                         navController = navController,
-                        hotelBookingId = selectedTripPackage.hotelID,
+                        hotelID = selectedTripPackage.hotelID,
                         tripPackageID = selectedTripPackage.id
                     )
                 }
