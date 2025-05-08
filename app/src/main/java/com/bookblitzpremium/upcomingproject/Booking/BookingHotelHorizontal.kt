@@ -69,6 +69,11 @@ fun HotelBookingHorizontalScreen(
     hotelID: String,
     saveData: HandleRotateState,
     isOrder: String = "false",
+    bookingID:String = "",
+    numberOfRoom :String = "",
+    numberOFClient :String = "",
+    startDate :String = "",
+    endDate :String = "",
     viewModel: LocalHotelViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
@@ -91,16 +96,29 @@ fun HotelBookingHorizontalScreen(
         previousDeviceType = deviceType
     }
 
-    var roomCount by remember { mutableStateOf( hotelDetails.numberOfRoom.toIntOrNull() ?: 1) }
-    var adultCount by remember { mutableStateOf( hotelDetails.numberOFClient.toIntOrNull() ?: 4) }
+    val initialRoomCount: Int = if (bookingID.isNotEmpty()) {
+        numberOfRoom.toIntOrNull() ?: 1
+    } else {
+        hotelDetails.numberOfRoom.toIntOrNull() ?: 1
+    }
+
+    val initialClientCount: Int = if (bookingID.isNotEmpty()) {
+        numberOFClient.toIntOrNull() ?: 1
+    } else {
+        hotelDetails.numberOFClient.toIntOrNull() ?: 1
+    }
+
+    var numberOfRoom by remember { mutableStateOf(initialRoomCount) }
+    var numberOFClient by remember { mutableStateOf(initialClientCount ) }
 
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     val today = LocalDate.now()
-    val nextFriday = today.with(TemporalAdjusters.next(DayOfWeek.FRIDAY))
+    val twoDaysFromNow = today.plusDays(2)
 
-    var startDate by remember { mutableStateOf(if(hotelDetails.startDate.isEmpty()) today.format(formatter) else hotelDetails.startDate) }
-    var endDate by remember { mutableStateOf(if(hotelDetails.endDate.isEmpty()) nextFriday.format(formatter) else hotelDetails.endDate )}
-
+    var startDate by remember { mutableStateOf(if(bookingID.isNotEmpty()) startDate else if(hotelDetails.startDate.isNotEmpty()) hotelDetails.startDate else today.format(formatter).toString()) }
+    var endDate by remember { mutableStateOf( if(bookingID.isNotEmpty()) endDate else if(hotelDetails.endDate.isNotEmpty()) hotelDetails.endDate else twoDaysFromNow.format(formatter).toString()) }
+    println("startDate of the Horizontal + ${startDate}")
+    println("endDate of the Horizontal + ${endDate}")
     // Dialog states
     var showFigureDialog by remember { mutableStateOf(false) }
     var showDateDialog by remember { mutableStateOf(false) }
@@ -110,8 +128,8 @@ fun HotelBookingHorizontalScreen(
     LaunchedEffect(startDate,endDate) {
         saveData.updateStartDateDetails(startDate)
         saveData.updateEndDateDetails(endDate)
-        saveData.updateRoomCount(roomCount.toString())
-        saveData.updateAdultCount(adultCount.toString())
+        saveData.updateRoomCount(numberOfRoom.toString())
+        saveData.updateAdultCount(numberOFClient.toString())
     }
 
     if (hotel!=null) {
@@ -185,18 +203,18 @@ fun HotelBookingHorizontalScreen(
                             if (showFigureDialog) {
                                 DialogFigure(
                                     onDismissRequest = {
-                                        if (roomCount >= 0 && adultCount >= 0) {
+                                        if (numberOfRoom >= 0 && numberOFClient >= 0) {
                                             coroutineScope.launch {
-                                                saveData.updateRoomCount(roomCount.toString())
-                                                saveData.updateAdultCount(adultCount.toString())
+                                                saveData.updateRoomCount(numberOfRoom.toString())
+                                                saveData.updateAdultCount(numberOFClient.toString())
                                             }
                                         }
 
                                         showFigureDialog = false
                                     },
                                     onDateSelected = { figure, room ->
-                                        adultCount = figure ?: 0
-                                        roomCount = room ?: 0
+                                        numberOFClient = figure ?: 0
+                                        numberOfRoom = room ?: 0
                                     }
                                 )
                             }
@@ -227,7 +245,7 @@ fun HotelBookingHorizontalScreen(
                 val paymentViewModel: RemotePaymentViewModel = hiltViewModel()
                 val coroutineScope = rememberCoroutineScope()
 
-                val totalPrice = adultCount.toDouble() * hotelData.price
+                val totalPrice = numberOFClient.toDouble() * hotelData.price
 
                 val payment = remember(copyPaymentID) {
                     Payment(
@@ -275,8 +293,8 @@ fun HotelBookingHorizontalScreen(
                             BookingSummaryTable(
                                 startDate = startDate.toString(),
                                 endDate = endDate.toString(),
-                                roomCount = roomCount.toString(),
-                                adultCount = adultCount.toString()
+                                roomCount = numberOfRoom.toString(),
+                                adultCount = numberOFClient.toString()
                             )
                         }
 
@@ -289,8 +307,8 @@ fun HotelBookingHorizontalScreen(
                         }
 
                         val hotelID = hotelID
-                        val totalPerson = adultCount
-                        val roomBooked = roomCount
+                        val totalPerson = numberOFClient
+                        val roomBooked = numberOfRoom
                         val paymentMethod = payment.paymentMethod
 
                         val isOrderBoolean = isOrder == "true"
@@ -308,13 +326,13 @@ fun HotelBookingHorizontalScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(16.dp),
-                                    enabled = startDate != null && endDate != null &&  roomCount!= 0 && adultCount != 0,
+                                    enabled = startDate != null && endDate != null &&  numberOfRoom!= 0 && numberOFClient != 0,
                                     onClick = {
                                         coroutineScope.launch {
 
-                                            if (roomCount >= 0 && adultCount >= 0) {
-                                                saveData.updateRoomCount(roomCount.toString())
-                                                saveData.updateAdultCount(adultCount.toString())
+                                            if (numberOfRoom >= 0 && numberOFClient >= 0) {
+                                                saveData.updateRoomCount(numberOfRoom.toString())
+                                                saveData.updateAdultCount(numberOFClient.toString())
                                             }
                                             if(startDate.isNotEmpty() && endDate.isNotEmpty()){
                                                 saveData.updateStartDateDetails(startDate)

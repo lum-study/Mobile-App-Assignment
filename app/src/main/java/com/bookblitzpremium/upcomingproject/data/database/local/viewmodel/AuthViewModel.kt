@@ -53,6 +53,9 @@ class AuthViewModel @Inject constructor(
         return auth.currentUser?.uid ?: ""
     }
 
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading.asStateFlow()
+
     // User details
     private val _user = MutableStateFlow(User())
     val userDetails: StateFlow<User> = _user.asStateFlow()
@@ -103,7 +106,7 @@ class AuthViewModel @Inject constructor(
     val authError = _authError.asStateFlow()
 
 
-    fun login(email: String, password: String, onClick: () -> Unit, isTablet: Boolean = false) {
+    fun login(email: String, password: String, onClick: () -> Unit = {}, isTablet: Boolean = false) {
         viewModelScope.launch {
             _authError.value = null
             try {
@@ -188,7 +191,7 @@ class AuthViewModel @Inject constructor(
                 // Send the password reset email
                 auth.sendPasswordResetEmail(email).await()
                 _passwordResetState.value = PasswordResetState.Success
-                Log.d("PasswordResetViewModel", "Password reset email sent to $email")
+
             } catch (e: FirebaseAuthException) {
                 when (e.errorCode) {
                     "ERROR_USER_NOT_FOUND" -> {

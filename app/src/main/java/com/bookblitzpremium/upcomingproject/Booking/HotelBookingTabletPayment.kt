@@ -203,43 +203,18 @@ fun PaymentDetails(
 
                             Button(
                                 onClick = {
-                                    // Log initial state and enabled condition
-                                    println("Debug - Button clicked, enabled: ${cardNumber.isNotEmpty() && paymentMethod != PaymentMethod.NotSelected}")
-                                    println("Debug - hotelDetail (dataOnChange): $dataOnChange")
-                                    println("Debug - hotelID: $hotelID")
-                                    println("Debug - userID: $userID")
-                                    println("Debug - paymentMethod: $paymentMethod")
-                                    println("Debug - cardNumber: $cardNumber")
 
-                                    // Validate and convert fields
                                     val startDate = dataOnChange.startDate
-                                    println("Debug - startDate from dataOnChange: $startDate")
                                     val endDate = dataOnChange.endDate
-                                    println("Debug - endDate from dataOnChange: $endDate")
                                     val totalPersonInt = dataOnChange.numberOFClient.toIntOrNull()
-                                    if (totalPersonInt == null) {
-                                        println("Debug - Warning: totalPerson '${dataOnChange.numberOFClient}' is not a valid integer, defaulting to 1")
-                                    } else {
-                                        println("Debug - totalPerson converted to: $totalPersonInt")
-                                    }
+
                                     val numberOfClient = totalPersonInt ?: 1
                                     val roomBookedInt = dataOnChange.numberOfRoom.toIntOrNull()
-                                    if (roomBookedInt == null) {
-                                        println("Debug - Warning: roomBooked '${dataOnChange.numberOfRoom}' is not a valid integer, defaulting to 1")
-                                    } else {
-                                        println("Debug - roomBooked converted to: $roomBookedInt")
-                                    }
+
                                     val numberOfRoom = roomBookedInt ?: 1
                                     val paymentID = dataOnChange.paymentID
-                                    println("Debug - paymentID from dataOnChange: $paymentID")
                                     val totalPriceDouble = dataOnChange.totalPrice.toDoubleOrNull()
-                                    if (totalPriceDouble == null) {
-                                        println("Debug - Warning: totalPrice '${dataOnChange.totalPrice}' is not a valid double, defaulting to 0.0")
-                                    } else {
-                                        println("Debug - totalPrice converted to: $totalPriceDouble")
-                                    }
 
-                                    // Create HotelBooking object
                                     val booking = HotelBooking(
                                         startDate = startDate,
                                         endDate = endDate,
@@ -250,7 +225,6 @@ fun PaymentDetails(
                                         paymentID = paymentID,
                                         status = BookingStatus.Confirmed.title
                                     )
-                                    println("Debug - Created HotelBooking: $booking")
 
                                     // Create Payment object
                                     val localPayment = Payment(
@@ -262,16 +236,9 @@ fun PaymentDetails(
                                         currency = "Ringgit Malaysia",
                                         userID = userID
                                     )
-                                    println("Debug - Created Payment: $localPayment")
 
-                                    // Log and call ViewModel
-                                    println("Debug - Calling addNewIntegratedRecord with booking: $booking, payment: $localPayment")
                                     remoteBookingViewModel.addNewIntegratedRecord(booking, localPayment)
-                                    println("Debug - addNewIntegratedRecord called, awaiting result")
-
-                                    // Log dialog state change
                                     showDialog = true
-                                    println("Debug - showDialog set to true")
                                 },
                                 enabled = cardNumber.isNotEmpty() && paymentMethod != PaymentMethod.NotSelected,
                                 colors = ButtonDefaults.buttonColors(

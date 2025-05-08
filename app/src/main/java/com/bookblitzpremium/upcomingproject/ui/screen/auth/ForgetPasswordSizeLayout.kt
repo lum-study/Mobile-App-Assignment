@@ -28,7 +28,7 @@ fun DynamicForgetPasswordPage(onNextButtonClicked: () -> Unit, navController: Na
         else -> false
     }
 
-    ForgetPassword(showTabletUI, onNextButtonClicked , userModel, navController = navController)
+    ForgetPassword(showTabletUI,userModel, navController = navController)
 }
 
 

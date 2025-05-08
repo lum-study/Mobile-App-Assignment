@@ -166,7 +166,7 @@ fun MapScreen(
 fun BoxMaps(
     modifier : Modifier,
     addressInput: String,
-    onClick: () -> Unit,
+    onClick: () -> Unit = {},
     viewModel: MapViewModel = viewModel(),
 ) {
     val context = LocalContext.current

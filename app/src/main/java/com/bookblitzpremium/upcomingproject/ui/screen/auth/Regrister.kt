@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -92,7 +93,7 @@ fun RegristerPage(
 
     fun isFormValid(): Boolean {
         if (email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(context, "Please enter a valid email address", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.please_enter_a_valid_email_address), Toast.LENGTH_SHORT).show()
             return false
         }
 
@@ -102,11 +103,13 @@ fun RegristerPage(
         }
 
         if (confirmPassword.isBlank()) {
-            Toast.makeText(context, "Please confirm your password", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context,
+                context.getString(R.string.please_confirm_your_password), Toast.LENGTH_SHORT).show()
             return false
         }
         if (!doPasswordsMatch()) {
-            Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context,
+                context.getString(R.string.passwords_do_not_match), Toast.LENGTH_SHORT).show()
             return false
         }
         return true
@@ -134,7 +137,7 @@ fun RegristerPage(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Register new account!",
+                text = stringResource(R.string.register_new_account),
                 style = AppTheme.typography.largeBold,
                 modifier = Modifier
                     .padding(top = 0.dp, bottom = 30.dp)
@@ -144,8 +147,8 @@ fun RegristerPage(
             CustomTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = "Username",
-                placeholder = "Enter your username",
+                label = stringResource(R.string.enter_emails),
+                placeholder = stringResource(R.string.enter_your_emails),
                 shape = RoundedCornerShape(12.dp),
                 leadingIcon = Icons.Default.Person,
                 trailingIcon = Icons.Default.Clear,
@@ -157,8 +160,8 @@ fun RegristerPage(
             CustomTextFieldPassword(
                 value = password,
                 onValueChange = { password = it },
-                label = "Password",
-                placeholder = "Enter your Password",
+                label = stringResource(R.string.enter_password),
+                placeholder = stringResource(R.string.enter_password),
                 leadingIcon = Icons.Default.Lock,
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
@@ -169,8 +172,8 @@ fun RegristerPage(
             CustomTextFieldPassword(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
-                label = "Confirm Password",
-                placeholder = "Enter your Confirm Password",
+                label = stringResource(R.string.confirm_password),
+                placeholder = stringResource(R.string.enter_your_confirm_password),
                 leadingIcon = Icons.Default.Lock,
                 modifier = Modifier
                     .fillMaxWidth()

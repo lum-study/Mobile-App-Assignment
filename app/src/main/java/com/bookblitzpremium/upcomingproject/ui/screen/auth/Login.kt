@@ -5,11 +5,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -32,7 +30,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.R
@@ -82,12 +79,12 @@ fun LoginPage(
 
     fun isFormValid(): Boolean {
         if (email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            toastMessage = "Please enter a valid email address"
+            toastMessage = context.getString(R.string.please_enter_a_valid_email_address)
             return false
         }
 
         if (password.isBlank()) {
-            toastMessage = "Please enter a valid password"
+            toastMessage = context.getString(R.string.please_enter_a_valid_password)
             return false
         }
         return true
@@ -122,8 +119,8 @@ fun LoginPage(
             CustomTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = "Enter email",
-                placeholder = "Enter your email",
+                label = stringResource(R.string.enter_emails),
+                placeholder = stringResource(R.string.enter_your_emails),
                 leadingIcon = Icons.Default.Email,
                 trailingIcon = Icons.Default.Clear,
                 shape = RoundedCornerShape(8.dp),
@@ -136,8 +133,8 @@ fun LoginPage(
             CustomTextFieldPassword(
                 value = password,
                 onValueChange = { password = it },
-                label = "Enter password",
-                placeholder = "Enter your password",
+                label = stringResource(R.string.enter_password),
+                placeholder = stringResource(R.string.enter_password),
                 leadingIcon = Icons.Default.Lock,
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
@@ -146,7 +143,7 @@ fun LoginPage(
             )
 
             Text(
-                text = "Forgot Password?",
+                text = stringResource(R.string.forgot_password),
                 style = AppTheme.typography.bodyLarge,
                 textDecoration = TextDecoration.Underline,
                 modifier = Modifier
@@ -168,9 +165,7 @@ fun LoginPage(
                     valueHorizontal = 16.dp,
                     onClick ={
                         if(isFormValid()){
-                            viewModel.login(email,password, onClick = {
-
-                            })
+                            viewModel.login(email,password)
                         }
                     }
                 )
@@ -186,8 +181,6 @@ fun LoginPage(
                             navController.navigate(AppScreen.Register.route)
                         }
                 )
-
-
             }
         }
     }

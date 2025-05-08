@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Female
 import androidx.compose.material.icons.filled.Male
@@ -19,6 +18,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -33,16 +33,17 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.media3.common.util.Log
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.GenderOption
+import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.RemoteUserViewModel
 import com.bookblitzpremium.upcomingproject.data.model.SignupState
-import com.google.firebase.auth.FirebaseAuth
+import com.bookblitzpremium.upcomingproject.ui.components.TextHeader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -53,7 +54,6 @@ fun GenderMobileVersion(
     navController: NavController,
     email: String,
     password:String,
-    onClick: () -> Unit = {},
     remoteUserViewModel: RemoteUserViewModel = hiltViewModel(),
     viewModel: AuthViewModel = hiltViewModel()
 ){
@@ -66,7 +66,6 @@ fun GenderMobileVersion(
     var toastTrigger by remember { mutableStateOf(0) }
     var triggerSignup by rememberSaveable { mutableStateOf(false) }
     var signupJob by remember { mutableStateOf<Job?>(null) }
-    val coroutineScope = rememberCoroutineScope()
 
     val context = LocalContext.current
 
@@ -83,7 +82,6 @@ fun GenderMobileVersion(
     // Handle signup state changes
     LaunchedEffect(triggerSignup, signupState) {
         if (triggerSignup) {
-            Log.d("GenderSelectionScreen", "Triggering signup with gender: $selectedGender")
             triggerSignup = false
             signupJob = viewModel.performSignup(email, password, selectedGender ?: "")
         }
@@ -124,15 +122,7 @@ fun GenderMobileVersion(
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         // Title
-        Text(
-            text = "What's your gender?",
-            style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.padding(top = 32.dp)
-        )
-
-        // Stepper (1/3) with clickable bubbles
-
-        var userID = FirebaseAuth.getInstance().currentUser?.uid.toString()
+        TextHeader(stringResource(R.string.what_is_yours_gender))
 
         Column(
             modifier = Modifier.weight(1f),
@@ -142,11 +132,11 @@ fun GenderMobileVersion(
             // Male Option
             GenderOption(
                 gender = "Male",
-                isSelected = selectedGender == "Male",
+                isSelected = selectedGender == context.getString(R.string.male),
                 icon = Icons.Default.Male,
                 tableScreen = false ,
                 mobileScreen = true,
-                onClick = { remoteUserViewModel.selectGender("Male") }
+                onClick = { remoteUserViewModel.selectGender(context.getString(R.string.male)) }
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -154,11 +144,11 @@ fun GenderMobileVersion(
             // Female Option
             GenderOption(
                 gender = "Female",
-                isSelected = selectedGender == "Female",
+                isSelected = selectedGender == context.getString(R.string.female),
                 icon = Icons.Default.Female,
                 tableScreen = false,
                 mobileScreen = true,
-                onClick = { remoteUserViewModel.selectGender("Female") }
+                onClick = { remoteUserViewModel.selectGender(context.getString(R.string.female)) }
             )
         }
 
@@ -180,7 +170,7 @@ fun GenderMobileVersion(
                     if (selectedGender != null) {
                         triggerSignup = true
                     } else {
-                        remoteUserViewModel.setError("Please select a gender")
+                        remoteUserViewModel.setError(context.getString(R.string.please_select_a_gender))
                     }
                 }
             },

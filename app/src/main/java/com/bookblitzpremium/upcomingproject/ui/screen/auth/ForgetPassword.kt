@@ -63,8 +63,7 @@ import kotlinx.coroutines.launch
 fun PreviewForgetPassword() {
     val navController = rememberNavController()
     ForgetPassword(
-        showToggleToTablet = false, // Example value
-        onNextButtonClicked = {} ,
+        showToggleToTablet = false,
         viewModel = viewModel(),
         navController = navController
     )
@@ -74,29 +73,16 @@ fun PreviewForgetPassword() {
 @Composable
 fun ForgetPassword(
     showToggleToTablet: Boolean,
-    onNextButtonClicked: () -> Unit,
     viewModel: AuthViewModel,
     navController: NavController
 ){
     val valueHorizontal = if (showToggleToTablet) 46.dp else 16.dp
     val maxSizeAvailable = if (showToggleToTablet) 0.4f else 1f
     val offsetValueX = if (showToggleToTablet) 620.dp else 0.dp
-    val offsetValueY = if (showToggleToTablet) 120.dp else 200.dp
-
 
     var emails by rememberSaveable { mutableStateOf("") }
-//    var localViewModel : LocalUserViewModel = hiltViewModel()
-    var checkTrigger by remember { mutableStateOf(0) }
-//    val emailExists by localViewModel.emailExists.collectAsState()
-//    val success by localViewModel.success.collectAsState()
     val remoteUser : RemoteUserViewModel = hiltViewModel()
 
-//    // Validate and check email when input changes or button is clicked
-//    LaunchedEffect(emails, checkTrigger) {
-//        if (emails.isNotEmpty() && isValidEmail(emails)) {
-//            localViewModel.checkUserEmail(emails)
-//        }
-//    }
 
     Column(
         modifier = Modifier
@@ -130,8 +116,8 @@ fun ForgetPassword(
             CustomTextField(
                 value = emails,
                 onValueChange = { emails = it },
-                label = "Enter",
-                placeholder = "Enter your Emails",
+                label = stringResource(R.string.enter_emails),
+                placeholder = stringResource(R.string.enter_your_emails),
                 shape = RoundedCornerShape(12.dp),
                 leadingIcon = Icons.Default.Email,
                 trailingIcon = Icons.Default.Clear,
@@ -141,7 +127,6 @@ fun ForgetPassword(
                     .padding(horizontal = valueHorizontal, vertical = 16.dp)
             )
 
-            var verifyEmailEnter by rememberSaveable { mutableStateOf(false) }
 
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -149,23 +134,18 @@ fun ForgetPassword(
             val context = LocalContext.current
 
             ButtonHeader(
-                textResId = R.string.login,
+                textResId = R.string.next_button,
                 valueHorizontal = valueHorizontal,
                 onClick = {
-
                     scope.launch {
                         try {
                             val existingId = remoteUser.checkEmails(emails)
                             if (existingId.isNotEmpty()) {
-                                Log.e("Verification", "Email found: Proceeding to OTP")
-                                viewModel.sendPasswordResetEmail(emails)
                                 navController.navigate("${AppScreen.OTP.route}/$emails")
                             } else {
-                                Log.e("Verification", "Email not found")
-                                Toast.makeText(context, "Email not registered!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Email not registered yet!", Toast.LENGTH_SHORT).show()
                             }
                         } catch (e: Exception) {
-                            Log.e("Verification", "Error verifying email: ${e.localizedMessage}")
                             Toast.makeText(context, "Something went wrong. Please try again.", Toast.LENGTH_SHORT).show()
                         }
                     }

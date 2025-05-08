@@ -68,7 +68,7 @@ fun NavGraphBuilder.authNavGraph(
         ) { backStackEntry ->
             val email = backStackEntry.arguments?.getString("email").toString()
             val password = backStackEntry.arguments?.getString("password").toString()
-            WelcomeLoginSizeLayout(navController,email, password) // pass it to your screen
+            WelcomeLoginSizeLayout(navController,email, password,viewModel)
         }
 
         composable(

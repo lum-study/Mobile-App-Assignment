@@ -3,7 +3,7 @@
     <string name="channel_name">Your Channel Name</string>
     <string name="channel_description">Your Channel Description</string>
 
-    <string name="app_name">Your App Name</string>
+    <string name="app_name">Bookblitzpremium</string>
     <string name="first_page_load">Explorer the world</string>
     <string name="second_page_load">Safe and easy</string>
     <string name="third_page_load">Welcome to Travel</string>
@@ -134,4 +134,20 @@
     <string name="price">RM %.2f</string>
     <string name="from_to">%s to %s</string>
     <string name="bookblitzpremium">Bookblitzpremium</string>
+    <string name="enter_emails">Enter Emails</string>
+    <string name="enter_your_emails">Enter your Emails</string>
+    <string name="please_enter_a_valid_password">Please enter a valid password</string>
+    <string name="please_enter_a_valid_email_address">Please enter a valid email address</string>
+    <string name="enter_password">Enter password</string>
+    <string name="enter_your_confirm_password">Enter your Confirm Password</string>
+    <string name="register_new_account">Register new account!</string>
+    <string name="please_confirm_your_password">Please confirm your password</string>
+    <string name="passwords_do_not_match">Passwords do not match</string>
+    <string name="pick_dates">Pick Dates</string>
+    <string name="select_guests">Select Guests</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="what_is_yours_gender">What is yours gender</string>
+    <string name="please_select_a_gender">Please select a gender</string>
+    <string name="female">Female</string>
+    <string name="male">Male</string>
 </resources>
