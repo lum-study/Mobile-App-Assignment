@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.bookblitzpremium.upcomingproject.BoxMaps
 import com.bookblitzpremium.upcomingproject.HandleRotateState
 import com.bookblitzpremium.upcomingproject.HotelDetails
 import com.bookblitzpremium.upcomingproject.R
@@ -315,7 +316,6 @@ fun ReviewFinalPackageSelected(
                                 saveData = saveData
                             )
                         }
-                        println("${hotelOnChange.paymentMethod} + ${hotelOnChange.cardNumber} + ${hotelOnChange.paymentMethodString}")
                     }
                 } else {
                     HotelInfoContent(hotelData, AppTheme.typography.largeBold)
@@ -364,6 +364,12 @@ fun ReviewFinalPackageSelected(
                         modifier = Modifier
                     )
                 }
+
+                BoxMaps(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    addressInput = hotelData.address,
+                )
             }
 
             if (!isTablet) Spacer(modifier = Modifier.weight(1f))
@@ -381,12 +387,6 @@ fun ReviewFinalPackageSelected(
 
             Button(
                 onClick = {
-                    println("Debug - hotelDetail: $hotelOnChange")
-                    println("Debug - hotelID: $hotelID")
-                    println("Debug - userID: $userID")
-                    println("Debug - paymentMethod: $paymentMethod")
-                    println("Debug - cardNumber: $cardNumber")
-
                     val booking = HotelBooking(
                         startDate = hotelOnChange.startDate,
                         endDate = hotelOnChange.endDate,
@@ -431,7 +431,8 @@ fun HotelInfoContent(
 ){
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ){
         Text(
             text = hotelData.name,
@@ -466,8 +467,6 @@ fun HotelInfoContent(
         }
     }
 }
-
-
 
 @Composable
 fun LegendItem1(

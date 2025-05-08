@@ -42,11 +42,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.bookblitzpremium.upcomingproject.HandleRotateState
+import com.bookblitzpremium.upcomingproject.R
 import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Hotel
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.Payment
@@ -120,10 +122,13 @@ fun HotelBookingVerticalScreen(
 
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     val today = LocalDate.now()
-    val nextFriday = today.with(TemporalAdjusters.next(DayOfWeek.FRIDAY))
+    val twoDaysFromNow = today.plusDays(2)
 
     var startDate by remember { mutableStateOf(if(bookingID.isNotEmpty()) startDate else if(hotelDetails.startDate.isNotEmpty()) hotelDetails.startDate else today.format(formatter).toString()) }
-    var endDate by remember { mutableStateOf( if(bookingID.isNotEmpty()) endDate else if(hotelDetails.endDate.isNotEmpty()) hotelDetails.endDate else nextFriday.format(formatter).toString()) }
+    var endDate by remember { mutableStateOf( if(bookingID.isNotEmpty()) endDate else if(hotelDetails.endDate.isNotEmpty()) hotelDetails.endDate else twoDaysFromNow.format(formatter).toString()) }
+
+    println("startDate of the Vertical + ${startDate}")
+    println("endDate of the Vertical + ${endDate}")
 
     var showFigureDialog by remember { mutableStateOf(false) }
     var showDateDialog by remember { mutableStateOf(false) }
@@ -178,7 +183,7 @@ fun HotelBookingVerticalScreen(
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = "Pick Dates",
+                                text = stringResource(R.string.pick_dates),
                                 style = AppTheme.typography.mediumBold,
                                 color = AppTheme.colorScheme.onPrimary
                             )
@@ -194,7 +199,7 @@ fun HotelBookingVerticalScreen(
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = "Select Guests",
+                                text = stringResource(R.string.select_guests),
                                 style = AppTheme.typography.mediumBold,
                                 color = AppTheme.colorScheme.onPrimary
                             )
@@ -280,7 +285,10 @@ fun DraggableObject(
         modifier = Modifier
             .fillMaxSize()
             .padding(top = 10.dp)
-            .background(AppTheme.colorScheme.background, RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+            .background(
+                AppTheme.colorScheme.background,
+                RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
+            )
     ) {
         HorizontalDivider(
             modifier = Modifier
@@ -317,7 +325,7 @@ fun DraggableObject(
             ) {
                 Icon(
                     imageVector = Icons.Default.LocationOn,
-                    contentDescription = "Location",
+                    contentDescription = stringResource(R.string.location),
                     tint = AppTheme.colorScheme.onBackground,
                     modifier = Modifier
                         .size(28.dp)

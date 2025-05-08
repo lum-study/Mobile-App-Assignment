@@ -32,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,6 +64,8 @@ import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.model.OtpAction
 import com.bookblitzpremium.upcomingproject.data.model.OtpState
+import com.bookblitzpremium.upcomingproject.data.model.PasswordResetState
+import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
 
 
 @Composable
@@ -204,6 +207,16 @@ fun OtpScreen2(
         viewModel.sendOTP(context)
     }
 
+    val passwordResetStatus by viewModel.passwordResetState.collectAsState()
+
+    if(passwordResetStatus is PasswordResetState.Success){
+        navController.navigate(AppScreen.Home.route) {
+            popUpTo(0) {
+                inclusive = true
+            }
+            launchSingleTop = true
+        }
+    }
     Column(
         modifier = modifier
             .fillMaxSize() // Fill the entire screen height
@@ -220,7 +233,7 @@ fun OtpScreen2(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp), // Reduced padding to avoid excessive spacing
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -287,13 +300,8 @@ fun OtpScreen2(
                         ).show()
                     } else if (state.isValid == true) {
                         Toast.makeText(context, "Valid code", Toast.LENGTH_SHORT).show()
-//                        viewModel.sendPasswordResetEmail(email = email)
-                        navController.navigate(AppScreen.Home.route) {
-                            popUpTo(0) {
-                                inclusive = true
-                            }
-                            launchSingleTop = true
-                        }
+                        viewModel.sendPasswordResetEmail(email = email)
+
 
                     } else {
                         Toast.makeText(context, "Invalid code", Toast.LENGTH_SHORT).show()
@@ -318,6 +326,8 @@ fun OtpScreen2(
             }
         }
     }
+
+    CheckStatusLoading(isLoading = passwordResetStatus is PasswordResetState.Loading)
 }
 
 

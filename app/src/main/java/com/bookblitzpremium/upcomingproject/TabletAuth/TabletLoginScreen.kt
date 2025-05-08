@@ -1,5 +1,6 @@
 package com.bookblitzpremium.upcomingproject.TabletAuth
 
+import android.util.Patterns
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -42,11 +43,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -62,6 +65,7 @@ import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.Remot
 import com.bookblitzpremium.upcomingproject.data.model.AuthState
 import com.bookblitzpremium.upcomingproject.data.model.OtpAction
 import com.bookblitzpremium.upcomingproject.data.model.OtpState
+import com.bookblitzpremium.upcomingproject.data.model.PasswordResetState
 import com.bookblitzpremium.upcomingproject.ui.components.ButtonHeader
 import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
 import com.bookblitzpremium.upcomingproject.ui.components.CustomTextField
@@ -82,7 +86,6 @@ fun TabletLoginScreen(
 ) {
     var email by rememberSaveable { mutableStateOf(email) }
     var password by rememberSaveable { mutableStateOf(password) }
-
     val authState by viewModel.authState.collectAsState()
     val context = LocalContext.current
     var toastMessage by remember { mutableStateOf<String?>(null) }
@@ -119,7 +122,7 @@ fun TabletLoginScreen(
     }
 
     fun isFormValid(): Boolean {
-        if (email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        if (email.isBlank() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             Toast.makeText(context, "Please enter a valid email address", Toast.LENGTH_SHORT).show()
             return false
         }
@@ -150,7 +153,7 @@ fun TabletLoginScreen(
         )
 
         Text(
-            text = "Get yours loving trip package",
+            text = "Sign in to explore your dream travel packages",
             style = AppTheme.typography.bodyLarge,
             color = AppTheme.colorScheme.secondary,
             modifier = Modifier.padding(top = 4.dp)
@@ -213,7 +216,7 @@ fun TabletLoginScreen(
 
         // Main Content: Personal Information
         Text(
-            text = "PERSONAL INFORMATION",
+            text = "Sign In",
             style = AppTheme.typography.mediumBold,
             color = AppTheme.colorScheme.onBackground,
             modifier = Modifier
@@ -222,7 +225,7 @@ fun TabletLoginScreen(
         )
 
         Text(
-            text = "Provide the basic information to get you registered with us.",
+            text = "Enter your email and password to sign in.",
             style = AppTheme.typography.labelMedium,
             color = AppTheme.colorScheme.secondary,
             modifier = Modifier
@@ -234,7 +237,7 @@ fun TabletLoginScreen(
             value = email,
             onValueChange = { email = it },
             label = "Enter email",
-            placeholder = "Enter your email",
+            placeholder = "example@domain.com",
             leadingIcon = Icons.Default.Email,
             trailingIcon = Icons.Default.Clear,
             shape = RoundedCornerShape(8.dp),
@@ -270,35 +273,21 @@ fun TabletLoginScreen(
         )
 
         val state by viewModel.state.collectAsStateWithLifecycle()
-        val focusRequesters = remember {
-            List(4) { FocusRequester() }
-        }
 
         if (showDialog) {
             PaymentDialog(
                 onDismissRequest = { showDialog = false },
                 onNextClick = {
                     showDialog = false
-                    navController.navigate(AppScreen.Home.route){
-                        popUpTo(AppScreen.Login.route){
+                    navController.navigate(AppScreen.Home.route) {
+                        popUpTo(AppScreen.Login.route) {
                             inclusive = true
                         }
                     }
                 },
                 state = state,
-                focusRequesters = focusRequesters,
                 navController = navController,
-                onAction = { action ->
-                    when (action) {
-                        is OtpAction.OnEnterNumber -> {
-                            if (action.number != null) {
-                                focusRequesters[action.index].freeFocus()
-                            }
-                        }
-                        else -> Unit
-                    }
-                    viewModel.onAction(action)
-                }
+                viewModel = viewModel,
             )
         }
 
@@ -321,7 +310,7 @@ fun TabletLoginScreen(
                     shape = RoundedCornerShape(24.dp)
                 ) {
                     Text(
-                        text = "Sign up a account",
+                        text = "Don't have an account? Sign Up",
                         style = AppTheme.typography.mediumBold,
                         color = AppTheme.colorScheme.onPrimary
                     )
@@ -370,7 +359,7 @@ fun TabletLoginScreen(
                     shape = RoundedCornerShape(24.dp)
                 ) {
                     Text(
-                        text = "Sign up a account",
+                        text = "Don't have an account? Sign Up",
                         style = AppTheme.typography.mediumBold,
                         color = AppTheme.colorScheme.onPrimary
                     )
@@ -404,6 +393,8 @@ fun TabletLoginScreen(
                 }
             }
         }
+
+
     }
 
     CheckStatusLoading(
@@ -419,11 +410,9 @@ fun LoginWelcomeScreen(
     tabletScreen: Boolean,
     email: String = "",
     password: String = "",
+    viewModel: AuthViewModel
 ) {
-    val viewModel: AuthViewModel = hiltViewModel()
     val authState by viewModel.authState.collectAsState()
-
-
 
     Box(
         modifier = Modifier
@@ -431,7 +420,7 @@ fun LoginWelcomeScreen(
             .background(AppTheme.colorScheme.background)
     ) {
         Image(
-            painter = painterResource(id = if (tabletScreen) R.drawable.hiking_potrait else R.drawable.hiking_new),
+            painter = painterResource(id = if (tabletScreen) R.drawable.hiking_new else R.drawable.hiking_potrait),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
@@ -567,15 +556,43 @@ fun PaymentDialog(
     onNextClick: () -> Unit = {},
     state: OtpState,
     navController: NavController,
-    focusRequesters: List<FocusRequester>,
-    onAction: (OtpAction) -> Unit,
-    viewModel: AuthViewModel = hiltViewModel(),
-    userModel: AuthViewModel = hiltViewModel()
+//    focusRequesters: List<FocusRequester>,
+//    onAction: (OtpAction) -> Unit,
+    viewModel: AuthViewModel,
 ) {
+
+    val passwordResetStatus by viewModel.passwordResetState.collectAsState()
+
+    if(passwordResetStatus is PasswordResetState.Success){
+        onNextClick()
+    }
+
+    var email by rememberSaveable { mutableStateOf("") }
+    var context = LocalContext.current
+
+    LaunchedEffect(state) {
+        println("Debug - OtpState updated: isValid=${state.isValid}, isExpired=${state.isExpired}")
+        if (state.isExpired) {
+            Toast.makeText(context, "OTP expired. Please request a new one.", Toast.LENGTH_SHORT).show()
+        } else if (state.isValid == true) {
+            println("Debug - OtpState updated: isValid=${state.isValid}, isExpired=${state.isExpired}")
+            Toast.makeText(context, "Valid code", Toast.LENGTH_SHORT).show()
+            viewModel.sendPasswordResetEmail(email = email)
+        } else if (state.isValid == false) {
+            Toast.makeText(context, "Invalid code", Toast.LENGTH_SHORT).show()
+            navController.navigate(AppScreen.Login.route) {
+                popUpTo(AppScreen.AuthGraph.route) {
+                    inclusive = true
+                }
+                launchSingleTop = true
+            }
+            viewModel.updateStateOfOTP()
+        }
+    }
+
     Dialog(
         onDismissRequest = {}
     ) {
-        var email by rememberSaveable { mutableStateOf("") }
         var isRecomposed by remember { mutableStateOf(false) }
         Box(
             modifier = Modifier
@@ -619,7 +636,9 @@ fun PaymentDialog(
                             modifier = Modifier
                         )
 
-                        OTP()
+                        OTP(
+                            viewModel
+                        )
 
                         Text(
                             text = "Resend OTP",
@@ -638,37 +657,6 @@ fun PaymentDialog(
                                 }
                         )
 
-                        if (state.isValid != null || state.isExpired) {
-                            LaunchedEffect(key1 = state.isValid, key2 = state.isExpired) {
-                                if (state.isExpired) {
-                                    Toast.makeText(
-                                        context,
-                                        "OTP expired. Please request a new one.",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                } else if (state.isValid == true) {
-                                    Toast.makeText(context, "Valid code", Toast.LENGTH_SHORT).show()
-                                    viewModel.sendPasswordResetEmail(email = email)
-                                } else {
-                                    Toast.makeText(context, "Invalid code", Toast.LENGTH_SHORT).show()
-                                    navController.navigate(AppScreen.Login.route) {
-                                        popUpTo(AppScreen.AuthGraph.route) {
-                                            inclusive = true
-                                        }
-                                        launchSingleTop = true
-                                    }
-                                    viewModel.updateStateOfOTP()
-                                }
-                            }
-                        }
-
-                        if (state.isExpired) {
-                            Text(
-                                text = "OTP expired. Please request a new one.",
-                                color = AppTheme.colorScheme.error,
-                                style = AppTheme.typography.bodyLarge
-                            )
-                        }
                     }
                 } else {
                     Text(
@@ -686,7 +674,7 @@ fun PaymentDialog(
                         shape = RoundedCornerShape(12.dp),
                         leadingIcon = Icons.Default.Email,
                         trailingIcon = Icons.Default.Clear,
-                        keyBoardType = androidx.compose.ui.text.input.KeyboardType.Email,
+                        keyBoardType = KeyboardType.Email,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 0.dp, vertical = 16.dp)
@@ -694,7 +682,7 @@ fun PaymentDialog(
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
-                val context = LocalContext.current
+
                 var scope = rememberCoroutineScope()
                 var remoteUser: RemoteUserViewModel = hiltViewModel()
                 ButtonHeader(
@@ -705,7 +693,6 @@ fun PaymentDialog(
                             try {
                                 val existingId = remoteUser.checkEmails(email)
                                 if (existingId.isNotEmpty()) {
-                                    viewModel.sendPasswordResetEmail(email)
                                     isRecomposed = !isRecomposed
                                 } else {
                                     Toast.makeText(context, "Email not registered!", Toast.LENGTH_SHORT).show()
@@ -732,13 +719,25 @@ fun PaymentDialog(
                     modifier = Modifier.size(24.dp)
                 )
             }
+
+            if (passwordResetStatus is PasswordResetState.Loading) {
+                CheckStatusLoading(
+                    isLoading = true,
+                    backgroundAlpha = 0.5f,
+                    indicatorColor = AppTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.5f))
+                )
+            }
         }
     }
+
 }
 
 @Composable
 fun OTP(
-    userModel: AuthViewModel = hiltViewModel()
+    userModel: AuthViewModel
 ) {
     val state by userModel.state.collectAsStateWithLifecycle()
     val focusRequesters = remember {
