@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.AuthViewModel
 import com.bookblitzpremium.upcomingproject.data.model.OtpAction
 import com.bookblitzpremium.upcomingproject.ui.utility.getWindowSizeClass
@@ -81,7 +82,8 @@ fun DynamicOTPPage(navController: NavController, userModel: AuthViewModel, email
         viewModel = userModel,
         navController = navController,
         modifier = Modifier,
-        email = email
+        email = email,
+        onClick = {navController.navigate(AppScreen.Login.route)}
     )
 
 }
