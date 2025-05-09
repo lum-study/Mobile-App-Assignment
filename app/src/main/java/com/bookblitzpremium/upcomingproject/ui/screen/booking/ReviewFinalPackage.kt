@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Close
@@ -180,7 +182,8 @@ fun ReviewFinalPackageSelected(
         modifier = modifier
             .padding(16.dp)
             .fillMaxSize()
-            .background(AppTheme.colorScheme.background),
+            .background(AppTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         val context = LocalContext.current
@@ -204,7 +207,7 @@ fun ReviewFinalPackageSelected(
             )
         }
 
-        var cardNumber by rememberSaveable {
+        var cardNumber by remember {
             mutableStateOf(
                 if (hotelOnChange.cardNumber.isNotEmpty()) hotelOnChange.cardNumber else ""
             )
@@ -364,13 +367,19 @@ fun ReviewFinalPackageSelected(
                         modifier = Modifier
                     )
                 }
-
-                BoxMaps(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    addressInput = hotelData.address,
-                )
             }
+
+            val locationName = hotelData.address
+            BoxMaps(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .clip(shape = RoundedCornerShape(32.dp)),
+                addressInput = locationName,
+                onClick = {
+                    navController.navigate("${AppScreen.Maps.route}/${locationName}")
+                },
+            )
 
             if (!isTablet) Spacer(modifier = Modifier.weight(1f))
 
@@ -416,7 +425,7 @@ fun ReviewFinalPackageSelected(
                     contentColor = AppTheme.colorScheme.onPrimary
                 ),
                 enabled = if(isTablet) cardNumber.isNotEmpty() && paymentMethod != PaymentMethod.NotSelected else true,
-                modifier = Modifier.fillMaxWidth().padding(if (isTablet) 16.dp else 0.dp)
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = "Next", color = AppTheme.colorScheme.onPrimary)
             }
@@ -658,7 +667,7 @@ fun DetailsSection(
 @Composable
 fun StyledImage(
     hotelImages: String,
-    tabletPortrait: String
+    tabletPortrait: String,
 ) {
     val isTablet = tabletPortrait == "true"
     val imageHeight = if (isTablet) 400.dp else 200.dp

@@ -7,6 +7,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +18,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -38,19 +42,25 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.util.Log
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -69,10 +79,14 @@ import com.bookblitzpremium.upcomingproject.ui.screen.home.DrawerLabel
 import com.bookblitzpremium.upcomingproject.ui.screen.home.GreetingProfile
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.bookblitzpremium.upcomingproject.ui.utility.PermissionUtils
+import com.bookblitzpremium.upcomingproject.ui.utility.ToastUtils
 import com.bookblitzpremium.upcomingproject.ui.utility.getDeviceType
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.temporal.ChronoUnit
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -97,6 +111,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 806)
 @Composable
@@ -136,7 +152,7 @@ fun App(
                     currentScreen = currentScreen,
                     canNavigateBack = navController.previousBackStackEntry != null,
                     navigateUp = { navController.navigateUp() },
-                    modifier = Modifier.padding(start = 20.dp)
+                    modifier = Modifier.padding(start = 8.dp)
                 )
             }
         },
