@@ -198,7 +198,8 @@ fun OtpScreen2(
     onAction: (OtpAction) -> Unit,
     navController: NavController,
     modifier: Modifier = Modifier,
-    email: String
+    email: String,
+    onClick: () -> Unit = {}
 ) {
 
     val context = LocalContext.current
@@ -209,17 +210,8 @@ fun OtpScreen2(
 
     val passwordResetStatus by viewModel.passwordResetState.collectAsState()
 
-    LaunchedEffect(passwordResetStatus) {
-        if(passwordResetStatus is PasswordResetState.Success){
-            navController.navigate(AppScreen.Login.route) {
-                popUpTo(AppScreen.AuthGraph.route) {
-                    inclusive = true
-                }
-                launchSingleTop =
-                    true // prevents multiple instances of the same screen from being created.
-            }
-            viewModel.updateStateOfOTP()
-        }
+    if(passwordResetStatus is PasswordResetState.Success){
+        onClick()
     }
 
 
@@ -307,8 +299,7 @@ fun OtpScreen2(
                     } else if (state.isValid == true) {
                         Toast.makeText(context, "Valid code", Toast.LENGTH_SHORT).show()
                         viewModel.sendPasswordResetEmail(email = email)
-
-
+                        onClick()
                     } else {
                         Toast.makeText(context, "Invalid code", Toast.LENGTH_SHORT).show()
                         navController.navigate(AppScreen.Login.route) {
