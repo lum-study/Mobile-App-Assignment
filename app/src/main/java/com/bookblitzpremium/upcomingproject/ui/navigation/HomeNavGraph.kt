@@ -146,7 +146,7 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController, saveData: Han
             ModifyHotelBooking(
                 navController = navController,
                 modifier = Modifier,
-                booking = booking
+                bookingId = booking
             )
         }
 

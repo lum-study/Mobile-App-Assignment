@@ -279,11 +279,7 @@ fun TabletLoginScreen(
                 onDismissRequest = { showDialog = false },
                 onNextClick = {
                     showDialog = false
-                    navController.navigate(AppScreen.Home.route) {
-                        popUpTo(AppScreen.Login.route) {
-                            inclusive = true
-                        }
-                    }
+                    navController.navigate(AppScreen.Login.route)
                 },
                 state = state,
                 navController = navController,
@@ -393,8 +389,6 @@ fun TabletLoginScreen(
                 }
             }
         }
-
-
     }
 
     CheckStatusLoading(
@@ -571,11 +565,9 @@ fun PaymentDialog(
     var context = LocalContext.current
 
     LaunchedEffect(state) {
-        println("Debug - OtpState updated: isValid=${state.isValid}, isExpired=${state.isExpired}")
         if (state.isExpired) {
             Toast.makeText(context, "OTP expired. Please request a new one.", Toast.LENGTH_SHORT).show()
         } else if (state.isValid == true) {
-            println("Debug - OtpState updated: isValid=${state.isValid}, isExpired=${state.isExpired}")
             Toast.makeText(context, "Valid code", Toast.LENGTH_SHORT).show()
             viewModel.sendPasswordResetEmail(email = email)
         } else if (state.isValid == false) {
@@ -685,6 +677,7 @@ fun PaymentDialog(
 
                 var scope = rememberCoroutineScope()
                 var remoteUser: RemoteUserViewModel = hiltViewModel()
+
                 ButtonHeader(
                     textResId = R.string.next_button,
                     valueHorizontal = 16.dp,

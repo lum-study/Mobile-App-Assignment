@@ -27,6 +27,21 @@ class RemoteHotelBookingViewModel @Inject constructor(
     private val localHotelBookingRepository: LocalHotelBookingRepo,
 ) : ViewModel() {
 
+    private val _startDate = MutableStateFlow<String?>(null)
+    val startDate: StateFlow<String?> = _startDate.asStateFlow()
+
+    private val _endDate = MutableStateFlow<String?>(null)
+    val endDate: StateFlow<String?> = _endDate.asStateFlow()
+
+    fun updateStartDate(startDateCopy: String) {
+        _startDate.value = startDateCopy
+    }
+
+    fun updateEndDate(endDateCopy: String) {
+        _endDate.value = endDateCopy
+    }
+
+
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading.asStateFlow()
 

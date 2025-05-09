@@ -66,7 +66,7 @@ fun NavGraphBuilder.hotelNavGraph(navController: NavController, saveData: Handle
         ModifyHotelBooking(
             navController = navController,
             modifier = Modifier,
-            booking = booking
+            bookingId = booking
         )
     }
 

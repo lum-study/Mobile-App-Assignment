@@ -297,8 +297,8 @@ fun CustomTextFieldPassword(
     }
 
     fun getPasswordErrorMessage(password: String): String? {
-        if (password.length < 8) {
-            return "Password must be at least 8 characters long"
+        if (password.length < 6) {
+            return "Password must be at least 6 characters long"
         }
         return null
     }

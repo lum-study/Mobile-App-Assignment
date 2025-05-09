@@ -112,9 +112,9 @@ fun HotelBookingVerticalScreen(
     }
 
     val initialClientCount: Int = if (bookingID.isNotEmpty()) {
-        numberOFClient.toIntOrNull() ?: 1
+        numberOFClient.toIntOrNull() ?: 4
     } else {
-        hotelDetails.numberOFClient.toIntOrNull() ?: 1
+        hotelDetails.numberOFClient.toIntOrNull() ?: 4
     }
 
     var numberOfRoom by remember { mutableStateOf(initialRoomCount) }

@@ -191,7 +191,6 @@ class AuthViewModel @Inject constructor(
                 // Send the password reset email
                 auth.sendPasswordResetEmail(email).await()
                 _passwordResetState.value = PasswordResetState.Success
-
             } catch (e: FirebaseAuthException) {
                 when (e.errorCode) {
                     "ERROR_USER_NOT_FOUND" -> {
@@ -263,6 +262,7 @@ class AuthViewModel @Inject constructor(
         val noticationService = NotificationService(context)
         val otp = sendOTP()
         noticationService.showNotification("OTP services", otp)
+        clearNavigationCommand()
     }
 
     fun onAction(action: OtpAction) {

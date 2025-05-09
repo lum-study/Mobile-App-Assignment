@@ -3,6 +3,7 @@ package com.bookblitzpremium.upcomingproject.ui.screen.booking
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,10 +16,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
@@ -29,7 +39,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -46,13 +59,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.util.Log
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.bookblitzpremium.upcomingproject.BoxMaps
+import com.bookblitzpremium.upcomingproject.common.enums.AppScreen
 import com.bookblitzpremium.upcomingproject.data.database.local.entity.HotelBooking
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelBookingViewModel
 import com.bookblitzpremium.upcomingproject.data.database.local.viewmodel.LocalHotelViewModel
@@ -60,10 +77,16 @@ import com.bookblitzpremium.upcomingproject.data.database.remote.viewmodel.Remot
 import com.bookblitzpremium.upcomingproject.ui.components.CheckStatusLoading
 import com.bookblitzpremium.upcomingproject.ui.theme.AppTheme
 import com.bookblitzpremium.upcomingproject.ui.utility.ToastUtils
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
+import java.time.format.TextStyle
 import java.time.temporal.ChronoUnit
+import java.util.Locale
 
 @Preview(showBackground = true)
 @Composable
@@ -88,7 +111,6 @@ fun BookingDaySelector(
     val startDateLocalDate = try {
         LocalDate.parse(startDate, formatter)
     } catch (e: DateTimeParseException) {
-        Log.e("BookingDaySelector", "Invalid startDate format: $startDate", e)
         LocalDate.now()
     }
 
@@ -100,19 +122,24 @@ fun BookingDaySelector(
     val daysDifference = ChronoUnit.DAYS.between(today, endDateLimit).toInt().coerceAtLeast(0)
     val range = (0..daysDifference)
 
-    range.forEach { offset ->
-        val startOption = today.plusDays(offset.toLong())
-        // Add 1-day range option
-        val endOption1 = startOption.plusDays(1)
-        if (endOption1.isAfter(startOption)) {
-            options.add(Pair(startOption, endOption1))
+    if(safeMaxRange == 1 && daysDifference == 1 ){
+        range.forEach { offset ->
+            val startOption = today.plusDays(offset.toLong())
+            val endOption1 = startOption.plusDays(1)
+            if (!endOption1.isAfter(endDateLimit)) { // Ensure the end date doesn't exceed the limit
+                options.add(Pair(startOption, endOption1))
+            }
         }
-        // Add maxRange option (if different)
-        val endOptionMax = startOption.plusDays((safeMaxRange - 1).toLong())
-        if (endOptionMax.isAfter(startOption) && safeMaxRange > 1) {
-            options.add(Pair(startOption, endOptionMax))
+    }else{
+        range.forEach { offset ->
+            val startOption = today.plusDays(offset.toLong())
+            val endOptionMax = startOption.plusDays((safeMaxRange - 1).toLong())
+            if (endOptionMax.isAfter(startOption) && safeMaxRange > 1) {
+                options.add(Pair(startOption, endOptionMax))
+            }
         }
     }
+
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -163,84 +190,384 @@ fun BookingDaySelector(
     }
 }
 
+//@Composable
+//fun MyScreen() {
+//    val currentMonth = YearMonth.of(2025, 5) // May 2025
+//    val availability = (1..31).associateWith { "Available" } // Example: all days available
+//    val startDate = LocalDate.of(2025, 5, 9) // 2025-05-09
+//    val endDate = LocalDate.of(2025, 5, 17)  // 2025-05-17
+//
+//    CalendarView(
+//        currentMonth = currentMonth,
+//        availability = availability,
+//        onDateRangeSelected = { start, end ->
+//            // Handle the selected range (e.g., update view model or state)
+//            println("Selected range: $start to $end")
+//        },
+//        startDate = startDate,
+//        endDate = endDate
+//    )
+//}
+
+@Composable
+fun CalendarView(
+    initialStartMonth: YearMonth,
+    numMonths: Int = 3,
+    availability: Map<LocalDate, String>,
+    onDateRangeSelected: (LocalDate?, LocalDate?) -> Unit,
+    startDate: LocalDate?,
+    endDate: LocalDate?,
+    customRangeDays: Int
+) {
+    val context = LocalContext.current
+    var startMonth by remember { mutableStateOf(initialStartMonth) }
+    var tempStartDate by remember { mutableStateOf<LocalDate?>(startDate) }
+    var tempEndDate by remember { mutableStateOf<LocalDate?>(endDate) }
+
+    // Update temp dates when startDate or endDate change
+    LaunchedEffect(startDate, endDate) {
+        if (startDate != null && endDate != null && !startDate.isAfter(endDate)) {
+            tempStartDate = startDate
+            tempEndDate = endDate
+            onDateRangeSelected(tempStartDate, tempEndDate)
+        }
+    }
+
+    val months = List(numMonths) { offset -> startMonth.plusMonths(offset.toLong()) }
+
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { startMonth = startMonth.minusMonths(numMonths.toLong()) }) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Previous Months"
+                )
+            }
+            Text(
+                text = "${months.first().month.getDisplayName(TextStyle.SHORT, Locale.getDefault())} ${months.first().year} - " +
+                        "${months.last().month.getDisplayName(TextStyle.SHORT, Locale.getDefault())} ${months.last().year}",
+                style = AppTheme.typography.mediumBold
+            )
+            IconButton(onClick = { startMonth = startMonth.plusMonths(numMonths.toLong()) }) {
+                Icon(
+                    imageVector = Icons.Default.ArrowForward,
+                    contentDescription = "Next Months"
+                )
+            }
+        }
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(7),
+            modifier = Modifier.padding(8.dp)
+        ) {
+            val today = LocalDate.now()
+
+            item(span = { GridItemSpan(7) }) {
+                Row {
+                    listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat").forEach { day ->
+                        Text(
+                            text = day,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(4.dp),
+                            textAlign = TextAlign.Center,
+                            style = AppTheme.typography.mediumNormal
+                        )
+                    }
+                }
+            }
+
+            months.forEach { month ->
+                item(span = { GridItemSpan(7) }) {
+                    Text(
+                        text = month.month.getDisplayName(TextStyle.FULL, Locale.getDefault()) + " ${month.year}",
+                        style = AppTheme.typography.smallRegular,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
+
+                val daysInMonth = month.lengthOfMonth()
+                val firstDayOfWeek = month.atDay(1).dayOfWeek.value % 7
+
+                items(firstDayOfWeek) {
+                    Box(modifier = Modifier.size(40.dp))
+                }
+
+                items(daysInMonth) { dayIndex ->
+                    val day = dayIndex + 1
+                    val date = LocalDate.of(month.year, month.month, day)
+                    val status = if (date.isBefore(today)) "NotAvailable" else availability[date] ?: "NotAvailable"
+
+                    val expectedEndDate = tempStartDate?.plusDays((customRangeDays - 1).toLong())
+
+                    val isStartDate = tempStartDate == date
+                    val isEndDate = expectedEndDate == date
+                    val isInRange = tempStartDate != null && expectedEndDate != null &&
+                            date in (tempStartDate!!..expectedEndDate) &&
+                            availability[date] == "Available"
+
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(
+                                when {
+                                    isStartDate || isEndDate -> AppTheme.colorScheme.selectDate
+                                    isInRange -> AppTheme.colorScheme.inRangeBackground
+                                    else -> Color.Transparent
+                                }
+                            )
+                            .clickable(
+                                enabled = true,
+                                onClick = {
+                                    if (status == "Available") {
+                                        tempStartDate = date
+                                        val calculatedEndDate = date.plusDays((customRangeDays - 1).toLong())
+
+                                        val allDatesAvailable = (0L until customRangeDays.toLong()).all { offset ->
+                                            val checkDate = date.plusDays(offset)
+                                            (if (checkDate.isBefore(today)) "NotAvailable" else availability[checkDate] ?: "NotAvailable") == "Available"
+                                        }
+
+                                        if (allDatesAvailable) {
+                                            tempEndDate = calculatedEndDate
+                                            onDateRangeSelected(tempStartDate, tempEndDate)
+                                            ToastUtils.showSingleToast(context, "Selected range: $date to $calculatedEndDate")
+                                        } else {
+                                            tempStartDate = null
+                                            tempEndDate = null
+                                            ToastUtils.showSingleToast(context, "Some dates in the range are not available")
+                                        }
+                                    } else {
+                                        ToastUtils.showSingleToast(context, "Date is not available")
+                                    }
+                                }
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = day.toString(),
+                                style = AppTheme.typography.mediumNormal,
+                                textAlign = TextAlign.Center,
+                                color = if (status == "Available") {
+                                    AppTheme.colorScheme.onSurface
+                                } else {
+                                    AppTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                }
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(6.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        when {
+                                            isStartDate || isEndDate -> AppTheme.colorScheme.primary
+                                            isInRange -> AppTheme.colorScheme.secondary
+                                            else -> Color.Transparent
+                                        }
+                                    )
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CalendarDialog(
+    initialStartMonth: YearMonth,
+    startDate: LocalDate?,
+    endDate: LocalDate?,
+    customRangeDays: Int,
+    onDismiss: () -> Unit,
+    onDateRangeSelected: (LocalDate, LocalDate) -> Unit
+) {
+    val context = LocalContext.current
+    var selectedStartDate by remember { mutableStateOf<LocalDate?>(startDate) }
+    var selectedEndDate by remember { mutableStateOf<LocalDate?>(endDate) }
+
+    // Generate availability for multiple months
+    val months = List(5) { offset -> initialStartMonth.plusMonths(offset.toLong()) }
+    val availability: Map<LocalDate, String> = months.flatMap { month ->
+        (1..month.lengthOfMonth()).map { day ->
+            LocalDate.of(month.year, month.month, day) to "Available"
+        }
+    }.toMap()
+
+    Dialog(onDismissRequest = { onDismiss() }) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = AppTheme.colorScheme.background,
+            tonalElevation = 4.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+            ) {
+
+                Text(
+                    text = "Select Booking Dates",
+                    style = AppTheme.typography.titleLarge,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+
+                Button(
+                    onClick = {
+                        if (selectedStartDate != null && selectedEndDate != null) {
+                            onDateRangeSelected(selectedStartDate!!, selectedEndDate!!)
+                            onDismiss()
+                        } else {
+                            ToastUtils.showSingleToast(context, "Please select a valid date range")
+                        }
+                    },
+                    enabled = selectedStartDate != null && selectedEndDate != null,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = AppTheme.colorScheme.primary,
+                        contentColor = AppTheme.colorScheme.onPrimary
+                    )
+                ) {
+                    Text("Confirm")
+                }
+
+
+                CalendarView(
+                    initialStartMonth = initialStartMonth,
+                    numMonths = 5,
+                    availability = availability,
+                    onDateRangeSelected = { start, end ->
+                        selectedStartDate = start
+                        selectedEndDate = end
+                    },
+                    startDate = selectedStartDate,
+                    endDate = selectedEndDate,
+                    customRangeDays = customRangeDays
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if (selectedStartDate != null && selectedEndDate != null) {
+                    Text(
+                        text = "Selected: $selectedStartDate to $selectedEndDate",
+                        style = AppTheme.typography.mediumNormal,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = AppTheme.colorScheme.onSurface
+                        )
+                    ) {
+                        Text("Cancel")
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+
+                }
+            }
+        }
+    }
+}
+
 @Composable
 fun ModifyHotelBooking(
     navController: NavController,
     modifier: Modifier = Modifier,
-    booking : String
+    bookingId: String,
 ) {
-
     val bookingViewModel: LocalHotelBookingViewModel = hiltViewModel()
     val hotelViewModel: LocalHotelViewModel = hiltViewModel()
     val remoteHotelBooking: RemoteHotelBookingViewModel = hiltViewModel()
 
-    var selectedStartDate by remember { mutableStateOf<LocalDate?>(null) }
-    var selectedEndDate by remember { mutableStateOf<LocalDate?>(null) }
-
-    bookingViewModel.fetchHotelBookingsById(booking)
+    bookingViewModel.fetchHotelBookingsById(bookingId)
 
     val bookingData by bookingViewModel.hotelBookingHistory.collectAsState()
     val booking = bookingData.firstOrNull()
 
-    hotelViewModel.getHotelByID(booking?.hotelID.toString())
-
     val hotelData by hotelViewModel.selectedHotel.collectAsState()
-
     val success by remoteHotelBooking.success.collectAsState()
+    val error by remoteHotelBooking.error.collectAsState()
+    val isBookingLoading by remoteHotelBooking.loading.collectAsState()
 
     val context = LocalContext.current
 
     LaunchedEffect(success) {
         if (success) {
             navController.popBackStack()
-            ToastUtils.showSingleToast(context, "Successfully change the date")
-            remoteHotelBooking.clearSuccess() // Reset success after navigation
+            ToastUtils.showSingleToast(context, "Successfully changed the date")
+            remoteHotelBooking.clearSuccess()
         }
     }
 
     booking?.let {
+        hotelViewModel.getHotelByID(booking.hotelID.toString())
+
         if (hotelData != null) {
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-            val start = LocalDate.parse(booking.startDate, formatter)
-            val end = LocalDate.parse(booking.endDate, formatter)
-            val maxRange = ChronoUnit.DAYS.between(start, end).toInt()
+            val initialStart = LocalDate.parse(booking.startDate, formatter)
+            val initialEnd = LocalDate.parse(booking.endDate, formatter)
+            val maxRange = ChronoUnit.DAYS.between(initialStart, initialEnd).toInt() + 1
 
-            val onBookingRangeSelected: (LocalDate, LocalDate) -> Unit = { start, end ->
-                selectedStartDate = start
-                selectedEndDate = end
+            var selectedStartDate by rememberSaveable { mutableStateOf<LocalDate?>(initialStart) }
+            var selectedEndDate by rememberSaveable { mutableStateOf<LocalDate?>(initialEnd) }
+            var selectedRange by rememberSaveable { mutableStateOf<Pair<LocalDate, LocalDate>?>(Pair(initialStart, initialEnd)) }
+            var showClick by remember { mutableStateOf(false) }
+
+            // Debug state changes
+            LaunchedEffect(selectedStartDate, selectedEndDate) {
+                println("Selected Start Date: $selectedStartDate")
+                println("Selected End Date: $selectedEndDate")
             }
 
             Column(
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxSize()
                     .padding(8.dp)
                     .verticalScroll(rememberScrollState())
             ) {
                 Spacer(modifier = Modifier.height(20.dp))
 
-                StyledImage(hotelData?.imageUrl.toString(), tabletPortrait = "true")
+                StyledImage(hotelData!!.imageUrl.toString(), tabletPortrait = "true")
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(16.dp)
+                        .padding(16.dp),
                 ) {
-                    // — HEADER: Title centered —
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = hotelData?.name.toString(),
+                            text = hotelData!!.name.toString(),
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.align(Alignment.CenterStart)
                         )
                     }
 
-                    // — RATING & LOCATION: Stars on the left, location on the right —
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -248,14 +575,12 @@ fun ModifyHotelBooking(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        // Stars
                         Row {
-                            repeat(hotelData?.rating?.toInt() ?: 0) {
+                            repeat(hotelData!!.rating?.toInt() ?: 0) {
                                 Text(text = "⭐", fontSize = 20.sp)
                             }
                         }
 
-                        // Location
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Filled.LocationOn,
@@ -265,7 +590,7 @@ fun ModifyHotelBooking(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "Malaysia, ${extractMalaysianState(hotelData?.address.toString())}",
+                                text = "Malaysia, ${extractMalaysianState(hotelData!!.address.toString())}",
                                 style = AppTheme.typography.mediumBold
                             )
                         }
@@ -273,31 +598,17 @@ fun ModifyHotelBooking(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-
-//                    val locationName = hotelData!!.name
-//                    BoxMaps(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .height(200.dp)
-//                            .clip(shape = RoundedCornerShape(32.dp)),
-//                        addressInput = locationName,
-//                        onClick = {
-//                            navController.navigate("${AppScreen.Maps.route}/${locationName}")
-//                        },
-//                    )
-
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height( 80.dp)
+                            .height(80.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(AppTheme.colorScheme.surface) // Use surface for background
+                            .background(AppTheme.colorScheme.surface)
                             .border(1.dp, AppTheme.colorScheme.primary, RoundedCornerShape(12.dp)),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Check-In half
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -313,15 +624,13 @@ fun ModifyHotelBooking(
                             )
                         }
 
-                        // Vertical divider
                         Divider(
-                            color = AppTheme.colorScheme.primary, // Use primary for divider
+                            color = AppTheme.colorScheme.primary,
                             modifier = Modifier
                                 .width(1.dp)
                                 .fillMaxHeight()
                         )
 
-                        // Check-Out half
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -340,52 +649,63 @@ fun ModifyHotelBooking(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // — BOOKING RANGE DROPDOWN: full width —
-                    BookingDaySelector(
-                        startDate = booking.startDate.toString(),
-                        maxRange = maxRange,
-                        onBookingRangeSelected = onBookingRangeSelected,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp)
-                    )
+                    Button(
+                        onClick = { showClick = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = AppTheme.colorScheme.onBackground,
+                            contentColor = AppTheme.colorScheme.background
+                        )
+                    ) {
+                        Text("Select Date Range")
+                    }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    if (showClick) {
+                        CalendarDialog(
+                            initialStartMonth = YearMonth.now(),
+                            startDate = selectedStartDate,
+                            endDate = selectedEndDate,
+                            customRangeDays = maxRange,
+                            onDismiss = { showClick = false },
+                            onDateRangeSelected = { start, end ->
+                                selectedStartDate = start
+                                selectedEndDate = end
+                                selectedRange = start to end
+                                println("Updated Start Date in Dialog: $start")
+                                println("Updated End Date in Dialog: $end")
+                            }
+                        )
+                    }
 
-                    // — DETAILS SECTION —
                     DetailsSection(
                         roomBooked = booking.numberOfRoom.toString(),
                         totalPerson = booking.numberOFClient.toString(),
-                        totalPrice = 0.toString(),  //find by payment ID
+                        totalPrice = "0",
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
                     )
 
-                    val error by remoteHotelBooking.error.collectAsState()
-
-                    val context = LocalContext.current
-                    LaunchedEffect(error) {
-                        error?.let { error ->
-                            ToastUtils.showSingleToast(context, error)
-                        }
-                    }
-
                     Spacer(modifier = Modifier.weight(1f))
 
-                    // — NEXT BUTTON: fixed at bottom, centered horizontally —
                     Button(
                         onClick = {
-                            val booking = HotelBooking(
-                                numberOFClient = booking.numberOFClient,
-                                numberOfRoom = booking.numberOfRoom,
-                                hotelID = booking.hotelID,
-                                userid = booking.userid,
-                                paymentID = booking.paymentID,
-                                status = booking.status,
-                                id = booking.id,
-                                startDate = selectedStartDate?.toString() ?: booking.startDate,
-                                endDate = selectedEndDate?.toString() ?: booking.endDate,
-                            )
-                            remoteHotelBooking.updateHotelBooking(booking)
+                            if (selectedStartDate != null && selectedEndDate != null) {
+                                val updatedBooking = HotelBooking(
+                                    numberOFClient = booking.numberOFClient,
+                                    numberOfRoom = booking.numberOfRoom,
+                                    hotelID = booking.hotelID,
+                                    userid = booking.userid,
+                                    paymentID = booking.paymentID,
+                                    status = booking.status,
+                                    id = booking.id,
+                                    startDate = selectedStartDate.toString(),
+                                    endDate = selectedEndDate.toString()
+                                )
+                                remoteHotelBooking.updateHotelBooking(updatedBooking)
+                            } else {
+                                ToastUtils.showSingleToast(context, "Please select a valid date range")
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -393,22 +713,20 @@ fun ModifyHotelBooking(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = AppTheme.colorScheme.onBackground,
                             contentColor = AppTheme.colorScheme.background
-                        )
+                        ),
+                        enabled = selectedStartDate != null && selectedEndDate != null
                     ) {
                         Text("Change Date")
                     }
                 }
             }
-
-        }else{
+        } else {
             CheckStatusLoading()
         }
+    }
 
-        val isBookingLoading by remoteHotelBooking.loading.collectAsState()
-
-        if(isBookingLoading){
-            CheckStatusLoading()
-        }
+    if (isBookingLoading) {
+        CheckStatusLoading()
     }
 }
 

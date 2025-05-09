@@ -209,14 +209,20 @@ fun OtpScreen2(
 
     val passwordResetStatus by viewModel.passwordResetState.collectAsState()
 
-    if(passwordResetStatus is PasswordResetState.Success){
-        navController.navigate(AppScreen.Home.route) {
-            popUpTo(0) {
-                inclusive = true
+    LaunchedEffect(passwordResetStatus) {
+        if(passwordResetStatus is PasswordResetState.Success){
+            navController.navigate(AppScreen.Login.route) {
+                popUpTo(AppScreen.AuthGraph.route) {
+                    inclusive = true
+                }
+                launchSingleTop =
+                    true // prevents multiple instances of the same screen from being created.
             }
-            launchSingleTop = true
+            viewModel.updateStateOfOTP()
         }
     }
+
+
     Column(
         modifier = modifier
             .fillMaxSize() // Fill the entire screen height

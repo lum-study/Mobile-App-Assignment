@@ -71,7 +71,7 @@ fun PaymentDetails(
         )
     }
 
-    var cardNumber by rememberSaveable {
+    var cardNumber by remember {
         mutableStateOf(
             if (dataOnChange.cardNumber.isNotEmpty()) dataOnChange.cardNumber else ""
         )
