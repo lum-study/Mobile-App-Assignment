@@ -130,6 +130,7 @@ fun TripPackageInformationPhoneLayout(
     selectedTripPackage: TripPackageInformation?,
     bookingID: String,
 ) {
+    val todayDate = LocalDate.now()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -267,7 +268,7 @@ fun TripPackageInformationPhoneLayout(
                     }
                 )
 
-                if (bookingID == "") {
+                if (bookingID == "" && todayDate.isBefore(startDate)) {
                     Button(
                         onClick = {
                             navController.navigate(
@@ -309,8 +310,10 @@ fun TripPackageInformationTabletLayout(
     bookingID: String,
     isPortrait: Boolean,
 ) {
+    val todayDate = LocalDate.now()
     if (selectedTripPackage != null) {
         var selectedTabIndex by rememberSaveable { mutableStateOf(0) }
+        val startDate = LocalDate.parse(selectedTripPackage.startDate)
 
         // List of tab items
         val tabs: List<TripPackageTabs> = listOf(
@@ -555,7 +558,7 @@ fun TripPackageInformationTabletLayout(
                     tabs[selectedTabIndex].screen()
                 }
             }
-            if (bookingID == "") {
+            if (bookingID == "" && todayDate.isBefore(startDate)) {
                 Button(
                     shape = RoundedCornerShape(12.dp),
                     onClick = {
