@@ -1,5 +1,6 @@
 package com.bookblitzpremium.upcomingproject.ui.screen.search
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -42,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -69,13 +71,14 @@ fun FilterScreen(
     maxPrice: String,
     isMobile: Boolean = true,
     onApplyClick: () -> Unit = {},
-    filterViewModel: FilterViewModel = hiltViewModel()
+    filterViewModel: FilterViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
     val filterState by filterViewModel.filterState.collectAsState()
     val localRecentSearchViewModel: LocalRecentSearchViewModel = hiltViewModel()
     val selectedOption = filterState.selectedOption
-    val hotelPriceRange = filterState.hotelStartPrice .. filterState.hotelEndPrice
-    val tpPriceRange = filterState.tpStartPrice .. filterState.tpEndPrice
+    val hotelPriceRange = filterState.hotelStartPrice..filterState.hotelEndPrice
+    val tpPriceRange = filterState.tpStartPrice..filterState.tpEndPrice
     //hotel
     val selectedRating = filterState.selectedRating
     val selectedFeature = filterState.selectedFeature
@@ -89,7 +92,7 @@ fun FilterScreen(
     val isUpdated = filterState.isUpdated
     val dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
 
-    if (isMobile && !isUpdated){
+    if (isMobile && !isUpdated) {
         filterViewModel.updateHotelStartPrice(minPrice.toFloat())
         filterViewModel.updateHotelEndPrice(maxPrice.toFloat())
         filterViewModel.updateState(true)
@@ -106,11 +109,10 @@ fun FilterScreen(
                 selectedOption = selectedOption,
                 onOptionChange = {
                     filterViewModel.updateOption(it)
-                    if(it == BookingType.Hotel) {
+                    if (it == BookingType.Hotel) {
                         filterViewModel.updateHotelStartPrice(minPrice.toFloat())
                         filterViewModel.updateHotelEndPrice(maxPrice.toFloat())
-                    }
-                    else{
+                    } else {
                         filterViewModel.updateTPStartPrice(600f)
                         filterViewModel.updateTPEndPrice(2500f)
                     }
@@ -119,13 +121,12 @@ fun FilterScreen(
             HorizontalDivider()
             //Price Range
             PriceRangeSlider(
-                selectedPriceRange = if(selectedOption == BookingType.Hotel)hotelPriceRange else tpPriceRange,
+                selectedPriceRange = if (selectedOption == BookingType.Hotel) hotelPriceRange else tpPriceRange,
                 onValueChange = {
-                    if(selectedOption == BookingType.Hotel) {
+                    if (selectedOption == BookingType.Hotel) {
                         filterViewModel.updateHotelStartPrice(it.start.roundToInt().toFloat())
                         filterViewModel.updateHotelEndPrice(it.endInclusive.roundToInt().toFloat())
-                    }
-                    else{
+                    } else {
                         filterViewModel.updateTPStartPrice(it.start.roundToInt().toFloat())
                         filterViewModel.updateTPEndPrice(it.endInclusive.roundToInt().toFloat())
                     }
@@ -151,7 +152,7 @@ fun FilterScreen(
                 ) {
                     FilterDropDownMenu(
                         selectedStation = selectedDeparture,
-                        onOptionChange = { filterViewModel.updateDeparture(it)},
+                        onOptionChange = { filterViewModel.updateDeparture(it) },
                         title = stringResource(R.string.filter_departure),
                     )
                     FilterDropDownMenu(
@@ -191,7 +192,7 @@ fun FilterScreen(
                                 style = AppTheme.typography.mediumSemiBold
                             )
                             OutlinedButton(
-                                onClick = { filterViewModel.updateEndDatePicker(true)  }
+                                onClick = { filterViewModel.updateEndDatePicker(true) }
                             ) {
                                 Text(
                                     text = endDate.format(dateFormatter),
@@ -200,8 +201,7 @@ fun FilterScreen(
                             }
                         }
                     }
-                }
-                else {
+                } else {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -216,7 +216,7 @@ fun FilterScreen(
                                 modifier = Modifier.weight(.75f),
                             )
                             OutlinedButton(
-                                onClick = { filterViewModel.updateStartDatePicker(true)  },
+                                onClick = { filterViewModel.updateStartDatePicker(true) },
                                 modifier = Modifier.weight(1f),
                                 contentPadding = PaddingValues(4.dp)
                             ) {
@@ -236,7 +236,7 @@ fun FilterScreen(
                                 modifier = Modifier.weight(.75f),
                             )
                             OutlinedButton(
-                                onClick = { filterViewModel.updateEndDatePicker(true)  },
+                                onClick = { filterViewModel.updateEndDatePicker(true) },
                                 modifier = Modifier.weight(1f),
                                 contentPadding = PaddingValues(4.dp)
                             ) {
@@ -259,8 +259,15 @@ fun FilterScreen(
                 if (showEndDatePicker) {
                     CustomDatePickerDialog(
                         onDateChange = {
-                            filterViewModel.updateEndDate(it)
+                            filterViewModel.updateEndDate(if (it.isAfter(startDate)) it else endDate)
                             filterViewModel.updateEndDatePicker(false)
+
+                            if (it.isBefore(startDate))
+                                Toast.makeText(
+                                    context,
+                                    "End date must be after the start date",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                         },
                     )
                 }
@@ -297,7 +304,7 @@ fun FilterScreen(
                                 AppScreen.Search.route
                             )
                         }
-                    } else{
+                    } else {
                         onApplyClick()
                     }
                 },
@@ -321,7 +328,7 @@ fun FilterScreen(
 fun PriceRangeSlider(
     selectedPriceRange: ClosedFloatingPointRange<Float>,
     onValueChange: (ClosedFloatingPointRange<Float>) -> Unit,
-    valueRange: ClosedFloatingPointRange<Float>
+    valueRange: ClosedFloatingPointRange<Float>,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -377,7 +384,7 @@ fun FilterDropDownMenu(
     selectedStation: FlightStation,
     onOptionChange: (FlightStation) -> Unit,
     title: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     val options = FlightStation.entries
@@ -420,7 +427,7 @@ fun FilterDropDownMenu(
 @Composable
 fun FilterType(
     selectedOption: BookingType,
-    onOptionChange: (BookingType) -> Unit
+    onOptionChange: (BookingType) -> Unit,
 ) {
     val options = listOf(BookingType.Hotel, BookingType.TripPackage)
     Column(
